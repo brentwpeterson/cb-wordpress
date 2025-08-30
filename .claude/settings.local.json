@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rm:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(wp plugin deactivate:*)",
+      "Bash(ls:*)",
+      "Read(/Users/brent/LocalSites/contentcucumber/**)",
+      "Read(/Users/brent/LocalSites/contentcucumber/**)"
+    ],
+    "deny": []
+  },
+  "enableAllProjectMcpServers": false
+}

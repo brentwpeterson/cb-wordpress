@@ -1,5 +1,6 @@
 # LocalWP Site Structure
 # Track the WordPress app and configuration, ignore logs and temp files
+# Project directories (todo/, documentation/) are tracked by default
 
 # Logs directory - LocalWP specific
 logs/
