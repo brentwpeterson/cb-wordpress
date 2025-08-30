@@ -32,3 +32,8 @@ This file contains important configuration and guidance for Claude when working 
 
 ## Notes
 - This is a local development environment
+
+## Important Search Hints
+- **Bug hunting**: Issues will NOT be in files ignored by git (WordPress core, default themes, etc.)
+- Focus searches on tracked files only: custom themes, plugins, and configuration files
+- Use git-tracked files as the primary search scope for troubleshooting

@@ -1,82 +1,88 @@
-# WordPress Core
-# Ignore everything in the root except the directories we're tracking
-/*
-!wp-content/
-!.gitignore
-!CLAUDE.md
-!README.md
-!composer.json
-!composer.lock
-!package.json
-!package-lock.json
+# LocalWP Site Structure
+# Track the WordPress app and configuration, ignore logs and temp files
 
-# WordPress Core files (if in subdirectory)
-/wp-admin/
-/wp-includes/
-/index.php
-/license.txt
-/readme.html
-/wp-*.php
-/xmlrpc.php
+# Logs directory - LocalWP specific
+logs/
 
-# WP-Content
-/wp-content/*
-!wp-content/mu-plugins/
-!wp-content/plugins/
-!wp-content/themes/
+# WordPress Core - in app/public/
+# Ignore everything in WordPress root except the directories we're tracking
+app/public/*
+!app/public/wp-content/
+!app/public/.gitignore
+!app/public/CLAUDE.md
+!app/public/README.md
+!app/public/composer.json
+!app/public/composer.lock
+!app/public/package.json
+!app/public/package-lock.json
 
-# Ignore default themes except the active one
-/wp-content/themes/twenty*/
+# WordPress Core files (in app/public/)
+app/public/wp-admin/
+app/public/wp-includes/
+app/public/index.php
+app/public/license.txt
+app/public/readme.html
+app/public/wp-*.php
+app/public/xmlrpc.php
+
+# WP-Content - in app/public/
+app/public/wp-content/*
+!app/public/wp-content/mu-plugins/
+!app/public/wp-content/plugins/
+!app/public/wp-content/themes/
+
+# Ignore default themes except custom ones
+app/public/wp-content/themes/twenty*/
 
 # Uploads directory - media files should not be in version control
-/wp-content/uploads/
+app/public/wp-content/uploads/
 
 # Plugin/Theme development - keep custom only
-/wp-content/plugins/hello.php
-/wp-content/plugins/index.php
-/wp-content/themes/index.php
+app/public/wp-content/plugins/hello.php
+app/public/wp-content/plugins/index.php
+app/public/wp-content/themes/index.php
 
 # WordPress database exports
 *.sql
 *.sql.gz
 
 # WP Config - sensitive data
-wp-config.php
-wp-config-local.php
-wp-config-staging.php
-.htaccess
+app/public/wp-config.php
+app/public/wp-config-local.php
+app/public/wp-config-staging.php
+app/public/.htaccess
 
 # WP Engine specific
-/_wpeprivate/
-/wp-content/mysql.sql
-/wp-content/mu-plugins/wpengine-common/
-/wp-content/mu-plugins/wpe-*.php
-/wp-content/mu-plugins/force-strong-passwords/
-/wp-content/mu-plugins/stop-long-comments.php
-/wp-content/mu-plugins/slt-force-strong-passwords.php
-/wp-content/mu-plugins/limit-login-attempts/
-/wp-content/mu-plugins/wpengine-security-auditor.php
-/wp-content/mu-plugins/wpe-wp-sign-on-plugin/
-/wp-content/object-cache.php
-/wp-content/advanced-cache.php
+app/public/_wpeprivate/
+app/public/wp-content/mysql.sql
+app/public/wp-content/mu-plugins/wpengine-common/
+app/public/wp-content/mu-plugins/wpe-*.php
+app/public/wp-content/mu-plugins/force-strong-passwords/
+app/public/wp-content/mu-plugins/stop-long-comments.php
+app/public/wp-content/mu-plugins/slt-force-strong-passwords.php
+app/public/wp-content/mu-plugins/limit-login-attempts/
+app/public/wp-content/mu-plugins/wpengine-security-auditor.php
+app/public/wp-content/mu-plugins/wpe-wp-sign-on-plugin/
+app/public/wp-content/object-cache.php
+app/public/wp-content/advanced-cache.php
 
 # Cache and temp files
-/wp-content/cache/
-/wp-content/temp/
-/wp-content/upgrade/
-/wp-content/backup*/
-/wp-content/backups/
-/wp-content/managewp/
-/wp-content/wp-cache-config.php
-/wp-content/w3tc-config/
-/wp-content/et-cache/
+app/public/wp-content/cache/
+app/public/wp-content/temp/
+app/public/wp-content/upgrade/
+app/public/wp-content/backup*/
+app/public/wp-content/backups/
+app/public/wp-content/managewp/
+app/public/wp-content/wp-cache-config.php
+app/public/wp-content/w3tc-config/
+app/public/wp-content/et-cache/
 
 # Logs and debugging
 *.log
-/wp-content/debug.log
-/wp-content/ewww/
-error_log
-php_errorlog
+app/public/wp-content/debug.log
+app/public/wp-content/ewww/
+app/public/error_log
+app/public/php_errorlog
 
 # Development files
 node_modules/
@@ -109,9 +115,9 @@ desktop.ini
 .phpintel/
 
 # Build files
-/build/
-/dist/
-/compiled/
+build/
+dist/
+compiled/
 
 # Environment files
 .env
@@ -124,8 +130,8 @@ deploy.sh
 deploy-config.php
 
 # Security files
-/wp-content/wflogs/
-/wp-content/plugins/wordfence/tmp/
+app/public/wp-content/wflogs/
+app/public/wp-content/plugins/wordfence/tmp/
 
 # Backup files
 *.bak
@@ -135,15 +141,20 @@ deploy-config.php
 *.tmp
 
 # Local development
-/local-xdebuginfo.php
-/fw-*.php
-/server-config/
+app/public/local-xdebuginfo.php
+app/public/fw-*.php
+app/public/server-config/
 
-# SiteGround specific (from your plugins)
-/wp-content/plugins/sg-cachepress/
-/wp-content/plugins/sg-security/
-/wp-content/sgs_encrypt_key.php
+# SiteGround specific
+app/public/wp-content/plugins/sg-cachepress/
+app/public/wp-content/plugins/sg-security/
+app/public/wp-content/sgs_encrypt_key.php
 
 # Local/custom overrides
-local-config.php
-*.local.php
+app/public/local-config.php
+app/public/*.local.php
+
+# LocalWP specific files to ignore
+conf/nginx/
+conf/php/
+conf/mysql/
