@@ -17,8 +17,10 @@ This file contains important configuration and guidance for Claude when working 
 - **Web Server**: Configured in LocalWP (nginx or Apache)
 
 ## Common Commands
-- `wp-cli` commands should be run from the public directory
-- LocalWP provides built-in WP-CLI access through the site shell
+- **CRITICAL WARNING**: DO NOT use WP-CLI commands in this LocalWP environment
+- WP-CLI causes PHP extension conflicts and database corruption in this setup
+- Use direct SQL commands through LocalWP's database interface instead
+- LocalWP manages PHP/MySQL versions - external CLI tools interfere with this
 
 ## Code Conventions
 - Follow WordPress coding standards
@@ -37,3 +39,12 @@ This file contains important configuration and guidance for Claude when working 
 - **Bug hunting**: Issues will NOT be in files ignored by git (WordPress core, default themes, etc.)
 - Focus searches on tracked files only: custom themes, plugins, and configuration files
 - Use git-tracked files as the primary search scope for troubleshooting
+
+## GP Premium Elements Management
+- **Admin Interface**: https://contentcucumber.local/wp-admin/edit.php?post_type=gp_elements
+- GP Premium Elements are stored as WordPress posts with `post_type = 'gp_elements'`
+- Template issues (like "Post title" instead of `{{post_title}}`) are in these elements
+- Common problematic elements:
+  - Single post (controls post title display)
+  - Right sidebar (controls author display)
+- Edit these through WP Admin interface, not database when possible
