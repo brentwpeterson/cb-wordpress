@@ -13,6 +13,7 @@ This file contains important configuration and guidance for Claude when working 
 - **Public Root**: `/Users/brent/LocalSites/contentcucumber/app/public`
 - **Local Site URL**: Check LocalWP app for the local domain
 - **Database**: Managed through LocalWP interface
+- **Database Table Prefix**: `wp_83rxila95v_`
 - **PHP Version**: Configured in LocalWP settings
 - **Web Server**: Configured in LocalWP (nginx or Apache)
 
