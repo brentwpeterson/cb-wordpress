@@ -67,9 +67,9 @@ class GeneratePress_Site_Library_Rest extends WP_REST_Controller {
 			$namespace,
 			'/get_sites/',
 			array(
-				'methods'  => WP_REST_Server::EDITABLE,
+				'methods'  => WP_REST_Server::READABLE,
 				'callback' => array( $this, 'get_sites' ),
-				'permission_callback' => array( $this, 'update_settings_permission' ),
+				'permission_callback' => array( $this, 'get_sites_permission' ),
 			)
 		);
 
@@ -172,6 +172,39 @@ class GeneratePress_Site_Library_Rest extends WP_REST_Controller {
 	}
 
 	/**
+	 * Get sites permissions.
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 * @return bool
+	 */
+	public function get_sites_permission( WP_REST_Request $request ) {
+		// Allow admin users.
+		if ( current_user_can( 'manage_options' ) ) {
+			return true;
+		}
+
+		// Allow public access if enabled via filter.
+		return apply_filters( 'generatepress_allow_public_site_library', false, $request );
+	}
+
+	/**
+	 * Verify nonce for destructive operations.
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 * @return bool True if nonce is valid, false otherwise.
+	 */
+	private function verify_nonce( WP_REST_Request $request ) {
+		$nonce = $request->get_header( 'X-WP-Nonce' );
+
+		if ( ! $nonce ) {
+			return false;
+		}
+
+		return wp_verify_nonce( $nonce, 'wp_rest' );
+	}
+
+
+	/**
 	 * Export a group of assets.
 	 *
 	 * @param WP_REST_Request $request  request object.
@@ -179,7 +212,13 @@ class GeneratePress_Site_Library_Rest extends WP_REST_Controller {
 	 * @return mixed
 	 */
 	public function get_sites( WP_REST_Request $request ) {
+		// Check if this is a force refresh request (requires manage_options capability).
 		$force_refresh = $request->get_param( 'forceRefresh' );
+
+		if ( $force_refresh && ! current_user_can( 'manage_options' ) ) {
+			$force_refresh = false;
+		}
+
 		$sites = get_option( 'generatepress_sites', array() );
 
 		$time_now = strtotime( 'now' );
@@ -301,6 +340,11 @@ class GeneratePress_Site_Library_Rest extends WP_REST_Controller {
 	 * @return mixed
 	 */
 	public function import_options( WP_REST_Request $request ) {
+		// Verify nonce for destructive operation.
+		if ( ! $this->verify_nonce( $request ) ) {
+			return $this->error( 'invalid_nonce', 'Invalid nonce provided.' );
+		}
+
 		$site_data = $request->get_param( 'siteData' );
 
 		if ( ! GeneratePress_Site_Library_Helper::file_exists( $site_data['directory'] . '/options.json' ) ) {
@@ -484,7 +528,13 @@ class GeneratePress_Site_Library_Rest extends WP_REST_Controller {
 	 * @return mixed
 	 */
 	public function activate_plugins( WP_REST_Request $request ) {
+		// Verify nonce for destructive operation.
+		if ( ! $this->verify_nonce( $request ) ) {
+			return $this->error( 'invalid_nonce', 'Invalid nonce provided.' );
+		}
+
 		$site_data = $request->get_param( 'siteData' );
+
 		$settings = GeneratePress_Site_Library_Helper::get_options( $site_data['directory'] . '/options.json' );
 		$plugins = $settings['plugins'];
 
@@ -531,6 +581,11 @@ class GeneratePress_Site_Library_Rest extends WP_REST_Controller {
 	 * @return mixed
 	 */
 	public function import_content( WP_REST_Request $request ) {
+		// Verify nonce for destructive operation.
+		if ( ! $this->verify_nonce( $request ) ) {
+			return $this->error( 'invalid_nonce', 'Invalid nonce provided.' );
+		}
+
 		$site_data = $request->get_param( 'siteData' );
 		$site_slug = $request->get_param( 'siteSlug' );
 		$import_options = $request->get_param( 'importOptions' );
@@ -596,6 +651,11 @@ class GeneratePress_Site_Library_Rest extends WP_REST_Controller {
 	 * @return mixed
 	 */
 	public function import_site_options( WP_REST_Request $request ) {
+		// Verify nonce for destructive operation.
+		if ( ! $this->verify_nonce( $request ) ) {
+			return $this->error( 'invalid_nonce', 'Invalid nonce provided.' );
+		}
+
 		$site_data = $request->get_param( 'siteData' );
 		$site_slug = $request->get_param( 'siteSlug' );
 		$backup_data = get_option( '_generatepress_site_library_backup', array() );
@@ -727,6 +787,11 @@ class GeneratePress_Site_Library_Rest extends WP_REST_Controller {
 	 * @return mixed
 	 */
 	public function import_widgets( WP_REST_Request $request ) {
+		// Verify nonce for destructive operation.
+		if ( ! $this->verify_nonce( $request ) ) {
+			return $this->error( 'invalid_nonce', 'Invalid nonce provided.' );
+		}
+
 		$site_data = $request->get_param( 'siteData' );
 
 		require_once GP_PREMIUM_DIR_PATH . 'site-library/classes/class-site-widget-importer.php';
@@ -751,8 +816,14 @@ class GeneratePress_Site_Library_Rest extends WP_REST_Controller {
 
 	/**
 	 * Restore our theme options.
+	 *
+	 * @param WP_REST_Request $request The request object.
 	 */
-	public function restore_theme_options() {
+	public function restore_theme_options( WP_REST_Request $request ) {
+		// Verify nonce for destructive operation.
+		if ( ! $this->verify_nonce( $request ) ) {
+			return $this->error( 'invalid_nonce', 'Invalid nonce provided.' );
+		}
 		$backup_data = get_option( '_generatepress_site_library_backup', array() );
 
 		if ( ! empty( $backup_data ) ) {
@@ -829,8 +900,14 @@ class GeneratePress_Site_Library_Rest extends WP_REST_Controller {
 
 	/**
 	 * Restore content.
+	 *
+	 * @param WP_REST_Request $request The request object.
 	 */
-	public function restore_content() {
+	public function restore_content( WP_REST_Request $request ) {
+		// Verify nonce for destructive operation.
+		if ( ! $this->verify_nonce( $request ) ) {
+			return $this->error( 'invalid_nonce', 'Invalid nonce provided.' );
+		}
 		$backup_data = get_option( '_generatepress_site_library_backup', array() );
 
 		// Plugins.

@@ -3,7 +3,7 @@
  * Plugin Name: GP Premium
  * Plugin URI: https://generatepress.com
  * Description: The entire collection of GeneratePress premium modules.
- * Version: 2.5.3
+ * Version: 2.5.5
  * Requires at least: 6.1
  * Requires PHP: 7.2
  * Author: Tom Usborne
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-define( 'GP_PREMIUM_VERSION', '2.5.3' );
+define( 'GP_PREMIUM_VERSION', '2.5.5' );
 define( 'GP_PREMIUM_DIR_PATH', plugin_dir_path( __FILE__ ) );
 define( 'GP_PREMIUM_DIR_URL', plugin_dir_url( __FILE__ ) );
 define( 'GP_LIBRARY_DIRECTORY', plugin_dir_path( __FILE__ ) . 'library/' );

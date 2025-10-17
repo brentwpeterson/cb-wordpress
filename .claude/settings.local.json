@@ -7,7 +7,9 @@
       "Bash(wp plugin deactivate:*)",
       "Bash(ls:*)",
       "Read(/Users/brent/LocalSites/contentcucumber/**)",
-      "Read(/Users/brent/LocalSites/contentcucumber/**)"
+      "Read(/Users/brent/LocalSites/contentcucumber/**)",
+      "Bash(git add:*)",
+      "Bash(git push)"
     ],
     "deny": []
   },

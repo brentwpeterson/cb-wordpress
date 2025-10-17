@@ -1143,8 +1143,13 @@ class Forminator_CForm_Front_Action extends Forminator_Front_Action {
 			}
 
 			self::process_uploads( 'upload' );
+
+			// Delete submission if payment is failed.
+			$delete_submission = true;
 			self::handle_stripe( $entry );
 			self::handle_paypal( $entry );
+			unset( $delete_submission );
+
 			self::process_uploads( 'transfer' );
 			self::maybe_create_post();
 
@@ -1159,7 +1164,19 @@ class Forminator_CForm_Front_Action extends Forminator_Front_Action {
 			self::send_email( $entry );
 
 			$response = self::get_response( $entry );
+
+			// If is lead, and storing in database is disabled, then store the $entry object temporarily in transient.
+			if ( self::$is_leads && self::prevent_store() && 0 === $response['entry_id'] ) {
+				$random_id                 = uniqid( $entry->form_id . '_' );
+				$entry->entry_id           = $random_id;
+				$response['lead_entry_id'] = $random_id;
+				$key                       = 'forminator_lead_object_temporary_storage_' . $random_id;
+				set_transient( $key, $entry, DAY_IN_SECONDS );
+			}
 		} catch ( Exception $e ) {
+			if ( ! empty( $delete_submission ) && ! empty( $entry->entry_id ) ) {
+				$entry->delete();
+			}
 			return self::return_error( $e->getMessage() );
 		}
 
@@ -2146,6 +2163,13 @@ class Forminator_CForm_Front_Action extends Forminator_Front_Action {
 			foreach ( $group_fields as $field ) {
 				$subfield_settings = $field->to_formatted_array();
 				self::update_hidden_fields_array( $field->slug, '', $subfield_settings );
+			}
+			return;
+		}
+		if ( 'page-break' === substr( $field_id, 0, 10 ) ) {
+			$page_break_fields = self::$module_object->get_page_fields( $field_id );
+			foreach ( $page_break_fields as $field ) {
+				self::update_hidden_fields_array( $field->slug, '', $field->to_formatted_array() );
 			}
 			return;
 		}

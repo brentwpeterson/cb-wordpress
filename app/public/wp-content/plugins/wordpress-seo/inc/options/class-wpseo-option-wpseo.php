@@ -47,6 +47,7 @@ class WPSEO_Option_Wpseo extends WPSEO_Option {
 		'googleverify'                                         => '', // Text field.
 		'msverify'                                             => '', // Text field.
 		'yandexverify'                                         => '',
+		'ahrefsverify'                                         => '',
 		'site_type'                                            => '', // List of options.
 		'has_multiple_authors'                                 => '',
 		'environment_type'                                     => '',
@@ -147,7 +148,9 @@ class WPSEO_Option_Wpseo extends WPSEO_Option {
 		'site_kit_tracking_setup_widget_temporarily_dismissed' => 'no',
 		'site_kit_tracking_setup_widget_permanently_dismissed' => 'no',
 		'google_site_kit_feature_enabled'                      => false,
+		'ai_free_sparks_started_on'                            => null,
 		'enable_llms_txt'                                      => false,
+		'last_updated_on'                                      => false,
 	];
 
 	/**
@@ -162,6 +165,7 @@ class WPSEO_Option_Wpseo extends WPSEO_Option {
 		'googleverify',
 		'msverify',
 		'yandexverify',
+		'ahrefsverify',
 	];
 
 	/**
@@ -346,6 +350,7 @@ class WPSEO_Option_Wpseo extends WPSEO_Option {
 				case 'site_kit_tracking_last_interaction_stage':
 				case 'site_kit_tracking_setup_widget_temporarily_dismissed':
 				case 'site_kit_tracking_setup_widget_permanently_dismissed':
+				case 'ai_free_sparks_started_on':
 					if ( isset( $dirty[ $key ] ) ) {
 						$clean[ $key ] = sanitize_text_field( $dirty[ $key ] );
 					}
@@ -356,6 +361,7 @@ class WPSEO_Option_Wpseo extends WPSEO_Option {
 				case 'googleverify':
 				case 'msverify':
 				case 'yandexverify':
+				case 'ahrefsverify':
 					$this->validate_verification_string( $key, $dirty, $old, $clean );
 					break;
 
@@ -398,6 +404,7 @@ class WPSEO_Option_Wpseo extends WPSEO_Option {
 				case 'first_activated_on':
 				case 'indexing_started':
 				case 'activation_redirect_timestamp_free':
+				case 'last_updated_on':
 					$clean[ $key ] = false;
 					if ( isset( $dirty[ $key ] ) ) {
 						if ( $dirty[ $key ] === false || WPSEO_Utils::validate_int( $dirty[ $key ] ) ) {

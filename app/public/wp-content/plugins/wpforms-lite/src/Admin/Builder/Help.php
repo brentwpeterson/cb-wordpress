@@ -169,6 +169,7 @@ class Help {
 			'fields/field_options/repeater'           => 'repeater',
 			'settings/general'                        => 'settings',
 			'settings/anti_spam'                      => 'spam',
+			'settings/themes'                         => 'themes',
 			'settings/notifications'                  => 'notification emails',
 			'settings/confirmation'                   => 'confirmation message',
 			'settings/lead_forms'                     => 'lead forms',
@@ -182,9 +183,12 @@ class Help {
 			'settings/save_resume'                    => 'save and resume',
 			'settings/google_sheets'                  => 'google sheets',
 			'settings/dropbox'                        => 'dropbox',
+			'settings/google_calendar'                => 'google calendar',
+			'settings/airtable'                       => 'airtable',
 			'settings/google_drive'                   => 'google drive',
 			'settings/webhooks'                       => 'webhooks',
 			'settings/entry_automation'               => 'entry automation',
+			'settings/pdf'                            => 'pdf',
 			'providers'                               => '',
 			'providers/aweber'                        => 'aweber',
 			'providers/activecampaign'                => 'activecampaign',
@@ -199,6 +203,7 @@ class Help {
 			'providers/mailerlite'                    => 'mailerlite',
 			'providers/mailpoet'                      => 'mailpoet',
 			'providers/make'                          => 'make',
+			'providers/n8n'                           => 'n8n',
 			'providers/zapier'                        => 'zapier',
 			'providers/salesforce'                    => 'salesforce',
 			'providers/sendinblue'                    => 'brevo',
@@ -262,6 +267,9 @@ class Help {
 				'/docs/how-to-install-and-use-custom-captcha-addon-in-wpforms/',
 				'/docs/setting-up-akismet-anti-spam-protection/',
 				'/docs/viewing-and-managing-spam-entries/',
+			],
+			'themes'                    => [
+				'/docs/styling-your-forms/',
 			],
 			'fields'                    => [
 				'/docs/how-to-choose-the-right-form-field-for-your-forms/',
@@ -952,6 +960,7 @@ class Help {
 				'/docs/how-to-create-conditional-form-notifications-in-wpforms/',
 				'/docs/troubleshooting-email-notifications/',
 				'/docs/how-to-fix-wordpress-contact-form-not-sending-email-with-smtp/',
+				'/docs/pdf-addon/',
 			],
 			'notifications'             => [
 				'/docs/setup-form-notification-wpforms/',
@@ -959,6 +968,7 @@ class Help {
 				'/docs/how-to-create-conditional-form-notifications-in-wpforms/',
 				'/docs/troubleshooting-email-notifications/',
 				'/docs/how-to-fix-wordpress-contact-form-not-sending-email-with-smtp/',
+				'/docs/pdf-addon/',
 			],
 			'notification email'        => [
 				'/docs/setup-form-notification-wpforms/',
@@ -966,6 +976,7 @@ class Help {
 				'/docs/how-to-create-conditional-form-notifications-in-wpforms/',
 				'/docs/troubleshooting-email-notifications/',
 				'/docs/how-to-fix-wordpress-contact-form-not-sending-email-with-smtp/',
+				'/docs/pdf-addon/',
 			],
 			'notification emails'       => [
 				'/docs/setup-form-notification-wpforms/',
@@ -973,6 +984,7 @@ class Help {
 				'/docs/how-to-create-conditional-form-notifications-in-wpforms/',
 				'/docs/troubleshooting-email-notifications/',
 				'/docs/how-to-fix-wordpress-contact-form-not-sending-email-with-smtp/',
+				'/docs/pdf-addon/',
 			],
 			'confirmation'              => [
 				'/docs/setup-form-confirmation-wpforms/',
@@ -1154,6 +1166,9 @@ class Help {
 			'dropbox'                   => [
 				'/docs/dropbox-addon/',
 			],
+			'google-calendar'           => [
+				'/docs/google-calendar-addon/',
+			],
 			'google-drive'              => [
 				'/docs/google-drive-addon/',
 			],
@@ -1204,11 +1219,13 @@ class Help {
 				'/docs/how-to-install-and-use-zapier-addon-with-wpforms/',
 				'/docs/how-to-install-and-use-the-webhooks-addon-with-wpforms/',
 				'/docs/google-sheets-addon/',
+				'/docs/n8n-addon/',
 			],
 			'integration'               => [
 				'/docs/how-to-install-and-use-zapier-addon-with-wpforms/',
 				'/docs/how-to-install-and-use-the-webhooks-addon-with-wpforms/',
 				'/docs/google-sheets-addon/',
+				'/docs/n8n-addon/',
 			],
 			'crm'                       => [
 				'/docs/how-to-install-and-use-zapier-addon-with-wpforms/',
@@ -1218,6 +1235,7 @@ class Help {
 				'/docs/how-to-install-and-use-zapier-addon-with-wpforms/',
 				'/docs/how-to-install-and-use-the-webhooks-addon-with-wpforms/',
 				'/docs/google-sheets-addon/',
+				'/docs/n8n-addon/',
 			],
 			'paypal commerce'           => [
 				'/docs/paypal-commerce-addon/',
@@ -1252,6 +1270,15 @@ class Help {
 			],
 			'entry automation'          => [
 				'/docs/entry-automation-addon/',
+			],
+			'pdf'                       => [
+				'/docs/pdf-addon/',
+			],
+			'n8n'                       => [
+				'/docs/n8n-addon/',
+			],
+			'airtable'                  => [
+				'/docs/airtable-addon/',
 			],
 		];
 	}
