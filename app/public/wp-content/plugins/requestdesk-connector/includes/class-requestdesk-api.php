@@ -77,6 +77,31 @@ class RequestDesk_API {
                 )
             )
         ));
+        
+        // NEW: Endpoint to pull posts for RequestDesk knowledge chunks
+        register_rest_route($namespace, '/pull-posts', array(
+            'methods' => 'GET',
+            'callback' => array($this, 'pull_posts_for_knowledge'),
+            'permission_callback' => array($this, 'verify_api_key'),
+            'args' => array(
+                'per_page' => array(
+                    'default' => 50,
+                    'sanitize_callback' => 'absint',
+                ),
+                'offset' => array(
+                    'default' => 0,
+                    'sanitize_callback' => 'absint',
+                ),
+                'modified_since' => array(
+                    'default' => '',
+                    'sanitize_callback' => 'sanitize_text_field',
+                ),
+                'include_content' => array(
+                    'default' => 'true',
+                    'sanitize_callback' => 'sanitize_text_field',
+                )
+            )
+        ));
     }
     
     /**
@@ -281,6 +306,101 @@ class RequestDesk_API {
             'sync_date' => $latest->sync_date,
             'sync_history' => $results
         ));
+    }
+    
+    /**
+     * Pull posts for RequestDesk knowledge chunks
+     */
+    public function pull_posts_for_knowledge($request) {
+        $per_page = $request->get_param('per_page') ?: 50;
+        $offset = $request->get_param('offset') ?: 0;
+        $modified_since = $request->get_param('modified_since');
+        $include_content = $request->get_param('include_content') === 'true';
+        
+        // Build query args
+        $args = array(
+            'post_type' => 'post',
+            'post_status' => 'publish',
+            'posts_per_page' => $per_page,
+            'offset' => $offset,
+            'orderby' => 'modified',
+            'order' => 'DESC'
+        );
+        
+        // Add date filter if provided
+        if ($modified_since) {
+            $args['date_query'] = array(
+                array(
+                    'column' => 'post_modified',
+                    'after' => $modified_since,
+                    'inclusive' => true
+                )
+            );
+        }
+        
+        // Get posts
+        $posts = get_posts($args);
+        $formatted_posts = array();
+        
+        foreach ($posts as $post) {
+            $post_data = array(
+                'id' => $post->ID,
+                'title' => $post->post_title,
+                'url' => get_permalink($post->ID),
+                'published_date' => $post->post_date,
+                'modified_date' => $post->post_modified,
+                'author' => get_the_author_meta('display_name', $post->post_author),
+                'excerpt' => wp_trim_words($post->post_excerpt ?: $post->post_content, 55),
+                'word_count' => str_word_count(strip_tags($post->post_content))
+            );
+            
+            // Include full content if requested
+            if ($include_content) {
+                // Strip shortcodes and clean content
+                $content = $post->post_content;
+                $content = strip_shortcodes($content);
+                $content = wp_strip_all_tags($content);
+                $content = trim(preg_replace('/\s+/', ' ', $content));
+                $post_data['content'] = $content;
+            }
+            
+            // Get categories
+            $categories = wp_get_post_categories($post->ID, array('fields' => 'names'));
+            $post_data['categories'] = $categories ?: array();
+            
+            // Get tags
+            $tags = wp_get_post_tags($post->ID, array('fields' => 'names'));
+            $post_data['tags'] = $tags ?: array();
+            
+            $formatted_posts[] = $post_data;
+        }
+        
+        // Get total count for pagination
+        $count_args = $args;
+        $count_args['posts_per_page'] = -1;
+        $count_args['fields'] = 'ids';
+        unset($count_args['offset']);
+        $total_posts = count(get_posts($count_args));
+        
+        // Get site info
+        $site_info = array(
+            'name' => get_bloginfo('name'),
+            'url' => get_site_url(),
+            'description' => get_bloginfo('description'),
+            'language' => get_bloginfo('language')
+        );
+        
+        return new WP_REST_Response(array(
+            'success' => true,
+            'posts' => $formatted_posts,
+            'site_info' => $site_info,
+            'pagination' => array(
+                'total' => $total_posts,
+                'per_page' => $per_page,
+                'offset' => $offset,
+                'has_more' => ($offset + $per_page) < $total_posts
+            )
+        ), 200);
     }
     
     /**
