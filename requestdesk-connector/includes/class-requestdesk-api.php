@@ -18,6 +18,13 @@ class RequestDesk_API {
             'permission_callback' => array($this, 'verify_api_key')
         ));
 
+        // Backward compatibility: old test endpoint
+        register_rest_route('requestdesk/v1', '/test', array(
+            'methods' => 'GET',
+            'callback' => array($this, 'test_connection'),
+            'permission_callback' => array($this, 'verify_api_key')
+        ));
+
         // Pull posts endpoint
         register_rest_route('requestdesk/v1', '/pull-posts', array(
             'methods' => 'GET',
@@ -125,6 +132,14 @@ class RequestDesk_API {
         return new WP_REST_Response(array(
             'success' => true,
             'message' => 'Connection successful',
+            'wordpress_version' => get_bloginfo('version'),
+            'plugin_version' => REQUESTDESK_VERSION,
+            'site_url' => home_url(),
+            'capabilities' => array(
+                'posts' => true,
+                'pages' => true,  // NEW in v1.3.0
+                'publish' => true
+            ),
             'site_info' => array(
                 'name' => get_bloginfo('name'),
                 'url' => home_url(),

@@ -52,16 +52,23 @@ function requestdesk_settings_page() {
             <h2>Connection Information</h2>
             <table class="form-table">
                 <tr>
-                    <th>REST API Endpoint</th>
+                    <th>Posts Endpoint</th>
                     <td>
-                        <code><?php echo get_rest_url(null, 'requestdesk/v1/posts'); ?></code>
-                        <p class="description">Use this endpoint to send posts from RequestDesk</p>
+                        <code><?php echo get_rest_url(null, 'requestdesk/v1/pull-posts'); ?></code>
+                        <p class="description">RequestDesk uses this endpoint to pull posts from WordPress</p>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Pages Endpoint <span style="color: green;">(NEW v1.3.0)</span></th>
+                    <td>
+                        <code><?php echo get_rest_url(null, 'requestdesk/v1/pull-pages'); ?></code>
+                        <p class="description">RequestDesk uses this endpoint to pull pages from WordPress</p>
                     </td>
                 </tr>
                 <tr>
                     <th>Test Endpoint</th>
                     <td>
-                        <code><?php echo get_rest_url(null, 'requestdesk/v1/test'); ?></code>
+                        <code><?php echo get_rest_url(null, 'requestdesk/v1/test-connection'); ?></code>
                         <p class="description">Use this to test your connection</p>
                     </td>
                 </tr>
