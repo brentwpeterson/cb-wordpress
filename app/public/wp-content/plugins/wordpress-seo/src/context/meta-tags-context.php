@@ -640,12 +640,9 @@ class Meta_Tags_Context extends Abstract_Presentation {
 			return $this->get_main_image_id_for_rest_request();
 		}
 
-		$image_id = null;
-
 		switch ( true ) {
 			case \is_singular():
-				$image_id = $this->get_singular_post_image( $this->id );
-				break;
+				return $this->get_singular_post_image( $this->id );
 			case \is_author():
 			case \is_tax():
 			case \is_tag():
@@ -655,21 +652,15 @@ class Meta_Tags_Context extends Abstract_Presentation {
 			case \is_post_type_archive():
 				if ( ! empty( $GLOBALS['wp_query']->posts ) ) {
 					if ( $GLOBALS['wp_query']->get( 'fields', 'all' ) === 'ids' ) {
-						$image_id = $this->get_singular_post_image( $GLOBALS['wp_query']->posts[0] );
-						break;
+						return $this->get_singular_post_image( $GLOBALS['wp_query']->posts[0] );
 					}
 
-					$image_id = $this->get_singular_post_image( $GLOBALS['wp_query']->posts[0]->ID );
+					return $this->get_singular_post_image( $GLOBALS['wp_query']->posts[0]->ID );
 				}
-				break;
+				return null;
+			default:
+				return null;
 		}
-
-		/**
-		 * Filter: 'wpseo_schema_main_image_id' - Allow changing the main image ID.
-		 *
-		 * @param int|array $image_id The image ID.
-		 */
-		return \apply_filters( 'wpseo_schema_main_image_id', $image_id );
 	}
 
 	/**

@@ -10,9 +10,6 @@ use WPForms\SmartTags\SmartTag\SmartTag;
 use WPForms_WP_Emails;
 use WPForms\Tasks\Actions\EntryEmailsTask;
 use WPForms\Emails\Templates\General; // phpcs:ignore WPForms.PHP.UseStatement.UnusedUseStatement
-use WPForms\Pro\Emails\Templates\Modern;
-use WPForms\Pro\Emails\Templates\Elegant;
-use WPForms\Pro\Emails\Templates\Tech;
 
 /**
  * Class Notifications.
@@ -104,15 +101,6 @@ class Notifications extends Mailer {
 	public const LEGACY_TEMPLATE = 'default';
 
 	/**
-	 * Whether the email is being sent to a PDF.
-	 *
-	 * @since 1.9.7.3
-	 *
-	 * @var string
-	 */
-	public $rendering_context;
-
-	/**
 	 * Get the instance of a class.
 	 *
 	 * @since 1.8.9
@@ -136,15 +124,12 @@ class Notifications extends Mailer {
 	 *
 	 * @since 1.8.5
 	 *
-	 * @param string $template          Email template name.
-	 * @param string $rendering_context Where the email is being rendered, 'mail' or 'pdf'.
+	 * @param string $template Email template name.
 	 *
 	 * @return $this|WPForms_WP_Emails
 	 * @noinspection PhpDeprecationInspection
 	 */
-	public function init( string $template = '', string $rendering_context = 'mail' ) {
-
-		$this->rendering_context = $rendering_context;
+	public function init( $template = '' ) {
 
 		// Add hooks.
 		$this->hooks();
@@ -158,7 +143,7 @@ class Notifications extends Mailer {
 			return $this;
 		}
 
-		// In case the user is still using the old "Legacy" default template, use the old class.
+		// In case user is still using the old "Legacy" default template, use the old class.
 		// Use the old class if the current template is "Legacy".
 		if ( $this->current_template === self::LEGACY_TEMPLATE ) {
 			return new WPForms_WP_Emails();
@@ -323,7 +308,7 @@ class Notifications extends Mailer {
 	 *
 	 * @param string $message Email message.
 	 */
-	public function process_email_template( string $message ): void {
+	private function process_email_template( $message ) {
 
 		$template = self::get_available_templates( $this->current_template );
 
@@ -428,7 +413,6 @@ class Notifications extends Mailer {
 	 * @since 1.8.5
 	 *
 	 * @return string
-	 * @noinspection PhpUnusedLocalVariableInspection
 	 */
 	private function process_field_values() {
 
@@ -468,51 +452,7 @@ class Notifications extends Mailer {
 			$message = $this->process_html_message( $show_empty_fields );
 		}
 
-		/**
-		 * Filter the email message content before sending.
-		 *
-		 * @since 1.9.7.3
-		 *
-		 * @param string $message  The email message to be sent out.
-		 * @param string $template The email template name.
-		 * @param Mailer $this     The instance of the "Notifications" class.
-		 */
-		return empty( $message ) ? $default_message : apply_filters( 'wpforms_emails_notifications_process_field_values_message', $message, $this->current_template, $this );
-	}
-
-	/**
-	 * Get processed field values.
-	 *
-	 * @since 1.9.7.3
-	 *
-	 * @return string
-	 */
-	public function get_processed_field_values(): string {
-
-		$template = self::get_available_templates( $this->current_template );
-
-		// Return if the template is not set.
-		// This can happen if the template is not found or if the template class doesn't exist.
-		if ( ! isset( $template['path'] ) || ! class_exists( $template['path'] ) ) {
-			return '';
-		}
-
-		// Set the email template, i.e., WPForms\Emails\Templates\Classic.
-		$this->template( new $template['path']( '', false, $this->current_template ) );
-
-		$email_template = $this->__get( 'template' );
-
-		if (
-			! method_exists( $email_template, 'get_field_template' ) ||
-			! method_exists( $email_template, 'set_field' )
-		) {
-			return '';
-		}
-
-		$this->field_template = $email_template->get_field_template();
-		$field_values         = trim( $this->process_field_values() );
-
-		return make_clickable( $field_values );
+		return empty( $message ) ? $default_message : $message;
 	}
 
 	/**
@@ -655,7 +595,6 @@ class Notifications extends Mailer {
 	 * @param bool $show_empty_fields Whether to display empty fields in the email.
 	 *
 	 * @return string
-	 * @noinspection PhpUnusedLocalVariableInspection
 	 */
 	private function process_html_message( $show_empty_fields = false ) { // phpcs:ignore Generic.Metrics.CyclomaticComplexity
 
@@ -872,7 +811,7 @@ class Notifications extends Mailer {
 	 */
 	private function process_tag( $input = '', $context = 'notification' ): string {
 
-		return wpforms_process_smart_tags( $input, $this->form_data, $this->fields, (string) $this->entry_id, $context );
+		return wpforms_process_smart_tags( $input, $this->form_data, $this->fields, $this->entry_id, $context );
 	}
 
 	/**
@@ -955,7 +894,7 @@ class Notifications extends Mailer {
 			return $value;
 		}
 
-		// Otherwise, return an empty string if the value is not an email.
+		// Otherwise, return empty string if the value is not an email.
 		return wpforms_is_email( $value ) ? $value : '';
 	}
 
@@ -1007,7 +946,7 @@ class Notifications extends Mailer {
 				break;
 
 			case 'pagebreak':
-				// Skip if the position is 'bottom'.
+				// Skip if position is 'bottom'.
 				if ( ! empty( $field['position'] ) && $field['position'] === 'bottom' ) {
 					break;
 				}
@@ -1036,7 +975,7 @@ class Notifications extends Mailer {
 	}
 
 	/**
-	 * Get the email reply to the address.
+	 * Get the email reply to address.
 	 * This method has been overridden to add support for the Reply-to Name.
 	 *
 	 * @since 1.8.5
@@ -1103,7 +1042,7 @@ class Notifications extends Mailer {
 
 	/**
 	 * Get the email content type.
-	 * This method has been overridden to better declare the email template assigned to each notification.
+	 * This method has been overridden to better declare email template assigned to each notification.
 	 *
 	 * @since 1.8.5.2
 	 *
@@ -1307,32 +1246,32 @@ class Notifications extends Mailer {
 		$templates = [
 			'classic' => [
 				'name'   => esc_html__( 'Classic', 'wpforms-lite' ),
-				'path'   => Templates\Classic::class,
+				'path'   => __NAMESPACE__ . '\Templates\Classic',
 				'is_pro' => false,
 			],
 			'compact' => [
 				'name'   => esc_html__( 'Compact', 'wpforms-lite' ),
-				'path'   => Templates\Compact::class,
+				'path'   => __NAMESPACE__ . '\Templates\Compact',
 				'is_pro' => false,
 			],
 			'modern'  => [
 				'name'   => esc_html__( 'Modern', 'wpforms-lite' ),
-				'path'   => Modern::class,
+				'path'   => 'WPForms\Pro\Emails\Templates\Modern',
 				'is_pro' => true,
 			],
 			'elegant' => [
 				'name'   => esc_html__( 'Elegant', 'wpforms-lite' ),
-				'path'   => Elegant::class,
+				'path'   => 'WPForms\Pro\Emails\Templates\Elegant',
 				'is_pro' => true,
 			],
 			'tech'    => [
 				'name'   => esc_html__( 'Tech', 'wpforms-lite' ),
-				'path'   => Tech::class,
+				'path'   => 'WPForms\Pro\Emails\Templates\Tech',
 				'is_pro' => true,
 			],
 			'none'    => [
 				'name'   => esc_html__( 'Plain Text', 'wpforms-lite' ),
-				'path'   => Templates\Plain::class,
+				'path'   => __NAMESPACE__ . '\Templates\Plain',
 				'is_pro' => false,
 			],
 		];

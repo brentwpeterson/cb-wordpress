@@ -25,7 +25,7 @@ class Fields {
 	 *
 	 * @return array All possible fields.
 	 */
-	private function get_all(): array {
+	private function get_all() {
 
 		if ( ! empty( $this->fields ) ) {
 			return $this->fields;
@@ -73,20 +73,12 @@ class Fields {
 				'order'   => '100',
 			],
 			[
-				'icon'    => 'fa-camera',
-				'name'    => esc_html__( 'Camera', 'wpforms-lite' ),
-				'name_en' => 'Camera',
-				'type'    => 'camera',
-				'group'   => 'fancy',
-				'order'   => '105',
-			],
-			[
 				'icon'    => 'fa-lock',
 				'name'    => esc_html__( 'Password', 'wpforms-lite' ),
 				'name_en' => 'Password',
 				'type'    => 'password',
 				'group'   => 'fancy',
-				'order'   => '95',
+				'order'   => '130',
 			],
 			[
 				'icon'    => 'fa-columns',
@@ -158,7 +150,7 @@ class Fields {
 				'name_en' => 'Rating',
 				'type'    => 'rating',
 				'group'   => 'fancy',
-				'order'   => '310',
+				'order'   => '200',
 			],
 			[
 				'icon'    => 'fa-eye-slash',
@@ -166,7 +158,7 @@ class Fields {
 				'name_en' => 'Hidden Field',
 				'type'    => 'hidden',
 				'group'   => 'fancy',
-				'order'   => '98',
+				'order'   => '210',
 			],
 			[
 				'icon'     => 'fa-question-circle',
@@ -186,7 +178,7 @@ class Fields {
 				'type'     => 'signature',
 				'group'    => 'fancy',
 				'addon'    => 'wpforms-signatures',
-				'order'    => '200',
+				'order'    => '310',
 			],
 			[
 				'icon'     => 'fa-ellipsis-h',
@@ -220,6 +212,16 @@ class Fields {
 			],
 			[
 				'icon'     => 'fa-credit-card',
+				'name'     => esc_html__( 'Square', 'wpforms-lite' ),
+				'keywords' => esc_html__( 'store, ecommerce, credit card, pay, payment, debit card', 'wpforms-lite' ),
+				'name_en'  => 'Square',
+				'type'     => 'square',
+				'group'    => 'payment',
+				'addon'    => 'wpforms-square',
+				'order'    => '92',
+			],
+			[
+				'icon'     => 'fa-credit-card',
 				'name'     => esc_html__( 'Authorize.Net', 'wpforms-lite' ),
 				'keywords' => esc_html__( 'store, ecommerce, credit card, pay, payment, debit card', 'wpforms-lite' ),
 				'name_en'  => 'Authorize.Net',
@@ -243,7 +245,7 @@ class Fields {
 		$captcha = $this->get_captcha();
 
 		if ( ! empty( $captcha ) ) {
-			$this->fields[] = $captcha;
+			array_push( $this->fields, $captcha );
 		}
 
 		return $this->fields;
@@ -256,7 +258,7 @@ class Fields {
 	 *
 	 * @return array Captcha field data.
 	 */
-	private function get_captcha(): array {
+	private function get_captcha() {
 
 		$captcha_settings = wpforms_get_captcha_settings();
 
@@ -313,7 +315,7 @@ class Fields {
 	 *
 	 * @return array Fields data filtered according to given arguments.
 	 */
-	private function get_filtered( array $args = [] ): array {
+	private function get_filtered( $args = [] ) {
 
 		$default_args = [
 			'group' => '',
@@ -329,7 +331,7 @@ class Fields {
 		foreach ( $args as $prop => $prop_val ) {
 			foreach ( $fields as $field ) {
 				if ( ! empty( $field[ $prop ] ) && $field[ $prop ] === $prop_val ) {
-					$filtered_fields[] = $field;
+					array_push( $filtered_fields, $field );
 				}
 			}
 		}
@@ -346,7 +348,7 @@ class Fields {
 	 *
 	 * @return array.
 	 */
-	public function get_by_group( string $group ): array {
+	public function get_by_group( $group ) {
 
 		return $this->get_filtered( [ 'group' => $group ] );
 	}
@@ -360,7 +362,7 @@ class Fields {
 	 *
 	 * @return array.
 	 */
-	public function get_by_addon( string $addon ): array {
+	public function get_by_addon( $addon ) {
 
 		return $this->get_filtered( [ 'addon' => $addon ] );
 	}
@@ -374,7 +376,7 @@ class Fields {
 	 *
 	 * @return array Single field data. Empty array if field is not available.
 	 */
-	public function get_field( string $type ): array {
+	public function get_field( $type ) {
 
 		$fields = $this->get_filtered( [ 'type' => $type ] );
 
@@ -393,7 +395,7 @@ class Fields {
 	 *
 	 * @return array Updated field data.
 	 */
-	public function set_values( array $fields, string $key, string $value, string $condition ): array {
+	public function set_values( $fields, $key, $value, $condition ) {
 
 		if ( empty( $fields ) || empty( $key ) ) {
 			return $fields;

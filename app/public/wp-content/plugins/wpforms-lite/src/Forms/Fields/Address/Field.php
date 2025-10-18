@@ -89,7 +89,7 @@ class Field extends WPForms_Field {
 	 *
 	 * @param array $field Field data.
 	 */
-	public function field_options( $field ) { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
+	public function field_options( $field ) { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.MaxExceeded
 
 		/*
 		 * Basic field options.
@@ -684,7 +684,7 @@ class Field extends WPForms_Field {
 	 *
 	 * @noinspection HtmlUnknownAttribute
 	 */
-	private function subfield_default( array $field, string $subfield_slug, string $subfield_key ): void {
+	private function subfield_default( array $field, string $subfield_slug, string $subfield_key ): void { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
 
 		// Scheme or default value may not be set yet.
 		$active_scheme = ! empty( $field['scheme'] ) ? $field['scheme'] : 'us';

@@ -411,6 +411,7 @@ class WPSEO_Admin_Asset_Manager {
 				self::PREFIX . 'externals-contexts',
 				self::PREFIX . 'externals-redux',
 				self::PREFIX . 'analysis',
+				self::PREFIX . 'react-select',
 				self::PREFIX . 'components-new-package',
 			],
 			'version' => $scripts['workouts']['version'],
@@ -590,7 +591,6 @@ class WPSEO_Admin_Asset_Manager {
 				'name' => 'ai-generator',
 				'src'  => 'ai-generator-' . $flat_version,
 				'deps' => [
-					self::PREFIX . 'ai-frontend',
 					self::PREFIX . 'tailwind',
 					self::PREFIX . 'introductions',
 				],
@@ -598,10 +598,6 @@ class WPSEO_Admin_Asset_Manager {
 			[
 				'name' => 'ai-fix-assessments',
 				'src'  => 'ai-fix-assessments-' . $flat_version,
-			],
-			[
-				'name' => 'ai-frontend',
-				'src'  => 'ai-frontend-' . $flat_version,
 			],
 			[
 				'name' => 'introductions',
@@ -630,7 +626,13 @@ class WPSEO_Admin_Asset_Manager {
 			[
 				'name' => 'admin-global',
 				'src'  => 'admin-global-' . $flat_version,
-				'deps' => [ self::PREFIX . 'tailwind' ],
+			],
+			[
+				'name' => 'extensions',
+				'src'  => 'yoast-extensions-' . $flat_version,
+				'deps' => [
+					'wp-components',
+				],
 			],
 			[
 				'name' => 'filter-explanation',
@@ -668,11 +670,6 @@ class WPSEO_Admin_Asset_Manager {
 				'deps' => [ self::PREFIX . 'tailwind' ],
 			],
 			[
-				'name' => 'redirects',
-				'src'  => 'redirects-' . $flat_version,
-				'deps' => [ self::PREFIX . 'tailwind' ],
-			],
-			[
 				'name' => 'black-friday-banner',
 				'src'  => 'black-friday-banner-' . $flat_version,
 				'deps' => [ self::PREFIX . 'tailwind' ],
@@ -707,11 +704,6 @@ class WPSEO_Admin_Asset_Manager {
 			[
 				'name' => 'inside-editor',
 				'src'  => 'inside-editor-' . $flat_version,
-			],
-			[
-				'name' => 'plans',
-				'src'  => 'plans-' . $flat_version,
-				'deps' => [ self::PREFIX . 'tailwind' ],
 			],
 		];
 	}

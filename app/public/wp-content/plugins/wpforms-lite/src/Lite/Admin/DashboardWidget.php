@@ -2,7 +2,6 @@
 
 namespace WPForms\Lite\Admin;
 
-use WPForms\Admin\Blocks\Links;
 use WPForms\Admin\Dashboard\Widget;
 
 /**
@@ -151,6 +150,14 @@ class DashboardWidget extends Widget {
 		);
 
 		wp_enqueue_script(
+			'wpforms-chart-adapter-moment',
+			WPFORMS_PLUGIN_URL . 'assets/lib/chartjs-adapter-moment.min.js',
+			[ 'moment', 'wpforms-chart' ],
+			'1.0.1',
+			true
+		);
+
+		wp_enqueue_script(
 			'wpforms-dashboard-widget',
 			WPFORMS_PLUGIN_URL . "assets/lite/js/admin/dashboard-widget{$min}.js",
 			[ 'jquery', 'wpforms-chart' ],
@@ -169,8 +176,6 @@ class DashboardWidget extends Widget {
 				'i18n'           => [
 					'entries' => esc_html__( 'Entries', 'wpforms-lite' ),
 				],
-				// Adapter for Chart.js to use Moment.js for date formatting.
-				'adapter_path'   => WPFORMS_PLUGIN_URL . 'assets/lib/chartjs-adapter-moment.min.js?ver=1.0.1',
 			]
 		);
 	}
@@ -223,15 +228,6 @@ class DashboardWidget extends Widget {
 			$this->widget_content_html( $hide_graph );
 		}
 
-		Links::render(
-			[
-				'docs' => [
-					'medium'  => 'dashboard-widget',
-					'content' => 'docs',
-				],
-			]
-		);
-
 		$plugin           = $this->get_recommended_plugin();
 		$hide_recommended = $this->widget_meta( 'get', 'hide_recommended_block' );
 
@@ -241,6 +237,15 @@ class DashboardWidget extends Widget {
 			! $hide_recommended
 		) {
 			$this->recommended_plugin_block_html( $plugin );
+		}
+
+		$hide_welcome        = $this->widget_meta( 'get', 'hide_welcome_block' );
+		$splash              = wpforms()->obj( 'splash_screen' );
+		$is_splash_available = $splash && $splash->is_available_for_display();
+		$is_splash_allowed   = $splash && $splash->is_allow_splash();
+
+		if ( $is_splash_available && $is_splash_allowed && ! $hide_welcome ) {
+			$this->welcome_block_html();
 		}
 
 		echo '</div><!-- .wpforms-dash-widget -->';
@@ -449,11 +454,37 @@ class DashboardWidget extends Widget {
 	 * The welcome block HTML.
 	 *
 	 * @since 1.8.7
-	 * @deprecated 1.9.7
 	 */
 	public function welcome_block_html() {
 
-		return '';
+		$welcome_message = sprintf(
+			wp_kses(
+			/* translators: %s - WPForms version. */
+				__( 'Welcome to <strong>WPForms %s</strong>', 'wpforms-lite' ),
+				[
+					'strong' => [],
+				]
+			),
+			WPFORMS_VERSION
+		);
+
+		/**
+		 * Filters the welcome message in the Dashboard Widget.
+		 *
+		 * @since 1.8.7
+		 *
+		 * @param string $welcome_message Welcome message.
+		 */
+		$welcome_message = apply_filters( 'wpforms_lite_admin_dashboard_widget_welcome_block_html_message', $welcome_message );
+
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo wpforms_render(
+			'admin/dashboard/widget/welcome',
+			[
+				'welcome_message' => $welcome_message,
+			],
+			true
+		);
 	}
 
 	/**
@@ -465,7 +496,7 @@ class DashboardWidget extends Widget {
 	 *
 	 * @return array
 	 */
-	public function get_entries_count_by_form(): array {
+	public function get_entries_count_by_form(): array { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
 
 		// Allow results caching to reduce a DB load.
 		$allow_caching  = $this->settings['allow_data_caching'];

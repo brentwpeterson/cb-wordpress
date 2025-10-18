@@ -19,21 +19,21 @@ class Migrations extends Base {
 	 *
 	 * @since 1.5.9
 	 */
-	public const MIGRATED_OPTION_NAME = 'wpforms_versions_lite';
+	const MIGRATED_OPTION_NAME = 'wpforms_versions_lite';
 
 	/**
 	 * Name of the core plugin used in log messages.
 	 *
 	 * @since 1.7.5
 	 */
-	protected const PLUGIN_NAME = 'WPForms';
+	const PLUGIN_NAME = 'WPForms';
 
 	/**
 	 * Upgrade classes.
 	 *
 	 * @since 1.7.5
 	 */
-	public const UPGRADE_CLASSES = [
+	const UPGRADE_CLASSES = [
 		'Upgrade159',
 		'Upgrade1672',
 		'Upgrade168',
@@ -47,6 +47,5 @@ class Migrations extends Base {
 		'Upgrade187',
 		'Upgrade1_9_1',
 		'Upgrade1_9_2',
-		'Upgrade1_9_7',
 	];
 }

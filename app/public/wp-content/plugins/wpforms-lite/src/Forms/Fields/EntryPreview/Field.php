@@ -22,13 +22,12 @@ class Field extends WPForms_Field {
 	public function init() {
 
 		// Define field type information.
-		$this->name            = esc_html__( 'Entry Preview', 'wpforms-lite' );
-		$this->keywords        = esc_html__( 'confirm', 'wpforms-lite' );
-		$this->type            = 'entry-preview';
-		$this->icon            = 'fa-file-text-o';
-		$this->order           = 190;
-		$this->group           = 'fancy';
-		$this->allow_read_only = false;
+		$this->name     = esc_html__( 'Entry Preview', 'wpforms-lite' );
+		$this->keywords = esc_html__( 'confirm', 'wpforms-lite' );
+		$this->type     = 'entry-preview';
+		$this->icon     = 'fa-file-text-o';
+		$this->order    = 190;
+		$this->group    = 'fancy';
 
 		$this->init_pro_field();
 		$this->hooks();
@@ -214,7 +213,7 @@ class Field extends WPForms_Field {
 	}
 
 	/**
-	 * Add custom JS i18n strings for the builder.
+	 * Add a custom JS i18n strings for the builder.
 	 *
 	 * @since 1.9.4
 	 *

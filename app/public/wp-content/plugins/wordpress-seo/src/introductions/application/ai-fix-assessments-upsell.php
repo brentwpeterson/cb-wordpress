@@ -51,7 +51,7 @@ class Ai_Fix_Assessments_Upsell implements Introduction_Interface {
 	}
 
 	/**
-	 * Returns the name of the introduction.
+	 * Returns the name of the introdyction.
 	 *
 	 * @return string The name.
 	 */
@@ -67,7 +67,7 @@ class Ai_Fix_Assessments_Upsell implements Introduction_Interface {
 	 * @return int The priority.
 	 */
 	public function get_priority() {
-		return 20;
+		return 10;
 	}
 
 	/**

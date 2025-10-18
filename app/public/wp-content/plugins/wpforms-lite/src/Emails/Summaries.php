@@ -2,7 +2,6 @@
 namespace WPForms\Emails;
 
 use Exception;
-use WPForms\Emails\Tasks\FetchInfoBlocksTask;
 
 /**
  * Email Summaries main class.

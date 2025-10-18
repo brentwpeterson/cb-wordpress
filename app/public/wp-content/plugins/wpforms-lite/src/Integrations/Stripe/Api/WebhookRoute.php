@@ -3,7 +3,6 @@
 namespace WPForms\Integrations\Stripe\Api;
 
 use Exception;
-use WPForms\Integrations\Stripe\Api\Webhooks\Exceptions\AmountMismatchException;
 use WPForms\Vendor\Stripe\Webhook;
 use RuntimeException;
 use BadMethodCallException;
@@ -185,12 +184,6 @@ class WebhookRoute extends Common {
 			$processed = $this->process_event( $event );
 
 			$this->response_code = $processed ? 200 : 202;
-
-			$this->respond();
-		} catch ( AmountMismatchException $e ) {
-
-			$this->response_code = 202;
-			$this->response      = $e->getMessage();
 
 			$this->respond();
 		} catch ( SignatureVerificationException $e ) {

@@ -70,7 +70,7 @@ WPForms.Admin.Builder.FieldMap = WPForms.Admin.Builder.FieldMap || ( function( d
 		 * @since 1.9.5
 		 */
 		events() {
-			// Field map table, update a key source.
+			// Field map table, update key source
 			el.$builder.on( 'input', '.wpforms-field-map-table .key-source', function() {
 				const value = $( this ).val(),
 					$dest = $( this ).parent().parent().find( '.key-destination' ),
@@ -144,19 +144,14 @@ WPForms.Admin.Builder.FieldMap = WPForms.Admin.Builder.FieldMap || ( function( d
 
 		/**
 		 * Update field mapped select items on form updates.
-		 * Use data attributes to configure field mapping:
-		 * - data-field-map-placeholder - A custom placeholder text shown in the select dropdown field.
-		 * - data-field-map-allowed - Space-separated list of allowed field types (e.g. "email textarea"). Use "all-fields" to allow all available form fields.
-		 * - data-field-map-allow-repeated-fields - Controls whether fields inside repeater blocks are included in the options (true/false).
-		 * - data-custom-value-support - When true, adds a "Custom Value" option at the end of the dropdown list.
 		 *
 		 * @since 1.2.0
 		 * @since 1.6.1.2 Registered `wpformsFieldSelectMapped` trigger.
-		 * @since 1.9.7 Removed all passed arguments.
-		 * @since 1.9.7 The list of fields is received via the `wpf.getFields` function.
-		 * @since 1.9.7 Added multiple fields support.
+		 *
+		 * @param {Event}  e      Event.
+		 * @param {Object} fields Fields.
 		 */
-		fieldMapSelect() {
+		fieldMapSelect( e, fields ) { // eslint-disable-line max-lines-per-function
 			const event = WPFormsUtils.triggerEvent( el.$builder, 'wpformsBeforeFieldMapSelectUpdate' );
 
 			// Allow callbacks on `wpformsBeforeFieldMapSelectUpdate` to cancel adding field
@@ -165,45 +160,54 @@ WPForms.Admin.Builder.FieldMap = WPForms.Admin.Builder.FieldMap || ( function( d
 				return;
 			}
 
-			// eslint-disable-next-line complexity
-			$( '.wpforms-field-map-select' ).each( function() {
+			$( '.wpforms-field-map-select' ).each( function() { // eslint-disable-line complexity, no-unused-vars
 				const $this = $( this );
+				let allowedFields = $this.data( 'field-map-allowed' ),
+					placeholder = $this.data( 'field-map-placeholder' );
 
-				let placeholder = $this.data( 'field-map-placeholder' );
-
-				// Check if a custom placeholder was provided.
+				// Check if custom placeholder was provided.
 				if ( typeof placeholder === 'undefined' || ! placeholder ) {
 					placeholder = wpforms_builder.select_field;
 				}
 
-				let allowedFields = $this.data( 'field-map-allowed' );
-
 				// If allowed, fields are not defined, bail.
-				if ( typeof allowedFields === 'undefined' || ! allowedFields ) {
+				if ( typeof allowedFields !== 'undefined' && allowedFields ) {
+					allowedFields = allowedFields.split( ' ' );
+				} else {
 					return;
 				}
 
-				allowedFields = allowedFields.split( ' ' );
-				allowedFields = $.inArray( 'all-fields', allowedFields ) >= 0 ? false : allowedFields;
+				const selected = $this.find( 'option:selected' ).val();
 
-				const isAllowedRepeatedFields = Boolean( $this.data( 'field-map-allow-repeated-fields' ) );
-				const selectedValue = $this.val();
-				const fields = wpf.getFields( allowedFields, true, isAllowedRepeatedFields );
+				// Reset select and add a placeholder option.
+				$this.empty().append( $( '<option>', { value: '', text: placeholder } ) );
 
-				$this.empty();
-				$this.append( $( '<option>', { value: '', text: placeholder } ) );
-
+				// Loop through the current fields, if we have fields for the form.
 				if ( fields && ! $.isEmptyObject( fields ) ) {
 					for ( const fieldID in fields ) {
-						if ( ! fields[ fieldID ]?.id ) {
+						let label = '';
+
+						if ( ! fields[ fieldID ] ) {
 							continue;
 						}
 
-						const field = fields[ fieldID ];
-						const label = wpf.sanitizeHTML( field?.label?.toString().trim() || wpforms_builder.field + ' #' + field.id );
+						// Prepare the label.
+						if ( typeof fields[ fieldID ].label !== 'undefined' && fields[ fieldID ].label.toString().trim() !== '' ) {
+							label = wpf.sanitizeHTML( fields[ fieldID ].label.toString().trim() );
+						} else {
+							label = wpforms_builder.field + ' #' + fieldID;
+						}
 
-						$this.append( $( '<option>', { value: field.id, text: label } ) );
+						// Add to select if it is a field type allowed.
+						if ( $.inArray( fields[ fieldID ].type, allowedFields ) >= 0 || $.inArray( 'all-fields', allowedFields ) >= 0 ) {
+							$this.append( $( '<option>', { value: fields[ fieldID ].id, text: label } ) );
+						}
 					}
+				}
+
+				// Restore previous value if found.
+				if ( selected ) {
+					$this.find( 'option[value="' + selected + '"]' ).prop( 'selected', true );
 				}
 
 				// Add a "Custom Value" option if it is supported.
@@ -217,10 +221,6 @@ WPForms.Admin.Builder.FieldMap = WPForms.Admin.Builder.FieldMap || ( function( d
 							class: 'wpforms-field-map-option-custom-value',
 						} )
 					);
-				}
-
-				if ( selectedValue ) {
-					$this.val( selectedValue );
 				}
 
 				el.$builder.trigger( 'wpformsFieldSelectMapped', [ $this ] );

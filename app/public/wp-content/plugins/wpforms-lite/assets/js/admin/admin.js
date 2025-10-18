@@ -1,24 +1,19 @@
 /* global wpforms_admin, jconfirm, wpCookies, Choices, List, wpf */
 
-/* eslint-disable camelcase */
-
 /**
  * @param wpforms_admin.recreating
  * @param wpforms_admin.testing
  */
 
-/**
- * Admin script.
- *
- * @param {jQuery} $ The jQuery instance.
- */
 ( function( $ ) {
+	'use strict';
+
 	// Global settings access.
-	let s;
+	var s;
 
 	// Admin object.
-	// noinspection ES6ConvertVarToLetConst,JSUnusedGlobalSymbols
-	var WPFormsAdmin = { // eslint-disable-line no-var
+	var WPFormsAdmin = {
+
 		// Settings.
 		settings: {
 			iconActivate: '<i class="fa fa-toggle-on fa-flip-horizontal" aria-hidden="true"></i>',
@@ -33,7 +28,8 @@
 		 *
 		 * @since 1.3.9
 		 */
-		init() {
+		init: function() {
+
 			// Settings shortcut.
 			s = this.settings;
 
@@ -70,7 +66,8 @@
 		 *
 		 * @since 1.3.9
 		 */
-		ready() { // eslint-disable-line max-lines-per-function
+		ready: function() {
+
 			// Add `_wp_http_referer` to the data of every AJAX request.
 			$.ajaxSetup( {
 				data: {
@@ -87,7 +84,7 @@
 			// which runs after they have been moved.
 			$( '.notice' ).show();
 
-			// If there are screen options, we have to move them.
+			// If there are screen options we have to move them.
 			$( '#screen-meta-links, #screen-meta' ).prependTo( '#wpforms-header-temp' ).show();
 
 			// Init fancy selects via choices.js.
@@ -101,6 +98,7 @@
 
 			// Init color pickers via minicolors.js.
 			$( '.wpforms-color-picker' ).each( function() {
+
 				const $this = $( this );
 
 				$this.minicolors( {
@@ -110,11 +108,11 @@
 
 			// Init fancy File Uploads.
 			$( '.wpforms-file-upload' ).each( function() {
-				const $input	 = $( this ).find( 'input[type=file]' ),
+				var $input	 = $( this ).find( 'input[type=file]' ),
 					$label	 = $( this ).find( 'label' ),
 					labelVal = $label.html();
 				$input.on( 'change', function( event ) {
-					let fileName = '';
+					var fileName = '';
 					if ( this.files && this.files.length > 1 ) {
 						fileName = ( this.getAttribute( 'data-multiple-caption' ) || '' ).replace( '{count}', this.files.length );
 					} else if ( event.target.value ) {
@@ -150,6 +148,7 @@
 
 			// Upgrade information modal for upgrade links.
 			$( document ).on( 'click', '.wpforms-upgrade-modal', function() {
+
 				$.alert( {
 					title: wpforms_admin.thanks_for_interest,
 					content: wpforms_admin.upgrade_modal,
@@ -184,10 +183,11 @@
 		 *
 		 * @since 1.8.3
 		 */
-		handleOnChangeScreenOptions() {
-			const $table = $( '.wpforms-table-list' );
-			const $columns = $table.find( 'thead .manage-column' );
-			const $hidden = $columns.filter( '.hidden' );
+		handleOnChangeScreenOptions: function() {
+
+			const $table         = $( '.wpforms-table-list' );
+			const $columns       = $table.find( 'thead .manage-column' );
+			const $hidden        = $columns.filter( '.hidden' );
 			const hasManyColumns = Boolean( ( $columns.length - $hidden.length ) > 5 );
 
 			// This is used to adjust the table layout.
@@ -201,10 +201,11 @@
 		 *
 		 * @since 1.4.2
 		 */
-		initChoicesJS() {
+		initChoicesJS: function() {
+
 			$( '.choicesjs-select' ).each( function() {
-				const $this = $( this ),
-					args = window.wpforms_admin_choicesjs_config ? { ...window.wpforms_admin_choicesjs_config } : {};
+				var $this = $( this ),
+					args  = window.wpforms_admin_choicesjs_config ? { ...window.wpforms_admin_choicesjs_config } : {};
 
 				if ( $this.attr( 'multiple' ) ) {
 					args.removeItemButton = typeof args.removeItemButton !== 'undefined' ? args.removeItemButton : true;
@@ -225,14 +226,14 @@
 				// Render HTML in Choices.js.
 				args.allowHTML = true;
 
-				// Function to run once Choices initializes.
-				// We need to reproduce a behavior like on the public-facing area for "Edit Entry" page.
+				// Function to run once Choices initialises.
+				// We need to reproduce a behaviour like on public-facing area for "Edit Entry" page.
 				args.callbackOnInit = function() {
 					const self = this;
 					const $element = $( self.passedElement.element );
 					const sizeClass = $element.data( 'size-class' );
 
-					// Add a CSS class for size.
+					// Add CSS-class for size.
 					if ( sizeClass ) {
 						$( self.containerOuter.element ).addClass( sizeClass );
 					}
@@ -244,7 +245,7 @@
 				$this.data( 'choicesjs', new Choices( $this[ 0 ], args ) );
 			} );
 
-			// Add the ability to close the drop-down menu.
+			// Add ability to close the drop-down menu.
 			$( document ).on( 'click', '.choices', function( e ) {
 				const $choices = $( this ),
 					choicesObj = $choices.find( 'select' ).data( 'choicesjs' );
@@ -269,14 +270,16 @@
 		 *
 		 * @since 1.4.2
 		 */
-		initCheckboxMultiselectColumns() {
+		initCheckboxMultiselectColumns: function() {
+
 			$( document ).on( 'change', '.checkbox-multiselect-columns input', function() {
-				const $this = $( this ),
-					$parent = $this.parent(),
+
+				var $this      = $( this ),
+					$parent    = $this.parent(),
 					$container = $this.closest( '.checkbox-multiselect-columns' ),
-					label = $parent.text(),
-					itemID = 'check-item-' + $this.val(),
-					$item = $container.find( '#' + itemID );
+					label      = $parent.text(),
+					itemID     = 'check-item-' + $this.val(),
+					$item      = $container.find( '#' + itemID );
 
 				if ( $this.prop( 'checked' ) ) {
 					$this.parent().addClass( 'checked' );
@@ -290,6 +293,7 @@
 			} );
 
 			$( document ).on( 'click', '.checkbox-multiselect-columns .all', function( event ) {
+
 				event.preventDefault();
 
 				$( this ).closest( '.checkbox-multiselect-columns' ).find( 'input[type=checkbox]' ).prop( 'checked', true ).trigger( 'change' );
@@ -302,15 +306,15 @@
 		//--------------------------------------------------------------------//
 
 		/**
-		 * Element bindings for the Form Overview page.
+		 * Element bindings for Form Overview page.
 		 *
 		 * @since 1.3.9
 		 * @since 1.7.3 Deprecated.
 		 *
 		 * @deprecated Use `WPFormsForms.Overview.init()` instead.
 		 */
-		initFormOverview() {
-			// eslint-disable-next-line no-console
+		initFormOverview: function() {
+
 			console.warn( 'WARNING! Function "WPFormsAdmin.initFormOverview()" has been deprecated, please use the new "WPFormsForms.Overview.init()" function instead!' );
 
 			window.WPFormsForms.Overview.init();
@@ -321,7 +325,7 @@
 		//--------------------------------------------------------------------//
 
 		/**
-		 * Element bindings for the Entries List table page.
+		 * Element bindings for Entries List table page.
 		 *
 		 * @since 1.3.9
 		 */
@@ -335,10 +339,11 @@
 
 			// Confirm bulk entry deletion.
 			$( document ).on( 'click', '#wpforms-entries-table #doaction', function( event ) {
-				const $btn = $( this ),
-					$form = $btn.closest( 'form' ),
-					$table = $form.find( 'table' ),
-					$action = $form.find( 'select[name=action]' ),
+
+				var $btn     = $( this ),
+					$form    = $btn.closest( 'form' ),
+					$table   = $form.find( 'table' ),
+					$action  = $form.find( 'select[name=action]' ),
 					$checked = $table.find( 'input[name^=entry_id]:checked' );
 
 				if ( ( 'delete' !== $action.val() && 'trash' !== $action.val() ) || ! $checked.length ) {
@@ -360,7 +365,8 @@
 							text: wpforms_admin.ok,
 							btnClass: 'btn-confirm',
 							keys: [ 'enter' ],
-							action() {
+							action: function() {
+
 								$form.trigger( 'submit' );
 							},
 						},
@@ -374,9 +380,10 @@
 
 			// Confirm entry deletion.
 			$( document ).on( 'click', '#wpforms-entries-list .wp-list-table .delete', function( event ) {
+
 				event.preventDefault();
 
-				const url = $( this ).attr( 'href' );
+				var url = $( this ).attr( 'href' );
 
 				// Trigger alert modal to confirm.
 				$.confirm( {
@@ -389,7 +396,7 @@
 							text: wpforms_admin.ok,
 							btnClass: 'btn-confirm',
 							keys: [ 'enter' ],
-							action() {
+							action: function() {
 								window.location = url;
 							},
 						},
@@ -438,7 +445,7 @@
 				const $counter = $( '#wpforms-entries-list .starred-num' );
 				const $table = $this.parents( 'table' );
 
-				let task;
+				let task = '';
 				let total = Number( $counter.text() );
 
 				if ( $this.hasClass( 'star' ) ) {
@@ -458,7 +465,7 @@
 				}
 
 				const data = {
-					task,
+					task    : task,
 					action  : 'wpforms_entry_list_star',
 					nonce   : wpforms_admin.nonce,
 					entryId : $this.data( 'id' ),
@@ -476,7 +483,7 @@
 				const $counter = $( '#wpforms-entries-list .unread-num' );
 				const $table = $this.parents( 'table' );
 
-				let task;
+				let task = '';
 				let total = Number( $counter.text() );
 
 				if ( $this.hasClass( 'read' ) ) {
@@ -496,7 +503,7 @@
 				}
 
 				const data = {
-					task,
+					task    : task,
 					action  : 'wpforms_entry_list_read',
 					nonce   : wpforms_admin.nonce,
 					entryId : $this.data( 'id' ),
@@ -559,29 +566,32 @@
 
 			// Check for new form entries using Heartbeat API.
 			$( document ).on( 'heartbeat-send', function( event, data ) {
-				const $entriesList = $( '#wpforms-entries-list' );
 
-				// Works on the entry list page only.
+				var $entriesList = $( '#wpforms-entries-list' );
+
+				// Works on entry list page only.
 				if ( ! $entriesList.length || $entriesList.find( '.wpforms-dash-widget' ).length ) {
 					return;
 				}
 
-				const last_entry_id = $entriesList.find( '#wpforms-entries-table' ).data( 'last-entry-id' );
+				var last_entry_id = $entriesList.find( '#wpforms-entries-table' ).data( 'last-entry-id' );
 
-				// When entry list is filtered, there is no data param at all.
+				// When entries list is filtered, there is no data param at all.
 				if ( typeof last_entry_id === 'undefined' ) {
 					return;
 				}
 
 				data.wpforms_new_entries_entry_id = last_entry_id;
-				data.wpforms_new_entries_form_id = $entriesList.find( 'input[name=form_id]' ).val();
+				data.wpforms_new_entries_form_id  = $entriesList.find( 'input[name=form_id]' ).val();
 			} );
 
 			// Display entries list notification if Heartbeat API new form entries check is successful.
 			$( document ).on( 'heartbeat-tick', function( event, data ) {
-				const $entriesList = $( '#wpforms-entries-list' );
 
-				// Works on the entry list page only.
+				var columnCount;
+				var $entriesList = $( '#wpforms-entries-list' );
+
+				// Works on entry list page only.
 				if ( ! $entriesList.length ) {
 					return;
 				}
@@ -590,22 +600,24 @@
 					return;
 				}
 
-				const columnCount = $entriesList.find( '.wp-list-table thead tr' ).first().children().length;
+				columnCount = $entriesList.find( '.wp-list-table thead tr' ).first().children().length;
 
 				if ( ! $entriesList.find( '.new-entries-notification' ).length ) {
 					$entriesList.find( '.wp-list-table thead' )
 						.append( '<tr class="new-entries-notification"><td colspan="' + columnCount + '"><a href=""></a></td></tr>' );
 				}
 
-				const $link = $entriesList.find( '.new-entries-notification a' );
+				var $link = $entriesList.find( '.new-entries-notification a' );
 
 				$link
 					.text( data.wpforms_new_entries_notification )
 					.slideDown( {
-						start() {
+						start: function() {
+
 							$link.css( 'display', 'block' );
 						},
-						always() {
+						always: function() {
+
 							$link.css( 'display', 'block' );
 						},
 					} );
@@ -613,11 +625,12 @@
 		},
 
 		/**
-		 * Element bindings for the Entries Single (Details) page.
+		 * Element bindings for Entries Single (Details) page.
 		 *
 		 * @since 1.3.9
 		 */
-		initEntriesSingle() { // eslint-disable-line max-lines-per-function
+		initEntriesSingle: function() {
+
 			// Entry navigation hotkeys.
 			// We only want to listen on the applicable admin page.
 			if ( 'wpforms-entries' === WPFormsAdmin.getQueryString( 'page' ) && 'details' === WPFormsAdmin.getQueryString( 'view' ) ) {
@@ -641,7 +654,7 @@
 							text: wpforms_admin.ok,
 							btnClass: 'btn-confirm',
 							keys: [ 'enter' ],
-							action() {
+							action: function() {
 								window.location = url;
 							},
 						},
@@ -682,7 +695,7 @@
 				} );
 			} );
 
-			// Open Print preview in a new window.
+			// Open Print preview in new window.
 			$( document ).on( 'click', '#wpforms-entries-single .wpforms-entry-print a', function( event ) {
 				event.preventDefault();
 
@@ -691,14 +704,17 @@
 
 			// Toggle displaying empty fields.
 			$( document ).on( 'click', '#wpforms-entries-single .wpforms-empty-field-toggle', function( event ) {
+
 				event.preventDefault();
 
 				// Handle cookie.
 				if ( wpCookies.get( 'wpforms_entry_hide_empty' ) === 'true' ) {
+
 					// User was hiding empty fields, so now display them.
 					wpCookies.remove( 'wpforms_entry_hide_empty' );
 					$( this ).text( wpforms_admin.entry_empty_fields_hide );
 				} else {
+
 					// User was seeing empty fields, so now hide them.
 					wpCookies.set( 'wpforms_entry_hide_empty', 'true', 2592000 ); // 1month.
 					$( this ).text( wpforms_admin.entry_empty_fields_show );
@@ -709,6 +725,7 @@
 
 			// Display notes editor.
 			$( document ).on( 'click', '#wpforms-entries-single .wpforms-entry-notes-new .add', function( event ) {
+
 				event.preventDefault();
 
 				$( this ).hide().next( 'form' ).stop().slideToggle();
@@ -716,6 +733,7 @@
 
 			// Cancel note.
 			$( document ).on( 'click', '#wpforms-entries-single .wpforms-entry-notes-new .cancel', function( event ) {
+
 				event.preventDefault();
 
 				$( this ).closest( 'form' ).stop().slideToggle();
@@ -724,9 +742,10 @@
 
 			// Delete note.
 			$( document ).on( 'click', '#wpforms-entries-single .wpforms-entry-notes-byline .note-delete', function( event ) {
+
 				event.preventDefault();
 
-				const url = $( this ).attr( 'href' );
+				var url = $( this ).attr( 'href' );
 
 				// Trigger alert modal to confirm.
 				$.confirm( {
@@ -739,7 +758,7 @@
 							text: wpforms_admin.ok,
 							btnClass: 'btn-confirm',
 							keys: [ 'enter' ],
-							action() {
+							action: function() {
 								window.location = url;
 							},
 						},
@@ -752,6 +771,7 @@
 			} );
 		},
 
+
 		//--------------------------------------------------------------------//
 		// Entry List
 		//--------------------------------------------------------------------//
@@ -763,17 +783,21 @@
 		 *
 		 * @since 1.4.0
 		 */
-		entryHotkeys() {
+		entryHotkeys: function() {
+
+			// eslint-disable-next-line complexity
 			$( document ).on( 'keydown', function( event ) {
 				if ( 74 === event.keyCode && ! event.metaKey && ! WPFormsAdmin.isFormTypeNode( event.target.nodeName ) ) {
+
 					// j key has been pressed outside a form element, go to the previous entry.
-					const prevEntry = $( '#wpforms-admin-single-navigation-prev-link' ).attr( 'href' );
+					var prevEntry = $( '#wpforms-admin-single-navigation-prev-link' ).attr( 'href' );
 					if ( '#' !== prevEntry ) {
 						window.location.href = prevEntry;
 					}
 				} else if ( 75 === event.keyCode && ! event.metaKey && ! WPFormsAdmin.isFormTypeNode( event.target.nodeName ) ) {
+
 					// k key has been pressed outside a form element, go to the previous entry.
-					const nextEntry = $( '#wpforms-admin-single-navigation-next-link' ).attr( 'href' );
+					var nextEntry = $( '#wpforms-admin-single-navigation-next-link' ).attr( 'href' );
 					if ( '#' !== nextEntry ) {
 						window.location.href = nextEntry;
 					}
@@ -790,8 +814,9 @@
 		 *
 		 * @since 1.3.9
 		 */
-		initWelcome() {
-			// Open modal and play How-To video.
+		initWelcome: function() {
+
+			// Open modal and play How To video.
 			$( document ).on( 'click', '#wpforms-welcome .play-video', function( event ) {
 				event.preventDefault();
 
@@ -811,11 +836,12 @@
 		//--------------------------------------------------------------------//
 
 		/**
-		 * Element bindings for the Addons List page.
+		 * Element bindings for Addons List page.
 		 *
 		 * @since 1.3.9
 		 */
-		initAddons() { // eslint-disable-line max-lines-per-function
+		initAddons: function() {
+
 			// Only run on the addons page.
 			if ( ! $( '#wpforms-admin-addons' ).length ) {
 				return;
@@ -892,7 +918,7 @@
 		 *
 		 * @since 1.7.4
 		 *
-		 * @param {Object} searchField          The search field HTML element.
+		 * @param {Object} searchField          The search field html element.
 		 * @param {Object} addonSearchAll       Addons all list (uses List.js).
 		 * @param {Object} addonSearchInstalled Addons installed list (uses List.js).
 		 */
@@ -901,7 +927,7 @@
 
 			/*
 			 * Replace dot and comma with space
-			 * it is a workaround for a bug in the list.js library.
+			 * it is workaround for a bug in list.js library.
 			 *
 			 * Note: remove when the issue below is fixed:
 			 * @see https://github.com/javve/list.js/issues/699
@@ -927,7 +953,7 @@
 		 * @param {string}   plugin        Plugin slug or URL for download.
 		 * @param {string}   state         State status activate|deactivate|install.
 		 * @param {string}   pluginType    Plugin type addon or plugin.
-		 * @param {Function} callback      Callback for get a result from AJAX.
+		 * @param {Function} callback      Callback for get result from AJAX.
 		 * @param {Function} errorCallback Callback for get error from AJAX.
 		 */
 		setAddonState( plugin, state, pluginType, callback, errorCallback ) {
@@ -964,7 +990,7 @@
 		 *
 		 * @param {Object} $btn Button element.
 		 */
-		// eslint-disable-next-line max-lines-per-function
+		// eslint-disable-next-line max-lines-per-function, complexity
 		addonToggleNew( $btn ) {
 			const $footer = $btn.parents( '.wpforms-addons-list-item-footer' );
 			const classes = {
@@ -1290,6 +1316,7 @@
 
 				if ( ! $addon.find( '.actions' ).find( '.msg.error' ).length ) {
 					setTimeout( function() {
+
 						$( '.addon-item .msg' ).remove();
 					}, 3000 );
 				}
@@ -1308,9 +1335,11 @@
 		 *
 		 * @since 1.3.9
 		 */
-		initSettings() { // eslint-disable-line max-lines-per-function
+		initSettings: function() {
+
 			// On ready events.
-			$( document ).on( 'wpformsReady', function() { // eslint-disable-line max-lines-per-function
+			$( document ).on( 'wpformsReady', function() {
+
 				// Only proceed if we're on the settings page.
 				if ( ! $( '#wpforms-settings' ).length ) {
 					return;
@@ -1318,8 +1347,8 @@
 
 				// Watch for hashes and scroll to if found.
 				// Display all addon boxes as the same height.
-				const integrationFocus = WPFormsAdmin.getQueryString( 'wpforms-integration' ),
-					jumpTo = WPFormsAdmin.getQueryString( 'jump' );
+				var integrationFocus = WPFormsAdmin.getQueryString( 'wpforms-integration' ),
+					jumpTo           = WPFormsAdmin.getQueryString( 'jump' );
 
 				if ( integrationFocus ) {
 					$( 'body' ).animate(
@@ -1449,11 +1478,13 @@
 
 			// Form styles plugin setting.
 			$( document ).on( 'change', '#wpforms-setting-disable-css', function() {
+
 				WPFormsAdmin.settingsFormStylesAlert( $( this ).val() );
 			} );
 
 			// Image upload fields.
 			$( document ).on( 'click', '.wpforms-setting-row-image button', function( event ) {
+
 				event.preventDefault();
 
 				// If the remove button was clicked, clear the value and remove the image.
@@ -1469,16 +1500,18 @@
 
 			// Verify license key.
 			$( document ).on( 'click', '#wpforms-setting-license-key-verify', function( event ) {
+
 				event.preventDefault();
 
 				WPFormsAdmin.licenseVerify( $( this ) );
 			} );
 
-			// Show a message for license field.
+			// Show message for license field.
 			$( document ).on( 'click', '.wpforms-setting-license-wrapper', function( event ) {
+
 				event.preventDefault();
 
-				const $keyField = $( '#wpforms-setting-license-key' );
+				var $keyField = $( '#wpforms-setting-license-key' );
 
 				if ( ! $keyField.length ) {
 					return;
@@ -1491,8 +1524,9 @@
 				WPFormsAdmin.licenseEditMessage();
 			} );
 
-			// Deactivate a license key.
+			// Deactivate license key.
 			$( document ).on( 'click', '#wpforms-setting-license-key-deactivate', function( event ) {
+
 				event.preventDefault();
 
 				WPFormsAdmin.licenseDeactivate( $( this ) );
@@ -1500,6 +1534,7 @@
 
 			// Refresh license key.
 			$( document ).on( 'click', '#wpforms-setting-license-key-refresh', function( event ) {
+
 				event.preventDefault();
 
 				WPFormsAdmin.licenseRefresh( $( this ) );
@@ -1511,15 +1546,17 @@
 
 			// Integration connect.
 			$( document ).on( 'click', '.wpforms-settings-provider-connect', function( event ) {
+
 				event.preventDefault();
 
-				const button = $( this );
+				var button = $( this );
 
 				WPFormsAdmin.integrationConnect( button );
 			} );
 
 			// Integration account disconnect.
 			$( document ).on( 'click', '.wpforms-settings-provider-accounts-list .remove a', function( event ) {
+
 				event.preventDefault();
 
 				WPFormsAdmin.integrationDisconnect( $( this ) );
@@ -1527,9 +1564,10 @@
 
 			// Integration individual display toggling.
 			$( document ).on( 'click', '.wpforms-settings-provider:not(.focus-out) .wpforms-settings-provider-header', function( event ) {
+
 				event.preventDefault();
 
-				const $this = $( this );
+				var $this = $( this );
 
 				$this
 					.parent()
@@ -1542,16 +1580,18 @@
 
 			// Integration accounts display toggling.
 			$( document ).on( 'click', '.wpforms-settings-provider-accounts-toggle a', function( event ) {
+
 				event.preventDefault();
 
-				const $connectFields = $( this ).parent().next( '.wpforms-settings-provider-accounts-connect' );
+				var $connectFields = $( this ).parent().next( '.wpforms-settings-provider-accounts-connect' );
 				$connectFields.find( 'input[type=text], input[type=password]' ).val( '' );
 				$connectFields.stop().slideToggle();
 			} );
 
 			// CAPTCHA settings page: type toggling.
 			$( document ).on( 'change', '#wpforms-setting-row-captcha-provider input', function() {
-				const $preview = $( '#wpforms-setting-row-captcha-preview' );
+
+				var $preview = $( '#wpforms-setting-row-captcha-preview' );
 
 				if ( this.value === 'hcaptcha' || this.value === 'turnstile' ) {
 					$preview.removeClass( 'wpforms-hidden' );
@@ -1569,6 +1609,7 @@
 
 			// CAPTCHA settings page: reCAPTCHA type toggling.
 			$( document ).on( 'change', '#wpforms-setting-row-recaptcha-type input', function() {
+
 				$( '#wpforms-setting-row-captcha-preview' ).toggleClass( 'wpforms-hidden', 'v2' !== this.value );
 				$( '#wpforms-setting-row-recaptcha-v3-threshold' ).toggleClass( 'wpforms-hidden', 'v3' !== this.value );
 			} );
@@ -1595,28 +1636,30 @@
 		 * Render engine setting change event handler.
 		 *
 		 * @since 1.8.1
+		 *
+		 * @param {object} e Event object.
 		 */
-		settingsRenderEngineChange() {
+		settingsRenderEngineChange: function( e ) {
+
 			// noinspection JSUnusedLocalSymbols
-			const renderEngine = $( this ).val(); // eslint-disable-line
+			// eslint-disable-next-line
+			const renderEngine = $( this ).val();
 
 			// TODO: Add corresponding code that need to be executed on change render engine setting.
 		},
 
 		/**
-		 * Alert users if they change form styles to something that may give unexpected results.
+		 * Alert users if they change form styles to something that may give
+		 * unexpected results.
 		 *
 		 * @since 1.5.0
-		 *
-		 * @param {string} value Form Styles value.
 		 */
-		settingsFormStylesAlert( value ) {
-			let msg;
+		settingsFormStylesAlert: function( value ) {
 
 			if ( '2' === value ) {
-				msg = wpforms_admin.settings_form_style_base;
+				var msg = wpforms_admin.settings_form_style_base;
 			} else if ( '3' === value ) {
-				msg = wpforms_admin.settings_form_style_none;
+				var msg = wpforms_admin.settings_form_style_none;
 			} else {
 				return;
 			}
@@ -1683,12 +1726,13 @@
 		 *
 		 * @param {jQuery} $el Verify button element.
 		 */
-		licenseVerify( $el ) { // eslint-disable-line max-lines-per-function
-			const $row = $el.closest( '.wpforms-setting-row' ),
-				$keyField = $( '#wpforms-setting-license-key' ),
+		licenseVerify: function( $el ) {
+
+			var $row        = $el.closest( '.wpforms-setting-row' ),
+				$keyField   = $( '#wpforms-setting-license-key' ),
 				buttonWidth = $el.outerWidth(),
 				buttonLabel = $el.text(),
-				data = {
+				data        = {
 					action: 'wpforms_verify_license',
 					nonce:   wpforms_admin.nonce,
 					license: $keyField.val(),
@@ -1697,7 +1741,8 @@
 			$el.html( s.iconSpinner ).css( 'width', buttonWidth ).prop( 'disabled', true );
 
 			$.post( wpforms_admin.ajax_url, data, function( res ) {
-				let icon = 'fa fa-check-circle',
+
+				var icon  = 'fa fa-check-circle',
 					color = 'green',
 					msg;
 
@@ -1711,11 +1756,11 @@
 					$keyField
 						.prop( 'disabled', true )
 						.addClass( 'wpforms-setting-license-is-valid' )
-						.attr( 'value', $keyField.val().replace( /./g, '*' ) );
+						.attr( 'value', $keyField.val() );
 				} else {
-					icon = 'fa fa-exclamation-circle';
+					icon  = 'fa fa-exclamation-circle';
 					color = 'orange';
-					msg = res.data;
+					msg   = res.data;
 					$row.find( '.type, .desc, #wpforms-setting-license-key-deactivate' ).hide();
 					$keyField.prop( 'disabled', false );
 				}
@@ -1723,7 +1768,7 @@
 				$.alert( {
 					title: msg.header ?? false,
 					content: msg.msg ?? msg,
-					icon,
+					icon: icon,
 					type: color,
 					buttons: {
 						confirm: {
@@ -1735,20 +1780,20 @@
 				} );
 
 				$el.html( buttonLabel ).css( 'width', 'auto' ).prop( 'disabled', false );
+
 			} ).fail( function( xhr ) {
 				$keyField.prop( 'disabled', false );
-
-				// eslint-disable-next-line no-console
 				console.log( xhr.responseText );
 			} );
 		},
 
 		/**
-		 * Show a message that license key editing is disabled.
+		 * Show message that license key editing is disabled.
 		 *
 		 * @since 1.6.5
 		 */
-		licenseEditMessage() {
+		licenseEditMessage: function() {
+
 			$.alert( {
 				title: wpforms_admin.heads_up,
 				content: wpforms_admin.edit_license,
@@ -1771,9 +1816,10 @@
 		 *
 		 * @param {Element} el Button element.
 		 */
-		licenseDeactivate( el ) {
+		licenseDeactivate: function( el ) {
+
 			const $this = $( el );
-			const $row = $this.closest( '.wpforms-setting-row' );
+			const $row  = $this.closest( '.wpforms-setting-row' );
 
 			const buttonWidth = $this.outerWidth();
 			const buttonLabel = $this.text();
@@ -1786,12 +1832,13 @@
 			$this.html( s.iconSpinner ).css( 'width', buttonWidth ).prop( 'disabled', true );
 
 			$.post( wpforms_admin.ajax_url, data, function( res ) {
-				let icon = 'fa fa-info-circle';
+
+				let icon  = 'fa fa-info-circle';
 				let color = 'blue';
 				let title = wpforms_admin.success;
 
-				const resData = res.data;
-				const msg = ! resData.msg || typeof resData.msg !== 'string' ? wpforms_admin.something_went_wrong : resData.msg;
+				const data = res.data;
+				const msg  = ! data.msg || typeof data.msg !== 'string' ? wpforms_admin.something_went_wrong : data.msg;
 
 				if ( res.success ) {
 					$row.find( '#wpforms-setting-license-key' )
@@ -1800,19 +1847,19 @@
 						.prop( { readonly: false, disabled: false } )
 						.removeClass();
 					$row.find( '.wpforms-license-key-deactivate-remove' ).remove();
-					$row.find( '#wpforms-setting-license-key-info-message' ).html( resData.info ).show();
+					$row.find( '#wpforms-setting-license-key-info-message' ).html( data.info ).show();
 					$row.find( '#wpforms-setting-license-key-verify' ).prop( 'disabled', false ).show();
 					$row.find( '.type, .desc, #wpforms-setting-license-key-deactivate' ).hide();
 				} else {
-					icon = 'fa fa-exclamation-circle';
+					icon  = 'fa fa-exclamation-circle';
 					color = 'orange';
 					title = wpforms_admin.oops;
 				}
 
 				$.alert( {
-					title,
+					title: title,
 					content: msg,
-					icon,
+					icon: icon,
 					type: color,
 					buttons: {
 						confirm: {
@@ -1824,8 +1871,8 @@
 				} );
 
 				$this.html( buttonLabel ).css( 'width', 'auto' ).prop( 'disabled', false );
+
 			} ).fail( function( xhr ) {
-				// eslint-disable-next-line no-console
 				console.log( xhr.responseText );
 			} );
 		},
@@ -1834,20 +1881,21 @@
 		 * Refresh a license key.
 		 *
 		 * @since 1.3.9
-		 *
-		 * @param {jQuery} el Element.
 		 */
-		licenseRefresh( el ) {
-			const $this = $( el ),
-				$row = $this.closest( '.wpforms-setting-row' ),
-				$input = $( '#wpforms-setting-license-key' ),
-				data = {
+		licenseRefresh: function( el ) {
+
+			var $this       = $( el ),
+				$row        = $this.closest( '.wpforms-setting-row' ),
+				$input      = $( '#wpforms-setting-license-key' ),
+				data        = {
 					action: 'wpforms_refresh_license',
 					nonce:   wpforms_admin.nonce,
+					license: $input.val(),
 				};
 
 			$.post( wpforms_admin.ajax_url, data, function( res ) {
-				let icon = 'fa fa-check-circle',
+
+				var icon  = 'fa fa-check-circle',
 					color = 'green',
 					msg;
 
@@ -1855,9 +1903,9 @@
 					msg = res.data.msg;
 					$row.find( '.type strong' ).text( res.data.type );
 				} else {
-					icon = 'fa fa-exclamation-circle';
+					icon  = 'fa fa-exclamation-circle';
 					color = 'orange';
-					msg = res.data;
+					msg   = res.data;
 					$row.find( '.type, .desc' ).hide();
 					$input.removeClass( 'wpforms-setting-license-is-valid' ).addClass( 'wpforms-setting-license-is-invalid' );
 				}
@@ -1865,7 +1913,7 @@
 				$.alert( {
 					title: msg.header ?? false,
 					content: msg.msg ?? msg,
-					icon,
+					icon: icon,
 					type: color,
 					buttons: {
 						confirm: {
@@ -1875,8 +1923,8 @@
 						},
 					},
 				} );
+
 			} ).fail( function( xhr ) {
-				// eslint-disable-next-line no-console
 				console.log( xhr.responseText );
 			} );
 		},
@@ -1884,30 +1932,34 @@
 		/**
 		 * Connect integration provider account.
 		 *
-		 * @since 1.3.9
+		 * @param $btn Button (.wpforms-settings-provider-connect) that was clicked to establish connection.
 		 *
-		 * @param {jQuery} $btn Button (.wpforms-settings-provider-connect) that was clicked to establish connection.
+		 * @since 1.3.9
 		 */
-		integrationConnect( $btn ) {
-			const buttonWidth = $btn.outerWidth(),
+		integrationConnect: function( $btn ) {
+
+			var buttonWidth = $btn.outerWidth(),
 				buttonLabel = $btn.text(),
-				$provider = $btn.closest( '.wpforms-settings-provider' ),
-				data = {
+				$provider   = $btn.closest( '.wpforms-settings-provider' ),
+				data        = {
 					action  : 'wpforms_settings_provider_add_' + $btn.data( 'provider' ),
 					data    : $btn.closest( 'form' ).serialize(),
 					provider: $btn.data( 'provider' ),
 					nonce   : wpforms_admin.nonce,
-				};
-			let errorMessage = wpforms_admin.provider_auth_error;
+				},
+				errorMessage = wpforms_admin.provider_auth_error;
 
 			$btn.html( wpforms_admin.connecting ).css( 'width', buttonWidth ).prop( 'disabled', true );
 
 			$.post( wpforms_admin.ajax_url, data, function( response ) {
+
 				if ( response.success ) {
 					$provider.find( '.wpforms-settings-provider-accounts-list ul' ).append( response.data.html );
 					$provider.addClass( 'connected' );
 					$btn.closest( '.wpforms-settings-provider-accounts-connect' ).stop().slideToggle();
+
 				} else {
+
 					if (
 						Object.prototype.hasOwnProperty.call( response, 'data' ) &&
 						Object.prototype.hasOwnProperty.call( response.data, 'error_msg' )
@@ -1917,30 +1969,34 @@
 
 					WPFormsAdmin.integrationError( errorMessage );
 				}
+
 			} ).fail( function() {
+
 				WPFormsAdmin.integrationError( errorMessage );
 			} ).always( function() {
+
 				$btn.html( buttonLabel ).css( 'width', 'auto' ).prop( 'disabled', false );
 			} );
 		},
 
 		/**
-		 * Remove an integration provider account.
+		 * Remove integration provider account.
 		 *
 		 * @since 1.3.9
 		 *
-		 * @param {Object} el Disconnect link that was clicked to establish removing account.
+		 * @param {object} el Disconnect link that was clicked to establish removing account.
 		 */
-		integrationDisconnect( el ) {
-			const $this = $( el ),
+		integrationDisconnect: function( el ) {
+
+			var $this     = $( el ),
 				$provider = $this.parents( '.wpforms-settings-provider' ),
-				data = {
+				data      = {
 					action  : 'wpforms_settings_provider_disconnect_' + $this.data( 'provider' ),
 					provider: $this.data( 'provider' ),
 					key     : $this.data( 'key' ),
 					nonce   : wpforms_admin.nonce,
-				};
-			let errorMessage = wpforms_admin.provider_delete_error;
+				},
+				errorMessage = wpforms_admin.provider_delete_error;
 
 			$.confirm( {
 				title: wpforms_admin.heads_up,
@@ -1952,13 +2008,15 @@
 						text: wpforms_admin.ok,
 						btnClass: 'btn-confirm',
 						keys: [ 'enter' ],
-						action() {
+						action: function() {
+
 							$.post( wpforms_admin.ajax_url, data, function( response ) {
+
 								if ( response.success ) {
 									$this.parent().parent().remove();
 
-									// Hide the Connected status label if no more integrations are linked.
-									const numberOfIntegrations = $provider.find( '.wpforms-settings-provider-accounts-list li' ).length;
+									// Hide Connected status label if no more integrations are linked.
+									var numberOfIntegrations = $provider.find( '.wpforms-settings-provider-accounts-list li' ).length;
 
 									if ( typeof numberOfIntegrations === 'undefined' || numberOfIntegrations === 0 ) {
 										$provider.removeClass( 'connected' );
@@ -1971,6 +2029,7 @@
 									 */
 									$( document ).trigger( 'wpformsProviderRemoved', [ $provider, response ] );
 								} else {
+
 									if (
 										Object.prototype.hasOwnProperty.call( response, 'data' ) &&
 										Object.prototype.hasOwnProperty.call( response.data, 'error_msg' )
@@ -1981,6 +2040,7 @@
 									WPFormsAdmin.integrationError( errorMessage );
 								}
 							} ).fail( function() {
+
 								WPFormsAdmin.integrationError( errorMessage );
 							} );
 						},
@@ -2000,7 +2060,8 @@
 		 *
 		 * @param {string} error Error message.
 		 */
-		integrationError( error ) {
+		integrationError: function( error ) {
+
 			$.alert( {
 				title: wpforms_admin.something_went_wrong,
 				content: error,
@@ -2025,7 +2086,7 @@
 		 *
 		 * @since 1.4.2
 		 */
-		initTools() { // eslint-disable-line max-lines-per-function
+		initTools() {
 			// Enable import/export buttons when a value is selected.
 			$( document ).on( 'change', '#wpforms-tools-form-import, #wpforms-tools-form-other-import, #wpforms-tools-form-export, #wpforms-tools-form-template', function() {
 				const $field = $( this );
@@ -2034,7 +2095,7 @@
 				$button.attr( 'aria-disabled', $field.val().length === 0 );
 			} );
 
-			// Copy system information to the clipboard.
+			// Copy system information to clipboard.
 			$( document ).on( 'click', '#wpforms-system-information-copy', function( event ) {
 				event.preventDefault();
 				WPFormsAdmin.copySystemInformation();
@@ -2056,13 +2117,11 @@
 			$( document ).on( 'click', '#wpforms-importer-forms-submit', function( event ) {
 				event.preventDefault();
 
-				// Check to confirm the user as selected a form.
-				const $checked = $( '#wpforms-importer-forms input:checked' );
-
-				if ( $checked.length ) {
+				// Check to confirm user as selected a form.
+				if ( $( '#wpforms-importer-forms input:checked' ).length ) {
 					const ids = [];
 
-					$checked.each( function( i ) {
+					$( '#wpforms-importer-forms input:checked' ).each( function( i ) {
 						ids[ i ] = $( this ).val();
 					} );
 
@@ -2074,7 +2133,7 @@
 						WPFormsAdmin.importForms( ids );
 					}
 				} else {
-					// User didn't select a form so alert them.
+					// User didn't actually select a form so alert them.
 					$.alert( {
 						title: wpforms_admin.heads_up,
 						content: wpforms_admin.importer_forms_required,
@@ -2099,7 +2158,7 @@
 		},
 
 		/**
-		 * Copy system information to the clipboard.
+		 * Copy system information to clipboard.
 		 *
 		 * @since 1.8.4
 		 */
@@ -2109,7 +2168,7 @@
 		},
 
 		/**
-		 * Perform a test connection to verify that the current web host
+		 * Perform test connection to verify that the current web host
 		 * can successfully make outbound SSL connections.
 		 *
 		 * @since 1.4.5
@@ -2195,17 +2254,17 @@
 		/**
 		 * Begins the process of analyzing the forms.
 		 *
-		 * This runs for non-Pro installs to check if any of the forms to be imported
-		 * contain fields not currently available.
+		 * This runs for non-Pro installs to check if any of the forms to be
+		 * imported contain fields
+		 * not currently available.
 		 *
 		 * @since 1.4.2
-		 *
-		 * @param {Array} forms Forms.
 		 */
-		analyzeForms( forms ) {
-			const $processAnalyze = $( '#wpforms-importer-analyze' );
+		analyzeForms: function( forms ) {
 
-			// Display the total number of forms we have to import.
+			var $processAnalyze = $( '#wpforms-importer-analyze' );
+
+			// Display total number of forms we have to import.
 			$processAnalyze.find( '.form-total' ).text( forms.length );
 			$processAnalyze.find( '.form-current' ).text( '1' );
 
@@ -2216,10 +2275,10 @@
 			$processAnalyze.show();
 
 			// Create global analyze queue.
-			s.analyzeQueue = forms;
-			s.analyzed = 0;
+			s.analyzeQueue   = forms;
+			s.analyzed       = 0;
 			s.analyzeUpgrade = [];
-			s.formIDs = forms;
+			s.formIDs        = forms;
 
 			// Analyze the first form in the queue.
 			WPFormsAdmin.analyzeForm();
@@ -2230,11 +2289,12 @@
 		 *
 		 * @since 1.4.2
 		 */
-		analyzeForm() {
-			const $analyzeSettings = $( '#wpforms-importer-analyze' ),
-				formID = _.first( s.analyzeQueue ),
-				provider = WPFormsAdmin.getQueryString( 'provider' ),
-				data = {
+		analyzeForm: function() {
+
+			var $analyzeSettings = $( '#wpforms-importer-analyze' ),
+				formID           = _.first( s.analyzeQueue ),
+				provider         = WPFormsAdmin.getQueryString( 'provider' ),
+				data             = {
 					action:  'wpforms_import_form_' + provider,
 					analyze: 1,
 					form_id: formID,
@@ -2243,7 +2303,9 @@
 
 			// Trigger AJAX analyze for this form.
 			$.post( wpforms_admin.ajax_url, data, function( res ) {
+
 				if ( res.success ) {
+
 					if ( ! _.isEmpty( res.data.upgrade_plain ) || ! _.isEmpty( res.data.upgrade_omit ) ) {
 						s.analyzeUpgrade.push( {
 							name:   res.data.name,
@@ -2256,18 +2318,23 @@
 					s.analyzed++;
 
 					if ( _.isEmpty( s.analyzeQueue ) ) {
+
 						if ( _.isEmpty( s.analyzeUpgrade ) ) {
+
 							// Continue to import forms as no Pro fields were found.
 							WPFormsAdmin.importForms( s.formIDs );
 						} else {
+
 							// We found Pro fields, so alert the user.
-							const upgradeDetails = wp.template( 'wpforms-importer-upgrade' );
+							var upgradeDetails = wp.template( 'wpforms-importer-upgrade' );
 							$analyzeSettings.find( '.upgrade' ).append( upgradeDetails( s.analyzeUpgrade ) );
 							$analyzeSettings.find( '.upgrade' ).show();
 							$analyzeSettings.find( '.process-analyze' ).hide();
 						}
+
 					} else {
-						// Analyze the next form in the queue.
+
+						// Analyze next form in the queue.
 						$analyzeSettings.find( '.form-current' ).text( s.analyzed + 1 );
 						WPFormsAdmin.analyzeForm();
 					}
@@ -2279,13 +2346,12 @@
 		 * Begins the process of importing the forms.
 		 *
 		 * @since 1.4.2
-		 *
-		 * @param {Array} forms Forms.
 		 */
-		importForms( forms ) {
-			const $processSettings = $( '#wpforms-importer-process' );
+		importForms: function( forms ) {
 
-			// Display the total number of forms we have to import.
+			var $processSettings = $( '#wpforms-importer-process' );
+
+			// Display total number of forms we have to import.
 			$processSettings.find( '.form-total' ).text( forms.length );
 			$processSettings.find( '.form-current' ).text( '1' );
 
@@ -2297,7 +2363,7 @@
 
 			// Create global import queue.
 			s.importQueue = forms;
-			s.imported = 0;
+			s.imported    = 0;
 
 			// Import the first form in the queue.
 			WPFormsAdmin.importForm();
@@ -2308,11 +2374,12 @@
 		 *
 		 * @since 1.4.2
 		 */
-		importForm() {
-			const $processSettings = $( '#wpforms-importer-process' ),
-				formID = _.first( s.importQueue ),
-				provider = WPFormsAdmin.getQueryString( 'provider' ),
-				data = {
+		importForm: function() {
+
+			var $processSettings = $( '#wpforms-importer-process' ),
+				formID           = _.first( s.importQueue ),
+				provider         = WPFormsAdmin.getQueryString( 'provider' ),
+				data             = {
 					action:  'wpforms_import_form_' + provider,
 					form_id: formID,
 					nonce:   wpforms_admin.nonce,
@@ -2320,8 +2387,9 @@
 
 			// Trigger AJAX import for this form.
 			$.post( wpforms_admin.ajax_url, data, function( res ) {
+
 				if ( res.success ) {
-					let statusUpdate;
+					var statusUpdate;
 
 					if ( res.data.error ) {
 						statusUpdate = wp.template( 'wpforms-importer-status-error' );
@@ -2337,13 +2405,17 @@
 					s.imported++;
 
 					if ( _.isEmpty( s.importQueue ) ) {
+
 						$processSettings.find( '.process-count' ).hide();
 						$processSettings.find( '.forms-completed' ).text( s.imported );
 						$processSettings.find( '.process-completed' ).show();
+
 					} else {
-						// Import the next form in the queue.
+
+						// Import next form in the queue.
 						$processSettings.find( '.form-current' ).text( s.imported + 1 );
 						WPFormsAdmin.importForm();
+
 					}
 				}
 			} );
@@ -2358,15 +2430,17 @@
 		 *
 		 * @since 1.4.3
 		 */
-		initUpgrades() {
+		initUpgrades: function() {
+
 			// Prepare to run the v1.4.3 upgrade routine.
 			$( document ).on( 'click', '#wpforms-upgrade-143 button', function( event ) {
+
 				event.preventDefault();
 
-				const $this = $( this ),
+				var $this       = $( this ),
 					buttonWidth = $this.outerWidth(),
-					$status = $( '#wpforms-upgrade-143 .status' ),
-					data = {
+					$status     = $( '#wpforms-upgrade-143 .status' ),
+					data        = {
 						action:    'wpforms_upgrade_143',
 						nonce:      wpforms_admin.nonce,
 						init:       true,
@@ -2379,10 +2453,11 @@
 				// Get the total number of entries, then kick off the routine.
 				$.post( wpforms_admin.ajax_url, data, function( res ) {
 					if ( res.success ) {
+
 						// Set initial values.
-						s.upgraded = Number( res.data.upgraded );
+						s.upgraded     = Number( res.data.upgraded );
 						s.upgradeTotal = Number( res.data.total );
-						const percent = Math.round( ( Number( s.upgraded ) / Number( s.upgradeTotal ) ) * 100 );
+						var percent    = Math.round( ( Number( s.upgraded ) / Number( s.upgradeTotal ) ) * 100 );
 
 						// Show the status area.
 						$this.remove();
@@ -2403,9 +2478,10 @@
 		 *
 		 * @since 1.4.3
 		 */
-		upgrade143() {
-			const $status = $( '#wpforms-upgrade-143 .status' ),
-				data = {
+		upgrade143: function() {
+
+			var $status     = $( '#wpforms-upgrade-143 .status' ),
+				data        = {
 					action:   'wpforms_upgrade_143',
 					nonce:    wpforms_admin.nonce,
 					upgraded: s.upgraded,
@@ -2414,17 +2490,20 @@
 			// Get the total number of entries, then kick off the routine.
 			$.post( wpforms_admin.ajax_url, data, function( res ) {
 				if ( res.success ) {
-					s.upgraded = Number( s.upgraded ) + Number( res.data.count );
-					const percent = Math.round( ( Number( s.upgraded ) / Number( s.upgradeTotal ) ) * 100 );
+
+					s.upgraded  = Number( s.upgraded ) + Number( res.data.count );
+					var percent = Math.round( ( Number( s.upgraded ) / Number( s.upgradeTotal ) ) * 100 );
 
 					// Update progress bar.
-					$status.find( '.bar' ).css( 'width', percent + '%' );
+					$status.find( '.bar' ).css( 'width',  percent + '%' );
 
 					if ( Number( res.data.count ) < 10 ) {
+
 						// This batch completed the upgrade routine.
 						$status.find( '.progress-bar' ).addClass( 'complete' );
 						$status.find( '.msg' ).text( wpforms_admin.upgrade_completed );
 					} else {
+
 						$status.find( '.current' ).text( s.upgraded );
 						$status.find( '.percent' ).text( percent + '%' );
 
@@ -2440,17 +2519,18 @@
 		 *
 		 * @since 1.5.7
 		 */
-		initFlyoutMenu() {
+		initFlyoutMenu: function() {
+
 			// Flyout Menu Elements.
-			const $flyoutMenu = $( '#wpforms-flyout' );
+			var $flyoutMenu    = $( '#wpforms-flyout' );
 
 			if ( $flyoutMenu.length === 0 ) {
 				return;
 			}
 
-			const	$head = $flyoutMenu.find( '.wpforms-flyout-head' ),
+			var	$head   = $flyoutMenu.find( '.wpforms-flyout-head' ),
 				$sullie = $head.find( 'img' ),
-				menu = {
+				menu    = {
 					state: 'inactive',
 					srcInactive: $sullie.attr( 'src' ),
 					srcActive: $sullie.data( 'active' ),
@@ -2458,6 +2538,7 @@
 
 			// Click on the menu head icon.
 			$head.on( 'click', function( e ) {
+
 				e.preventDefault();
 
 				if ( menu.state === 'active' ) {
@@ -2472,26 +2553,27 @@
 			} );
 
 			// Page elements and other values.
-			const $wpfooter = $( '#wpfooter' );
+			var $wpfooter = $( '#wpfooter' );
 
 			if ( $wpfooter.length === 0 ) {
 				return;
 			}
 
-			const	$overlap = $(
+			var	$overlap = $(
 				'#wpforms-overview, ' +
 				'#wpforms-entries-list, ' +
 				'#wpforms-tools.wpforms-tools-tab-action-scheduler, ' +
 				'#wpforms-tools.wpforms-tools-tab-logs'
 			);
 
-			// Hide the menu if scrolled down to the bottom of the page.
-			$( window ).on( 'resize scroll', _.debounce( function() {
-				const wpfooterTop = $wpfooter.offset().top,
+			// Hide menu if scrolled down to the bottom of the page.
+			$( window ).on( 'resize scroll', _.debounce( function( e ) {
+
+				var wpfooterTop    = $wpfooter.offset().top,
 					wpfooterBottom = wpfooterTop + $wpfooter.height(),
-					overlapBottom = $overlap.length > 0 ? $overlap.offset().top + $overlap.height() + 85 : 0,
-					viewTop = $( window ).scrollTop(),
-					viewBottom = viewTop + $( window ).height();
+					overlapBottom  = $overlap.length > 0 ? $overlap.offset().top + $overlap.height() + 85 : 0,
+					viewTop        = $( window ).scrollTop(),
+					viewBottom     = viewTop + $( window ).height();
 
 				if ( wpfooterBottom <= viewBottom && wpfooterTop >= viewTop && overlapBottom > viewBottom ) {
 					$flyoutMenu.addClass( 'out' );
@@ -2508,10 +2590,12 @@
 		 *
 		 * @since 1.5.8
 		 */
-		initLity() {
+		initLity: function() {
+
 			// Use `data-lity-srcset` opener's attribute for add srcset to full image in opened lightbox.
 			$( document ).on( 'lity:ready', function( event, instance ) {
-				const $el = instance.element(),
+
+				var $el     = instance.element(),
 					$opener = instance.opener(),
 					srcset = typeof $opener !== 'undefined' ? $opener.data( 'lity-srcset' ) : '';
 
@@ -2529,44 +2613,43 @@
 		 * Return if the target nodeName is a form element.
 		 *
 		 * @since 1.4.0
-		 *
-		 * @param {string} name Node name.
-		 * @return {boolean} Target node is a form element.
 		 */
-		isFormTypeNode( name ) {
+		isFormTypeNode: function( name ) {
+
 			name = name || false;
 
-			return 'TEXTAREA' === name || 'INPUT' === name || 'SELECT' === name;
+			if ( 'TEXTAREA' === name || 'INPUT' === name || 'SELECT' === name ) {
+				return true;
+			}
+
+			return false;
 		},
 
 		/**
-		 * Get a query string in a URL.
+		 * Get query string in a URL.
 		 *
 		 * @since 1.3.9
-		 *
-		 * @param {string} name Query string to find in a URL.
-		 * @return {string|null} Query string or null.
 		 */
-		getQueryString( name ) {
-			const match = new RegExp( '[?&]' + name + '=([^&]*)' ).exec( window.location.search );
+		getQueryString: function( name ) {
 
-			return match && decodeURIComponent( match[ 1 ].replace( /\+/g, ' ' ) );
+			var match = new RegExp( '[?&]' + name + '=([^&]*)' ).exec( window.location.search );
+			return match && decodeURIComponent( match[1].replace( /\+/g, ' ' ) );
 		},
 
 		/**
 		 * Debug output helper.
 		 *
-		 * @param {string} msg Message.
-		 *
 		 * @since 1.4.4
+		 * @param msg
 		 */
-		debug( msg ) {
+		debug: function( msg ) {
+
 			if ( WPFormsAdmin.isDebug() ) {
 				if ( typeof msg === 'object' || msg.constructor === Array ) {
-					console.log( 'WPForms Debug:' ); // eslint-disable-line no-console
-					console.log( msg ); // eslint-disable-line no-console
+					console.log( 'WPForms Debug:' );
+					console.log( msg );
 				} else {
-					console.log( 'WPForms Debug: ' + msg ); // eslint-disable-line no-console
+					console.log( 'WPForms Debug: ' + msg );
 				}
 			}
 		},
@@ -2575,10 +2658,9 @@
 		 * Is debug mode.
 		 *
 		 * @since 1.4.4
-		 *
-		 * @return {boolean} Debug mode.
 		 */
-		isDebug() {
+		isDebug: function() {
+
 			return ( window.location.hash && '#wpformsdebug' === window.location.hash );
 		},
 
@@ -2589,7 +2671,7 @@
 		 *
 		 * @param {string} type Type of screen.
 		 *
-		 * @return {Object} The `Notice Data` object.
+		 * @return {Object} Notice Data object.
 		 */
 		getDeleteAllNoticeData: ( type = '' ) => {
 			// Define delete data for spam or trash.
@@ -2629,7 +2711,7 @@
 					$menu.addClass( 'wpforms-admin-tabs--scrollable' );
 				}
 
-				// Listen to the ` scroll ` event to hide the right arrow when the last item is visible.
+				// Listen to `scroll` event in order to hide the right arrow when the last item is visible.
 				$menu.on( 'scroll', function() {
 					$menu.toggleClass( 'wpforms-admin-tabs--scrollable', ! wpf.isInViewport( $lastMenuItem ) );
 				} );
@@ -2640,4 +2722,5 @@
 	WPFormsAdmin.init();
 
 	window.WPFormsAdmin = WPFormsAdmin;
+
 }( jQuery ) );

@@ -115,10 +115,10 @@ class Mailer {
 	 *
 	 * @since 1.5.4
 	 *
-	 * @param string       $key   Property name.
-	 * @param string|array $value Property value.
+	 * @param string $key   Property name.
+	 * @param string $value Property value.
 	 */
-	public function __set( string $key, $value ) {
+	public function __set( $key, $value ) {
 
 		$this->$key = $value;
 	}
@@ -194,7 +194,7 @@ class Mailer {
 	}
 
 	/**
-	 * Get the email from the name.
+	 * Get the email from name.
 	 *
 	 * @since 1.5.4
 	 *
@@ -209,7 +209,7 @@ class Mailer {
 	}
 
 	/**
-	 * Get the email from the address.
+	 * Get the email from address.
 	 *
 	 * @since 1.5.4
 	 *
@@ -224,7 +224,7 @@ class Mailer {
 	}
 
 	/**
-	 * Get the email reply to the address.
+	 * Get the email reply to address.
 	 *
 	 * @since 1.5.4
 	 *
@@ -341,15 +341,7 @@ class Mailer {
 			$this->message = $this->template->get();
 		}
 
-		/**
-		 * Filters the email message.
-		 *
-		 * @since 1.5.4
-		 *
-		 * @param string $message Email message.
-		 * @param Mailer $this    Mailer instance.
-		 */
-		return apply_filters( 'wpforms_emails_mailer_get_message', $this->message, $this );
+		return \apply_filters( 'wpforms_emails_mailer_get_message', $this->message, $this );
 	}
 
 	/**
@@ -380,15 +372,7 @@ class Mailer {
 
 		$this->headers .= "Content-Type: {$this->get_content_type()}; charset=utf-8\r\n";
 
-		/**
-		 * Filters the email headers.
-		 *
-		 * @since 1.5.4
-		 *
-		 * @param string $headers Email headers.
-		 * @param Mailer $this    Mailer instance.
-		 */
-		return apply_filters( 'wpforms_emails_mailer_get_headers', $this->headers, $this );
+		return \apply_filters( 'wpforms_emails_mailer_get_headers', $this->headers, $this );
 	}
 
 	/**
@@ -416,7 +400,7 @@ class Mailer {
 	}
 
 	/**
-	 * Set an email address to send to.
+	 * Set email address to send to.
 	 *
 	 * @since 1.5.4
 	 *
@@ -437,7 +421,7 @@ class Mailer {
 	}
 
 	/**
-	 * Set an email subject.
+	 * Set email subject.
 	 *
 	 * @since 1.5.4
 	 *
@@ -456,7 +440,7 @@ class Mailer {
 	}
 
 	/**
-	 * Set an email message (body).
+	 * Set email message (body).
 	 *
 	 * @since 1.5.4
 	 *
@@ -534,7 +518,7 @@ class Mailer {
 	 *
 	 * @param array $errors Errors to log.
 	 */
-	protected function log_errors( $errors ): void {
+	protected function log_errors( $errors ) {
 
 		if ( empty( $errors ) || ! is_array( $errors ) ) {
 			return;
@@ -603,7 +587,7 @@ class Mailer {
 	 *
 	 * @since 1.5.4
 	 */
-	public function send_before(): void { // phpcs:ignore WPForms.PHP.HooksMethod.InvalidPlaceForAddingHooks
+	public function send_before() { // phpcs:ignore WPForms.PHP.HooksMethod.InvalidPlaceForAddingHooks
 
 		// phpcs:ignore WPForms.Comments.PHPDocHooks.RequiredHookDocumentation
 		do_action( 'wpforms_emails_mailer_send_before', $this );
@@ -618,7 +602,7 @@ class Mailer {
 	 *
 	 * @since 1.5.4
 	 */
-	public function send_after(): void { // phpcs:ignore WPForms.PHP.HooksMethod.InvalidPlaceForAddingHooks
+	public function send_after() { // phpcs:ignore WPForms.PHP.HooksMethod.InvalidPlaceForAddingHooks
 
 		// phpcs:ignore WPForms.Comments.PHPDocHooks.RequiredHookDocumentation
 		do_action( 'wpforms_emails_mailer_send_after', $this );

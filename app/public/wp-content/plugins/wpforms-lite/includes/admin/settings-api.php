@@ -16,7 +16,7 @@ use WPForms\Admin\Education\Helpers as EducationHelpers;
  *
  * @return string
  */
-function wpforms_settings_output_field( array $args ): string {
+function wpforms_settings_output_field( array $args ): string { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
 
 	// Define default callback for this field type.
 	$callback = ! empty( $args['type'] ) && function_exists( 'wpforms_settings_' . $args['type'] . '_callback' ) ? 'wpforms_settings_' . $args['type'] . '_callback' : 'wpforms_settings_missing_callback';
@@ -258,7 +258,7 @@ function wpforms_settings_number_callback( array $args ): string {
  *
  * @return string
  */
-function wpforms_settings_select_callback( array $args ): string { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
+function wpforms_settings_select_callback( array $args ): string { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.MaxExceeded
 
 	$default     = isset( $args['default'] ) ? esc_html( $args['default'] ) : '';
 	$value       = wpforms_setting( $args['id'], $default );
@@ -457,7 +457,7 @@ function wpforms_settings_email_template_callback( array $args ): string {
  *
  * @return string
  */
-function wpforms_settings_toggle_callback( array $args ): string { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
+function wpforms_settings_toggle_callback( array $args ): string { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.MaxExceeded
 
 	$value      = ! empty( $args['value'] ) ? $args['value'] : wpforms_setting( $args['id'] );
 	$id         = wpforms_sanitize_key( $args['id'] );
@@ -695,7 +695,7 @@ function wpforms_settings_webhook_endpoint_callback( array $args ): string {
  *
  * @return string
  */
-function wpforms_settings_columns_callback( array $args ): string {
+function wpforms_settings_columns_callback( array $args ): string { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
 
 	if ( empty( $args['columns'] ) || ! is_array( $args['columns'] ) ) {
 		return '';

@@ -125,7 +125,7 @@ WPForms.Admin.Builder.SmartTags = WPForms.Admin.Builder.SmartTags || ( function(
 		initWidgets( $scope = el.$builder ) {
 			const $smartTagsInputs = $scope.find( '.wpforms-smart-tags-enabled' );
 
-			// eslint-disable-next-line max-lines-per-function
+			// eslint-disable-next-line max-lines-per-function,complexity
 			$smartTagsInputs.each( function() {
 				// Skip if the element is already initialized.
 				if ( $( this ).hasClass( 'wpforms-smart-tags-widget-original' ) ) {
@@ -160,7 +160,7 @@ WPForms.Admin.Builder.SmartTags = WPForms.Admin.Builder.SmartTags || ( function(
 				// Append the show smart tags button.
 				$widgetContainer.append( '<span class="wpforms-show-smart-tags"><i class="fa fa-tags"></i></span>' );
 
-				// Add a class to the original input field.
+				// Add class to the original input field.
 				$element.addClass( 'wpforms-smart-tags-widget-original' );
 
 				// Listen for the input disable/readonly state change.
@@ -182,11 +182,6 @@ WPForms.Admin.Builder.SmartTags = WPForms.Admin.Builder.SmartTags || ( function(
 				// Mimic the focusout event for the original input.
 				$widget.on( 'focusout', function() {
 					$element.trigger( 'focusout' );
-				} );
-
-				// Copy all original input content on copy event in the widget.
-				$widget.on( 'copy', function( event ) {
-					app.copyWidgetContent( event, $element );
 				} );
 
 				// Prevent the Enter key from creating a new line.
@@ -248,7 +243,7 @@ WPForms.Admin.Builder.SmartTags = WPForms.Admin.Builder.SmartTags || ( function(
 		},
 
 		/**
-		 * Re-init Smart Tags widgets in a given scope.
+		 * Re-init Smart Tags widgets in given scope.
 		 *
 		 * @since 1.9.5
 		 *
@@ -310,7 +305,7 @@ WPForms.Admin.Builder.SmartTags = WPForms.Admin.Builder.SmartTags || ( function(
 			}
 
 			// Normalize the widget content.
-			// In a normalized subtree, no text nodes in the subtree are empty, and there are no adjacent text nodes.
+			// In a normalized subtree, no text nodes in the subtree are empty and there are no adjacent text nodes.
 			widget.normalize();
 
 			// Save the current cursor position.
@@ -437,27 +432,6 @@ WPForms.Admin.Builder.SmartTags = WPForms.Admin.Builder.SmartTags || ( function(
 		},
 
 		/**
-		 * Copy the original input content handler.
-		 *
-		 * @since 1.9.7
-		 *
-		 * @param {Object} event    Event object.
-		 * @param {Object} $element Original input element.
-		 */
-		copyWidgetContent( event, $element ) {
-			const textToCopy = $element.val();
-			const hasSmartTags = /\{[^\n\r}]+}/.test( textToCopy );
-
-			if ( ! hasSmartTags || ! event.originalEvent.clipboardData || textToCopy === '' ) {
-				return;
-			}
-
-			// Copy the whole original input content.
-			event.preventDefault();
-			event.originalEvent.clipboardData.setData( 'text/plain', textToCopy );
-		},
-
-		/**
 		 * Get the Smart Tag title.
 		 *
 		 * @since 1.9.5
@@ -473,18 +447,11 @@ WPForms.Admin.Builder.SmartTags = WPForms.Admin.Builder.SmartTags || ( function(
 
 			value = value.toString().trim();
 
-			const decode = ( str ) => {
-				return str
-					.replace( /&quot;/g, '"' )
-					.replace( /&#039;/g, '\'' )
-					.replace( /&apos;/g, '\'' );
-			};
-
 			const tagTitle = app.getSmartTagFieldTitle( value ) ||
 				app.getSmartTagWithArgsTitle( value ) ||
 				wpforms_builder.smart_tags[ value ];
 
-			return tagTitle ? decode( tagTitle ) : value;
+			return tagTitle ? tagTitle : value;
 		},
 
 		/**
@@ -669,7 +636,6 @@ WPForms.Admin.Builder.SmartTags = WPForms.Admin.Builder.SmartTags || ( function(
 			const value = $tag.data( 'value' );
 			const $close = $tag.find( 'i' ).detach();
 
-			// language=HTML
 			const $editOk = $( '<i class="tag-edit-ok fa fa-check-circle"></i>' )
 				.attr( 'title', wpforms_builder.smart_tags_edit_ok_button );
 
@@ -719,9 +685,9 @@ WPForms.Admin.Builder.SmartTags = WPForms.Admin.Builder.SmartTags || ( function(
 		smartTagBlur( $tag, restore = false ) {
 			let value = restore ? $tag.data( 'restore' ) : $tag.text();
 
-			// Remove curly braces from the tag value if they exist.
-			// It is necessary to avoid further issues as the value is already wrapped by the curly braces.
-			value = value.replace( /[{}]/g, '' ).trim();
+			// Remove curly braces from tag value if they exist.
+			// It is necessary to avoid further issues as the value already wrapped by the curly braces.
+			value = value.replace( /\{|\}/g, '' ).trim();
 			value = wpf.sanitizeHTML( value );
 
 			$tag
@@ -762,7 +728,7 @@ WPForms.Admin.Builder.SmartTags = WPForms.Admin.Builder.SmartTags || ( function(
 			// Find the position of the tag in the parent's childNodes.
 			for ( let i = 0; i < parentNode.childNodes.length; i++ ) {
 				if ( parentNode.childNodes[ i ] === $tag[ 0 ] ) {
-					// Set the range position after the tag.
+					// Set range position after the tag.
 					range.setStart( parentNode, i + 1 );
 					range.collapse( true );
 
@@ -871,7 +837,7 @@ WPForms.Admin.Builder.SmartTags = WPForms.Admin.Builder.SmartTags || ( function(
 			const isFieldOption = id ? id.includes( 'wpforms-field-option-' ) : false;
 
 			// Copy the data attributes from the original input to the button.
-			const attributesToCopy = [ 'location', 'type', 'fields', 'allow-repeated-fields', 'allowed-smarttags' ];
+			const attributesToCopy = [ 'location', 'type', 'fields', 'allow-repeated-fields' ];
 
 			attributesToCopy.forEach( ( attr ) => {
 				const dataValue = originalInput.data( attr );
@@ -979,7 +945,7 @@ WPForms.Admin.Builder.SmartTags = WPForms.Admin.Builder.SmartTags || ( function(
 		},
 
 		/**
-		 * Click on the button event handler.
+		 * Click on button event handler.
 		 *
 		 * @since 1.9.5
 		 *
@@ -1025,7 +991,7 @@ WPForms.Admin.Builder.SmartTags = WPForms.Admin.Builder.SmartTags || ( function(
 		 * @param {jQuery}  $el           Show a smart tags button element.
 		 * @param {boolean} isFieldOption Is a field option.
 		 *
-		 * @return {Array} Smart Tags list an array.
+		 * @return {Array} Smart Tags list array.
 		 */
 		getSmartTagsList( $el, isFieldOption ) {
 			return [
@@ -1144,7 +1110,7 @@ WPForms.Admin.Builder.SmartTags = WPForms.Admin.Builder.SmartTags || ( function(
 		 * @param {jQuery}  $el           Button element.
 		 * @param {boolean} isFieldOption Is a field option.
 		 *
-		 * @return {Array} Smart Tags list element markup.
+		 * @return {Array} Smart Tags list elements markup.
 		 */
 		// eslint-disable-next-line complexity
 		getSmartTagsListOtherElements( $el, isFieldOption ) {
@@ -1155,9 +1121,6 @@ WPForms.Admin.Builder.SmartTags = WPForms.Admin.Builder.SmartTags || ( function(
 			if ( type !== 'other' && type !== 'all' ) {
 				return smartTagListElements;
 			}
-
-			// Allowed Smart Tags patterns.
-			const allowedSmartTags = $el.data( 'allowed-smarttags' )?.split( ',' ).filter( Boolean );
 
 			// Add a heading for the other Smart Tags.
 			smartTagListElements.push( {
@@ -1178,11 +1141,6 @@ WPForms.Admin.Builder.SmartTags = WPForms.Admin.Builder.SmartTags || ( function(
 					continue;
 				}
 
-				// Respect allowed Smart Tags patterns, if provided.
-				if ( ! app.isSmartTagAllowed( smartTagKey, allowedSmartTags ) ) {
-					continue;
-				}
-
 				smartTagListElements.push( {
 					value: smartTagKey,
 					type: 'other',
@@ -1191,47 +1149,6 @@ WPForms.Admin.Builder.SmartTags = WPForms.Admin.Builder.SmartTags || ( function(
 			}
 
 			return smartTagListElements;
-		},
-
-		/**
-		 * Check if Smart Tag is allowed.
-		 *
-		 * @since 1.9.8
-		 *
-		 * @param {string}  smartTagKey      Smart Tag key.
-		 * @param {Array|*} allowedSmartTags Allowed Smart Tag patterns.
-		 *
-		 * @return {boolean} True if the Smart Tag is allowed.
-		 */
-		isSmartTagAllowed( smartTagKey, allowedSmartTags ) {
-			if ( ! allowedSmartTags || ! allowedSmartTags.length ) {
-				return true;
-			}
-
-			for ( let i = 0; i < allowedSmartTags.length; i++ ) {
-				const patternRaw = String( allowedSmartTags[ i ] ).trim();
-
-				if ( ! patternRaw ) {
-					continue;
-				}
-
-				// Exact match.
-				if ( patternRaw === smartTagKey ) {
-					return true;
-				}
-
-				// Convert a wildcard pattern to RegExp: '*' => '.*' (match any characters).
-				// The character class [.+?^${}()|[\\]\\] matches all regex-special characters: . + ? ^ $ { } ( ) | [ ] \.
-				// The replacement \\$& means “prefix the matched character with a backslash,” turning it into a literal.
-				const escaped = patternRaw.replace( /[.+?^${}()|[\]\\]/g, '\\$&' ).replace( /\*/g, '.*' );
-				const regex = new RegExp( '^' + escaped + '$' );
-
-				if ( regex.test( smartTagKey ) ) {
-					return true;
-				}
-			}
-
-			return false;
 		},
 
 		/**
@@ -1303,7 +1220,7 @@ WPForms.Admin.Builder.SmartTags = WPForms.Admin.Builder.SmartTags || ( function(
 		},
 
 		/**
-		 * Save caret position for the widget.
+		 * Save caret position for widget.
 		 *
 		 * @param {Object} widget Widget object.
 		 *
@@ -1407,7 +1324,7 @@ WPForms.Admin.Builder.SmartTags = WPForms.Admin.Builder.SmartTags || ( function(
 				tempMarker.style.width = '0px';
 				tempMarker.style.height = '0px';
 
-				// Get the current selection and range.
+				// Get current selection and range.
 				const selection = document.getSelection();
 
 				if ( ! selection.rangeCount ) {
@@ -1489,13 +1406,13 @@ WPForms.Admin.Builder.SmartTags = WPForms.Admin.Builder.SmartTags || ( function(
 			selection.removeAllRanges();
 			selection.addRange( range );
 
-			// Scroll to the cursor position if it's out of view.
+			// Scroll to cursor position if it's out of view.
 			this.scrollToCursorPosition( br.parentNode );
 
 			// Get the widget element that contains the cursor.
 			const widget = br.closest( '.wpforms-smart-tags-widget' );
 
-			// Update the original input with the new content, including the line break.
+			// Update the original input with the new content including the line break.
 			if ( widget ) {
 				this.updateOriginalInput( widget );
 			}
@@ -1621,7 +1538,7 @@ WPForms.Admin.Builder.SmartTags = WPForms.Admin.Builder.SmartTags || ( function(
 		},
 
 		/**
-		 * Remove zero-width spaces while preserving the HTML structure.
+		 * Remove zero-width spaces while preserving HTML structure.
 		 *
 		 * @since 1.9.5
 		 *

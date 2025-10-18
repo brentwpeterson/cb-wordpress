@@ -2,8 +2,6 @@
 
 namespace WPForms\Admin\Notifications;
 
-use WPForms\Migrations\Base as MigrationsBase;
-
 /**
  * Class EventDriven.
  *
@@ -18,7 +16,7 @@ class EventDriven {
 	 *
 	 * @var string
 	 */
-	public const FEATURE_INTRODUCED = '1.7.5';
+	const FEATURE_INTRODUCED = '1.7.5';
 
 	/**
 	 * Expected date format for notifications.
@@ -27,7 +25,7 @@ class EventDriven {
 	 *
 	 * @var string
 	 */
-	private const DATE_FORMAT = 'Y-m-d H:i:s';
+	const DATE_FORMAT = 'Y-m-d H:i:s';
 
 	/**
 	 * Common UTM parameters.
@@ -36,7 +34,7 @@ class EventDriven {
 	 *
 	 * @var array
 	 */
-	private const UTM_PARAMS = [
+	const UTM_PARAMS = [
 		'utm_source' => 'WordPress',
 		'utm_medium' => 'Event Notification',
 	];
@@ -45,7 +43,7 @@ class EventDriven {
 	 * Common targets for date logic.
 	 *
 	 * Available items:
-	 *  - upgraded (upgraded to the latest version)
+	 *  - upgraded (upgraded to a latest version)
 	 *  - activated
 	 *  - forms_first_created
 	 *  - X.X.X.X (upgraded to a specific version)
@@ -56,7 +54,7 @@ class EventDriven {
 	 *
 	 * @var array
 	 */
-	private const DATE_LOGIC = [ 'upgraded', 'activated', 'forms_first_created' ];
+	const DATE_LOGIC = [ 'upgraded', 'activated', 'forms_first_created' ];
 
 	/**
 	 * Timestamps.
@@ -72,7 +70,7 @@ class EventDriven {
 	 *
 	 * @since 1.7.5
 	 */
-	public function init(): void {
+	public function init() {
 
 		if ( ! $this->allow_load() ) {
 			return;
@@ -88,12 +86,9 @@ class EventDriven {
 	 *
 	 * @return bool
 	 */
-	private function allow_load(): bool {
+	private function allow_load() {
 
-		$notifications_obj = wpforms()->obj( 'notifications' );
-		$has_access        = $notifications_obj && $notifications_obj->has_access();
-
-		return $has_access || wp_doing_cron();
+		return wpforms()->obj( 'notifications' )->has_access() || wp_doing_cron();
 	}
 
 	/**
@@ -101,23 +96,21 @@ class EventDriven {
 	 *
 	 * @since 1.7.5
 	 */
-	private function hooks(): void {
+	private function hooks() {
 
 		add_filter( 'wpforms_admin_notifications_update_data', [ $this, 'update_events' ] );
 	}
 
 	/**
-	 * Add Event Driven notifications before saving them in a database.
+	 * Add Event Driven notifications before saving them in database.
 	 *
 	 * @since 1.7.5
 	 *
-	 * @param array|mixed $data Notification data.
+	 * @param array $data Notification data.
 	 *
 	 * @return array
 	 */
-	public function update_events( $data ): array {
-
-		$data = (array) $data;
+	public function update_events( $data ) {
 
 		$updated = [];
 
@@ -137,15 +130,10 @@ class EventDriven {
 			$is_processed      = ! empty( $data['events'][ $slug ]['start'] );
 			$is_conditional_ok = ! ( isset( $notification['condition'] ) && $notification['condition'] === false );
 
-			// If it's a debug mode, OR valid notification has been already processed - skip running logic checks and save it.
+			// If it's a debug mode OR valid notification has been already processed - skip running logic checks and save it.
 			if (
 				$is_debug ||
-				(
-					$is_processed &&
-					$is_conditional_ok &&
-					$wpforms_notifications &&
-					$wpforms_notifications->is_valid( $data['events'][ $slug ] )
-				)
+				( $is_processed && $is_conditional_ok && $wpforms_notifications->is_valid( $data['events'][ $slug ] ) )
 			) {
 				unset( $notification['date_logic'], $notification['offset'], $notification['condition'] );
 
@@ -172,7 +160,7 @@ class EventDriven {
 			// Probably, notification should be visible after some time.
 			$offset = empty( $notification['offset'] ) ? 0 : absint( $notification['offset'] );
 
-			// Set a start date when the notification will be shown.
+			// Set a start date when notification will be shown.
 			// phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
 			$notification['start'] = date( self::DATE_FORMAT, $timestamp + $offset );
 
@@ -181,7 +169,7 @@ class EventDriven {
 				continue;
 			}
 
-			// Remove unnecessary values, mark the notification as active, and save it.
+			// Remove unnecessary values, mark notification as active, and save it.
 			unset( $notification['date_logic'], $notification['offset'], $notification['condition'] );
 			$updated[ $slug ] = $notification;
 		}
@@ -196,15 +184,13 @@ class EventDriven {
 	 *
 	 * @since 1.7.5
 	 *
-	 * @param array|mixed $notification Notification data.
+	 * @param array $notification Notification data.
 	 *
 	 * @return array
 	 */
-	private function prepare_date_logic( $notification ): array {
+	private function prepare_date_logic( $notification ) {
 
-		$date_logic = empty( $notification['date_logic'] ) || ! is_array( $notification['date_logic'] )
-			? self::DATE_LOGIC
-			: $notification['date_logic'];
+		$date_logic = empty( $notification['date_logic'] ) || ! is_array( $notification['date_logic'] ) ? self::DATE_LOGIC : $notification['date_logic'];
 
 		return array_filter( array_filter( $date_logic, 'is_string' ) );
 	}
@@ -218,14 +204,15 @@ class EventDriven {
 	 *
 	 * @return int
 	 */
-	private function get_timestamp_by_date_logic( array $args ): int {
+	private function get_timestamp_by_date_logic( $args ) {
 
 		foreach ( $args as $target ) {
+
 			if ( ! empty( $this->timestamps[ $target ] ) ) {
 				return $this->timestamps[ $target ];
 			}
 
-			$timestamp = (int) call_user_func(
+			$timestamp = call_user_func(
 				$this->get_timestamp_callback( $target ),
 				$target
 			);
@@ -241,7 +228,7 @@ class EventDriven {
 	}
 
 	/**
-	 * Retrieve a callback that determines the necessary timestamp.
+	 * Retrieve a callback that determines needed timestamp.
 	 *
 	 * @since 1.7.5
 	 *
@@ -249,12 +236,12 @@ class EventDriven {
 	 *
 	 * @return callable
 	 */
-	private function get_timestamp_callback( string $target ) {
+	private function get_timestamp_callback( $target ) {
 
 		$raw_target = $target;
 
 		// As $target should be a part of name for callback method,
-		// this regular expression allows lowercase characters, numbers, and underscore.
+		// this regular expression allow lowercase characters, numbers, and underscore.
 		$target = strtolower( preg_replace( '/[^a-z0-9_]/', '', $target ) );
 
 		// Basic callback.
@@ -267,7 +254,7 @@ class EventDriven {
 			$callback = [ $this, 'get_timestamp_upgraded' ];
 		}
 
-		// If a callback is callable, return it. Otherwise, return fallback.
+		// If callback is callable, return it. Otherwise, return fallback.
 		return is_callable( $callback ) ? $callback : '__return_zero';
 	}
 
@@ -280,7 +267,7 @@ class EventDriven {
 	 *
 	 * @return int|false Unix timestamp. False on failure.
 	 */
-	private function get_timestamp_upgraded( string $version ) {
+	private function get_timestamp_upgraded( $version ) {
 
 		if ( $version === 'upgraded' ) {
 			$version = WPFORMS_VERSION;
@@ -302,7 +289,6 @@ class EventDriven {
 	 * @since 1.7.5
 	 *
 	 * @return int|false Unix timestamp. False on failure.
-	 * @noinspection PhpUnusedPrivateMethodInspection
 	 */
 	private function get_timestamp_activated() {
 
@@ -315,7 +301,6 @@ class EventDriven {
 	 * @since 1.7.5
 	 *
 	 * @return int|false Unix timestamp. False on failure.
-	 * @noinspection PhpUnusedPrivateMethodInspection
 	 */
 	private function get_timestamp_lite() {
 
@@ -330,7 +315,6 @@ class EventDriven {
 	 * @since 1.7.5
 	 *
 	 * @return int|false Unix timestamp. False on failure.
-	 * @noinspection PhpUnusedPrivateMethodInspection
 	 */
 	private function get_timestamp_pro() {
 
@@ -345,7 +329,6 @@ class EventDriven {
 	 * @since 1.7.5
 	 *
 	 * @return int|false Unix timestamp. False on failure.
-	 * @noinspection PhpUnusedPrivateMethodInspection
 	 */
 	private function get_timestamp_forms_first_created() {
 
@@ -361,7 +344,7 @@ class EventDriven {
 	 *
 	 * @return int
 	 */
-	private function get_entry_count(): int {
+	private function get_entry_count() {
 
 		static $count;
 
@@ -399,26 +382,22 @@ class EventDriven {
 	 *
 	 * @since 1.7.5
 	 *
-	 * @param int $posts_per_page The number of forms to return.
+	 * @param int $posts_per_page Number of form to return.
 	 *
 	 * @return array
-	 * @noinspection PhpSameParameterValueInspection
 	 */
-	private function get_forms( int $posts_per_page ): array {
+	private function get_forms( $posts_per_page ) {
 
-		$form_obj = wpforms()->obj( 'form' );
-		$forms    = $form_obj
-			? $form_obj->get(
-				'',
-				[
-					'posts_per_page'         => $posts_per_page,
-					'nopaging'               => false,
-					'update_post_meta_cache' => false,
-					'update_post_term_cache' => false,
-					'cap'                    => false,
-				]
-			)
-			: null;
+		$forms = wpforms()->obj( 'form' )->get(
+			'',
+			[
+				'posts_per_page'         => (int) $posts_per_page,
+				'nopaging'               => false,
+				'update_post_meta_cache' => false,
+				'update_post_term_cache' => false,
+				'cap'                    => false,
+			]
+		);
 
 		return ! empty( $forms ) ? (array) $forms : [];
 	}
@@ -430,7 +409,7 @@ class EventDriven {
 	 *
 	 * @return bool
 	 */
-	private function has_form(): bool {
+	private function has_form() {
 
 		return ! empty( $this->get_forms( 1 ) );
 	}
@@ -442,10 +421,10 @@ class EventDriven {
 	 *
 	 * @return bool
 	 */
-	private function is_new_user(): bool {
+	private function is_new_user() {
 
 		// Check if this is an update or first install.
-		return ! get_option( MigrationsBase::PREVIOUS_CORE_VERSION_OPTION_NAME );
+		return ! get_option( 'wpforms_version_upgraded_from' );
 	}
 
 	/**
@@ -454,9 +433,8 @@ class EventDriven {
 	 * @since 1.7.5
 	 *
 	 * @return bool
-	 * @noinspection PhpUnusedPrivateMethodInspection
 	 */
-	private function is_english_site(): bool {
+	private function is_english_site() {
 
 		static $result;
 
@@ -480,13 +458,11 @@ class EventDriven {
 	 *
 	 * @since 1.7.5
 	 *
-	 * @param string|mixed $lang Language value.
+	 * @param string $lang Language value.
 	 *
 	 * @return string
 	 */
-	private function language_to_iso( $lang ): string {
-
-		$lang = (string) $lang;
+	private function language_to_iso( $lang ) {
 
 		return $lang === '' ? $lang : explode( '_', $lang )[0];
 	}
@@ -501,7 +477,7 @@ class EventDriven {
 	 *
 	 * @return string
 	 */
-	private function add_query_arg( array $args, string $url ): string {
+	private function add_query_arg( $args, $url ) {
 
 		return add_query_arg(
 			array_merge( $this->get_utm_params(), array_map( 'rawurlencode', $args ) ),
@@ -516,7 +492,7 @@ class EventDriven {
 	 *
 	 * @return array
 	 */
-	private function get_utm_params(): array {
+	private function get_utm_params() {
 
 		static $utm_params;
 
@@ -538,7 +514,7 @@ class EventDriven {
 	 *
 	 * @return array
 	 */
-	private function get_notifications(): array {
+	private function get_notifications() {
 
 		return [
 			'welcome-message'        => [

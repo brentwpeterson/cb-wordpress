@@ -331,7 +331,7 @@ class PaymentElementCreditCard extends WPForms_Field {
 	 * @param array $deprecated Deprecated field attributes. Use field properties.
 	 * @param array $form_data  Form data and settings.
 	 */
-	public function field_display( $field, $deprecated, $form_data ) {
+	public function field_display( $field, $deprecated, $form_data ) { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
 
 		if ( $this->field_display_errors( $form_data ) ) {
 			return;

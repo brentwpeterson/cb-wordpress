@@ -2,6 +2,7 @@ body,
 .body {
   height: 100% !important;
   margin: 0;
+  Margin: 0;
   padding: 0;
   width: 100% !important;
   min-width: 100%;
@@ -28,6 +29,7 @@ a img {
 
 p {
   margin: 0 0 10px 0;
+  Margin: 0 0 10px 0;
 }
 
 table {
@@ -57,6 +59,7 @@ h4,
 h5,
 h6 {
   margin: 0;
+  Margin: 0;
   padding: 0;
 }
 
@@ -114,6 +117,7 @@ a {
   font-weight: normal;
   padding: 0;
   margin: 0;
+  Margin: 0;
   mso-line-height-rule: exactly;
   line-height: 1.4;
   line-height: 140%;
@@ -130,6 +134,7 @@ h6 {
   font-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui, helvetica neue, helvetica, Cantarell, Ubuntu, roboto, noto, arial, sans-serif;
   font-weight: bold;
   margin: 0 0 7px 0;
+  Margin: 0 0 7px 0;
   mso-line-height-rule: exactly;
   line-height: 1.3;
   line-height: 130%;
@@ -181,6 +186,7 @@ th {
 
 p {
   margin: 0 0 7px 0;
+  Margin: 0 0 7px 0;
   overflow-wrap: break-word;
   word-wrap: break-word;
   -ms-word-break: break-all;
@@ -200,6 +206,7 @@ p.bold, p.text-bold {
 }
 
 p a {
+  Margin: inherit;
   margin: inherit;
 }
 
@@ -331,6 +338,7 @@ span.text-center {
 ol,
 ul {
   margin: 0 0 7px 20px;
+  Margin: 0 0 7px 20px;
   padding: 0;
 }
 
@@ -374,6 +382,7 @@ body {
 
 .container {
   margin: 0 auto 0 auto;
+  Margin: 0 auto 0 auto;
 }
 
 .header {
@@ -385,6 +394,7 @@ body {
 .header .header-image {
   display: inline-block;
   margin: 0 auto 0 auto;
+  Margin: 0 auto 0 auto;
   max-width: 260px;
   vertical-align: middle;
 }
@@ -415,10 +425,12 @@ a, p, pre {
   font-size: 16px;
   line-height: 24px;
   margin-bottom: 0;
+  Margin-bottom: 0;
 }
 
 .content p + p {
   margin-top: 24px;
+  Margin-top: 24px;
 }
 
 .content h1,
@@ -438,6 +450,7 @@ a, p, pre {
 .button-container .button-wrapper {
   border-spacing: 24px;
   margin: 0 auto;
+  Margin: 0 auto;
 }
 
 .button-wrapper {
@@ -458,6 +471,7 @@ a, p, pre {
   font-size: 16px;
   font-weight: 500;
   margin: 0;
+  Margin: 0;
   text-decoration: none;
 }
 
@@ -497,13 +511,16 @@ a, p, pre {
 .content .summary-content .summary-content-inner div {
   max-width: 600px;
   margin-left: auto;
+  Margin-left: auto;
   margin-right: auto;
+  Margin-right: auto;
 }
 
 .content .summary-content .greeting {
   font-size: 20px;
   line-height: 24px;
   margin-bottom: 24px;
+  Margin-bottom: 24px;
 }
 
 .content .summary-trend td {
@@ -512,6 +529,7 @@ a, p, pre {
 
 .content .email-summaries-wrapper {
   margin-bottom: 1px;
+  Margin-bottom: 1px;
 }
 
 .content .email-summaries-wrapper .summary-trend td {
@@ -521,6 +539,7 @@ a, p, pre {
 .content .summary-header,
 .content .email-summaries-overview-wrapper {
   margin-bottom: 50px;
+  Margin-bottom: 50px;
 }
 
 .content .email-summaries-overview {
@@ -552,6 +571,7 @@ a, p, pre {
 .content .email-summaries-overview .overview-stats h5 {
   line-height: 30px;
   margin-bottom: 0;
+  Margin-bottom: 0;
 }
 
 .content .email-summaries-overview .overview-stats p {
@@ -636,6 +656,7 @@ a, p, pre {
 .summary-notice h4 {
   line-height: 36px;
   margin-bottom: 16px;
+  Margin-bottom: 16px;
 }
 
 .summary-notice p {
@@ -654,6 +675,7 @@ a, p, pre {
 
 .summary-notice + .summary-notice {
   margin-top: 1px;
+  Margin-top: 1px;
 }
 
 tr:last-child > .summary-notice-content,
@@ -798,7 +820,7 @@ tr:last-child > .summary-notice-content,
   padding-bottom: 0;
 }
 
-.wpforms-layout-table-display-blocks .wpforms-layout-table-row tr:last-child .wpforms-layout-table-cell .field-value, .wpforms-layout-table-display-columns .wpforms-layout-table-row tr:last-child .wpforms-layout-table-cell .field-value {
+.wpforms-layout-table-display-blocks .wpforms-layout-table-row:last-child .field-value, .wpforms-layout-table-display-columns .wpforms-layout-table-row:last-child .field-value {
   padding-bottom: 0;
 }
 

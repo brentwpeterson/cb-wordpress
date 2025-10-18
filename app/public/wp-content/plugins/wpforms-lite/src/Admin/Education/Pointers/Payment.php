@@ -4,7 +4,6 @@ namespace WPForms\Admin\Education\Pointers;
 
 use WPForms\Integrations\Stripe;
 use WPForms\Admin\Payments\Views\Overview\Page as PaymentsPage;
-use WPForms\Migrations\Base as MigrationsBase;
 
 /**
  * Education class for handling Payments education pointer functionality.
@@ -35,7 +34,7 @@ class Payment extends Pointer {
 	protected $selector = '[href$="-payments"]';
 
 	/**
-	 * Make sure that the pointer is visible across other dashboard pages.
+	 * Make sure that pointer is visible across other dashboard pages.
 	 *
 	 * @since 1.8.8
 	 *
@@ -61,14 +60,11 @@ class Payment extends Pointer {
 		}
 
 		// Bail early if it has been less than 90 days since activation or the installation wasn't upgraded.
-		if (
-			! get_option( MigrationsBase::PREVIOUS_CORE_VERSION_OPTION_NAME ) ||
-			wpforms_get_activated_timestamp() > ( time() - 90 * DAY_IN_SECONDS )
-		) {
+		if ( ! get_option( 'wpforms_version_upgraded_from' ) || wpforms_get_activated_timestamp() > ( time() - 90 * DAY_IN_SECONDS ) ) {
 			return false;
 		}
 
-		// Bail early if a Stripe account is connected.
+		// Bail early if Stripe account is connected.
 		if ( Stripe\Helpers::has_stripe_keys() ) {
 			return false;
 		}
@@ -79,9 +75,12 @@ class Payment extends Pointer {
 		}
 
 		// Bail early if there are no published forms.
-		$forms_obj = wpforms()->obj( 'form' );
+		if ( ! wpforms()->obj( 'form' )->forms_exist() ) {
+			return false;
+		}
 
-		return $forms_obj && $forms_obj->forms_exist();
+		// All conditions passed, allow loading the Payments feature pointer.
+		return true;
 	}
 
 	/**
@@ -120,8 +119,6 @@ class Payment extends Pointer {
 	 * Set arguments for the Payments feature pointer.
 	 *
 	 * @since 1.8.8
-	 *
-	 * @noinspection HtmlUnknownTarget
 	 */
 	protected function set_args() {
 
@@ -136,7 +133,7 @@ class Payment extends Pointer {
 	}
 
 	/**
-	 * Retrieve the current installation license type in the lowercase.
+	 * Retrieve the current installation license type in lowercase.
 	 * If no license type is found, defaults to 'lite'.
 	 *
 	 * @since 1.8.8
@@ -147,7 +144,7 @@ class Payment extends Pointer {
 
 		$type = wpforms_get_license_type();
 
-		// Set the default to 'lite' if no license type is detected.
+		// Set default to 'lite' if no license type is detected.
 		if ( empty( $type ) ) {
 			$type = 'lite';
 		}

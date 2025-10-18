@@ -370,9 +370,7 @@ class Elementor implements Integration_Interface {
 
 		$this->asset_manager->enqueue_style( 'admin-global' );
 		$this->asset_manager->enqueue_style( 'metabox-css' );
-		if ( $this->readability_analysis->is_enabled() ) {
-			$this->asset_manager->enqueue_style( 'scoring' );
-		}
+		$this->asset_manager->enqueue_style( 'scoring' );
 		$this->asset_manager->enqueue_style( 'monorepo' );
 		$this->asset_manager->enqueue_style( 'admin-css' );
 		$this->asset_manager->enqueue_style( 'ai-generator' );
@@ -440,6 +438,7 @@ class Elementor implements Integration_Interface {
 		$script_data = \array_merge_recursive( $site_information->get_legacy_site_information(), $script_data );
 
 		$this->asset_manager->localize_script( 'elementor', 'wpseoScriptData', $script_data );
+		$this->asset_manager->enqueue_user_language_script();
 	}
 
 	/**

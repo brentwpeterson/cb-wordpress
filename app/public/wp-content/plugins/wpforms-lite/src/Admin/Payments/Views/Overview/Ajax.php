@@ -54,7 +54,7 @@ class Ajax {
 	 *
 	 * @since 1.8.2
 	 */
-	public function get_chart_dataset_data() {
+	public function get_chart_dataset_data() { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
 
 		// Run a security check.
 		check_ajax_referer( 'wpforms_payments_overview_nonce' );

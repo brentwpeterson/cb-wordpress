@@ -98,7 +98,6 @@ namespace WPForms {
 		 *
 		 * @return mixed|null
 		 * @noinspection MagicMethodsValidityInspection
-		 * @noinspection PhpDeprecationInspection
 		 */
 		public function __get( $name ) {
 
@@ -151,7 +150,7 @@ namespace WPForms {
 		 *
 		 * @noinspection UsingInclusionOnceReturnValueInspection
 		 */
-		private function init(): void {
+		private function init() {
 
 			if ( self::is_restricted_heartbeat() ) {
 				return;
@@ -172,31 +171,21 @@ namespace WPForms {
 
 		/**
 		 * Setup plugin constants.
-		 * All the path/URL-related constants are defined in the main plugin file.
+		 * All the path/URL related constants are defined in the main plugin file.
 		 *
 		 * @since 1.0.0
 		 */
-		private function constants(): void {
+		private function constants() {
 
 			$this->version = WPFORMS_VERSION;
 
-			// Plugin Slug - Determine a plugin type and set slug accordingly.
+			// Plugin Slug - Determine plugin type and set slug accordingly.
 			// This filter is documented in \WPForms\WPForms::is_pro.
 			if ( apply_filters( 'wpforms_allow_pro_version', file_exists( WPFORMS_PLUGIN_DIR . 'pro/wpforms-pro.php' ) ) ) {
 				$this->pro = true;
 
-				/**
-				 * Pro plugin slug.
-				 *
-				 * @since 1.5.0
-				 */
 				define( 'WPFORMS_PLUGIN_SLUG', 'wpforms' );
 			} else {
-				/**
-				 * Lite plugin slug.
-				 *
-				 * @since 1.5.0
-				 */
 				define( 'WPFORMS_PLUGIN_SLUG', 'wpforms-lite' );
 			}
 		}
@@ -206,17 +195,10 @@ namespace WPForms {
 		 *
 		 * @since 1.0.0
 		 */
-		private function includes(): void {
+		private function includes() {
 
 			$this->error_handler();
 
-			// Action Scheduler requires a special loading procedure.
-			require_once WPFORMS_PLUGIN_DIR . 'vendor/woocommerce/action-scheduler/action-scheduler.php';
-
-			// Autoload Composer packages.
-			require_once WPFORMS_PLUGIN_DIR . 'vendor/autoload.php';
-
-			// Base class and functions.
 			require_once WPFORMS_PLUGIN_DIR . 'includes/class-db.php';
 			require_once WPFORMS_PLUGIN_DIR . 'includes/functions.php';
 			require_once WPFORMS_PLUGIN_DIR . 'includes/fields/class-base.php';
@@ -261,7 +243,7 @@ namespace WPForms {
 		 *
 		 * @return void
 		 */
-		private function hooks(): void {
+		private function hooks() {
 
 			add_action( 'plugins_loaded', [ self::$instance, 'objects' ] );
 			add_action( 'wpforms_settings_init', [ self::$instance, 'reinstall_custom_tables' ] );
@@ -272,7 +254,7 @@ namespace WPForms {
 		 *
 		 * @since 1.8.5
 		 */
-		private function error_handler(): void {
+		private function error_handler() {
 
 			require_once WPFORMS_PLUGIN_DIR . 'src/ErrorHandler.php';
 
@@ -284,7 +266,13 @@ namespace WPForms {
 		 *
 		 * @since 1.4.7
 		 */
-		private function includes_magic(): void { // phpcs:ignore WPForms.PHP.HooksMethod.InvalidPlaceForAddingHooks
+		private function includes_magic() { // phpcs:ignore WPForms.PHP.HooksMethod.InvalidPlaceForAddingHooks
+
+			// Action Scheduler requires a special loading procedure.
+			require_once WPFORMS_PLUGIN_DIR . 'vendor/woocommerce/action-scheduler/action-scheduler.php';
+
+			// Autoload Composer packages.
+			require_once WPFORMS_PLUGIN_DIR . 'vendor/autoload.php';
 
 			// Load the class loader.
 			$this->register(
@@ -304,19 +292,19 @@ namespace WPForms {
 			);
 
 			/*
-			 * Load admin components. Exclude from the frontend.
+			 * Load admin components. Exclude from frontend.
 			 */
 			if ( is_admin() ) {
 				add_action( 'wpforms_loaded', [ '\WPForms\Admin\Loader', 'get_instance' ] );
 			}
 
 			/*
-			 * Properly init the providers' loader that will handle all the related logic and further loading.
+			 * Properly init the providers' loader, that will handle all the related logic and further loading.
 			 */
 			add_action( 'wpforms_loaded', [ '\WPForms\Providers\Providers', 'get_instance' ] );
 
 			/*
-			 * Properly init the integration loader that will handle all the related logic and further loading.
+			 * Properly init the integration loader, that will handle all the related logic and further loading.
 			 */
 			add_action( 'wpforms_loaded', [ '\WPForms\Integrations\Loader', 'get_instance' ] );
 		}
@@ -326,7 +314,7 @@ namespace WPForms {
 		 *
 		 * @since 1.0.0
 		 */
-		public function objects(): void {
+		public function objects() {
 
 			// Global objects.
 			$this->registry['form']    = new WPForms_Form_Handler();
@@ -347,18 +335,18 @@ namespace WPForms {
 		 *
 		 * @param WPForms_Settings $wpforms_settings WPForms settings object.
 		 */
-		public function reinstall_custom_tables( WPForms_Settings $wpforms_settings ): void {
+		public function reinstall_custom_tables( WPForms_Settings $wpforms_settings ) {
 
 			if ( empty( $wpforms_settings->view ) ) {
 				return;
 			}
 
-			// Proceed on the Settings plugin admin area page only.
+			// Proceed on Settings plugin admin area page only.
 			if ( $wpforms_settings->view !== 'general' ) {
 				return;
 			}
 
-			// Install on the current site only.
+			// Install on a current site only.
 			if ( ! DB::custom_tables_exist() ) {
 				DB::create_custom_tables();
 			}
@@ -377,10 +365,8 @@ namespace WPForms {
 		 * - hook: optional -- hook to register the class on -- default wpforms_loaded.
 		 * - run: optional -- method to run on class instantiation -- default init.
 		 * - condition: optional -- condition to check before registering the class.
-		 *
-		 * @noinspection OnlyWritesOnParameterInspection
 		 */
-		public function register( $class_data ): void { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh, WPForms.PHP.HooksMethod.InvalidPlaceForAddingHooks
+		public function register( $class_data ): void { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.MaxExceeded, WPForms.PHP.HooksMethod.InvalidPlaceForAddingHooks
 
 			if ( empty( $class_data['name'] ) || ! is_string( $class_data['name'] ) ) {
 				return;
@@ -399,7 +385,7 @@ namespace WPForms {
 				$full_name      = $is_initialized ? $class_data['addon_class'] : $full_name;
 				$full_name      = strpos( $full_name, '\\' ) !== 0 ? '\\' . $full_name : $full_name;
 
-				// The core plugin classes have priority 10.
+				// The core plugin classes have the priority 10.
 				// Addon classes should be initialized after the core.
 				$class_data['priority'] = 100;
 			}
@@ -445,7 +431,7 @@ namespace WPForms {
 		 * @param string $id       Class ID.
 		 * @param object $instance Any class instance (object).
 		 */
-		public function register_instance( $id, $instance ): void {
+		public function register_instance( $id, $instance ) {
 
 			if ( $id && is_object( $instance ) && ! array_key_exists( $id, $this->registry ) ) {
 				$this->registry[ $id ] = $instance;
@@ -459,7 +445,7 @@ namespace WPForms {
 		 *
 		 * @param array $classes Classes to register.
 		 */
-		public function register_bulk( $classes ): void {
+		public function register_bulk( $classes ) {
 
 			if ( ! is_array( $classes ) ) {
 				return;
@@ -505,7 +491,7 @@ namespace WPForms {
 		 *
 		 * @return object|null
 		 */
-		public function obj( string $name ): ?object {
+		public function obj( string $name ) {
 
 			return $this->registry[ $name ] ?? null;
 		}

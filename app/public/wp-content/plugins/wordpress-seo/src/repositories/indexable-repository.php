@@ -466,11 +466,10 @@ class Indexable_Repository {
 	 * @param string $post_type                   The post type.
 	 * @param int    $limit                       The maximum number of posts to return.
 	 * @param bool   $exclude_older_than_one_year Whether to exclude posts older than one year.
-	 * @param string $search_filter               Optional. A search filter to apply to the breadcrumb title.
 	 *
 	 * @return Indexable[] array of indexables.
 	 */
-	public function get_recently_modified_posts( string $post_type, int $limit, bool $exclude_older_than_one_year, string $search_filter = '' ) {
+	public function get_recently_modified_posts( string $post_type, int $limit, bool $exclude_older_than_one_year ) {
 		$query = $this->query()
 			->where( 'object_type', 'post' )
 			->where( 'object_sub_type', $post_type )
@@ -480,10 +479,6 @@ class Indexable_Repository {
 
 		if ( $exclude_older_than_one_year === true ) {
 			$query->where_gte( 'object_published_at', \gmdate( 'Y-m-d H:i:s', \strtotime( '-1 year' ) ) );
-		}
-
-		if ( $search_filter !== '' ) {
-			$query->where_like( 'breadcrumb_title', '%' . $search_filter . '%' );
 		}
 
 		$query->order_by_desc( 'object_last_modified' )

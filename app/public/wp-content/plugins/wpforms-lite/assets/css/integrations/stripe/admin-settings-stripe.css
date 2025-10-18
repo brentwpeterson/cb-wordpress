@@ -63,7 +63,7 @@
 }
 
 #wpforms-setting-row-stripe-connection-status .wpforms-reconnect p {
-  color: #3c434a;
+  color: #444444;
   margin: 0 0 10px 0;
   padding: 2px;
 }
@@ -73,11 +73,11 @@
 }
 
 #wpforms-setting-row-stripe-connection-status .desc {
-  color: #999c9e;
+  color: #999999;
 }
 
 #wpforms-setting-row-stripe-connection-status .desc a {
-  color: #999c9e;
+  color: #999999;
 }
 
 #wpforms-setting-row-stripe-card-mode .wpforms-setting-field {

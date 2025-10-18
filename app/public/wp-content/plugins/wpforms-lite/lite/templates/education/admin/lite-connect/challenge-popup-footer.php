@@ -31,3 +31,4 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<?php esc_html_e( 'Form Entry Backups Are Enabled', 'wpforms-lite' ); ?>
 	</div>
 </div>
+

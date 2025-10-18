@@ -86,7 +86,7 @@ class WPForms_Field_Checkbox extends WPForms_Field {
 	 *
 	 * @return array
 	 */
-	public function field_properties( $properties, $field, $form_data ) { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.MaxExceeded
+	public function field_properties( $properties, $field, $form_data ) {
 
 		// Define data.
 		$form_id  = absint( $form_data['id'] );
@@ -110,9 +110,8 @@ class WPForms_Field_Checkbox extends WPForms_Field {
 			'id'    => "wpforms-{$form_id}-field_{$field_id}",
 		];
 
-		$is_choice_limit_set = ! empty( $field['choice_limit'] ) && (int) $field['choice_limit'] > 0;
-
-		if ( $is_choice_limit_set ) {
+		$field['choice_limit'] = empty( $field['choice_limit'] ) ? 0 : (int) $field['choice_limit'];
+		if ( $field['choice_limit'] > 0 ) {
 			$properties['input_container']['data']['choice-limit'] = $field['choice_limit'];
 		}
 
@@ -167,7 +166,7 @@ class WPForms_Field_Checkbox extends WPForms_Field {
 			];
 
 			// Rule for validator only if needed.
-			if ( $is_choice_limit_set ) {
+			if ( $field['choice_limit'] > 0 ) {
 				$properties['inputs'][ $key ]['data']['rule-check-limit'] = 'true';
 			}
 		}
@@ -341,9 +340,36 @@ class WPForms_Field_Checkbox extends WPForms_Field {
 		$this->field_option( 'input_columns', $field );
 
 		// Choice Limit.
-		$this->field_option( 'choice_limit', $field );
+		$field['choice_limit'] = empty( $field['choice_limit'] ) ? 0 : (int) $field['choice_limit'];
+		$this->field_element(
+			'row',
+			$field,
+			[
+				'slug'    => 'choice_limit',
+				'content' =>
+					$this->field_element(
+						'label',
+						$field,
+						[
+							'slug'    => 'choice_limit',
+							'value'   => esc_html__( 'Choice Limit', 'wpforms-lite' ),
+							'tooltip' => esc_html__( 'Limit the number of checkboxes a user can select. Leave empty for unlimited.', 'wpforms-lite' ),
+						],
+						false
+					) . $this->field_element(
+						'text',
+						$field,
+						[
+							'slug'  => 'choice_limit',
+							'value' => $field['choice_limit'] > 0 ? $field['choice_limit'] : '',
+							'type'  => 'number',
+						],
+						false
+					),
+			]
+		);
 
-		// Dynamic choice auto-populating toggle.
+			// Dynamic choice auto-populating toggle.
 		$this->field_option( 'dynamic_choices', $field );
 
 		// Dynamic choice source.
@@ -611,17 +637,22 @@ class WPForms_Field_Checkbox extends WPForms_Field {
 	 */
 	public function validate( $field_id, $field_submit, $form_data ) {
 
-		$field_id = (int) $field_id;
-		$field    = $form_data['fields'][ $field_id ];
+		$field = $form_data['fields'][ $field_id ];
 
 		// Skip validation if field is dynamic and choices are empty.
 		if ( $this->is_dynamic_choices_empty( $field, $form_data ) ) {
 			return;
 		}
 
-		$field_submit = (array) $field_submit;
+		$field_submit  = (array) $field_submit;
+		$choice_limit  = empty( $form_data['fields'][ $field_id ]['choice_limit'] ) ? 0 : (int) $form_data['fields'][ $field_id ]['choice_limit'];
+		$count_choices = count( $field_submit );
 
-		$this->validate_field_choice_limit( $field_id, $field_submit, $form_data );
+		if ( $choice_limit > 0 && $count_choices > $choice_limit ) {
+			// Generating the error.
+			$error = wpforms_setting( 'validation-check-limit', esc_html__( 'You have exceeded the number of allowed selections: {#}.', 'wpforms-lite' ) );
+			$error = str_replace( '{#}', $choice_limit, $error );
+		}
 
 		// Basic required check - If field is marked as required, check for entry data.
 		if (

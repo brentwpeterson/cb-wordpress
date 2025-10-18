@@ -38,7 +38,7 @@ class SiteHealth {
 	 *
 	 * @return array Array with added WPForms info section.
 	 */
-	public function add_info_section( $debug_info ) {
+	public function add_info_section( $debug_info ) { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
 
 		$wpforms = [
 			'label'  => 'WPForms',

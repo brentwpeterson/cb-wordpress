@@ -146,7 +146,7 @@ class BulkActions {
 	 * @uses process_action_duplicate
 	 * @uses process_action_empty_trash
 	 */
-	private function process_action() {
+	private function process_action() { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
 
 		$method = "process_action_{$this->action}";
 
@@ -327,7 +327,7 @@ class BulkActions {
 	 *
 	 * @since 1.7.3
 	 */
-	public function notices() {
+	public function notices() { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
 
 		// phpcs:disable WordPress.Security.NonceVerification
 		$results = [

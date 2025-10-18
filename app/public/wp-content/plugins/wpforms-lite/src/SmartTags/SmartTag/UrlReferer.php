@@ -25,9 +25,7 @@ class UrlReferer extends SmartTag {
 		$referer = $this->get_meta( $entry_id, 'url_referer' );
 
 		if ( ! empty( $referer ) ) {
-			return $this->context === 'confirmation_redirect'
-				? urldecode( $referer )
-				: esc_url( urldecode( $referer ) );
+			return esc_url( urldecode( $referer ) );
 		}
 
 		$process = wpforms()->obj( 'process' );

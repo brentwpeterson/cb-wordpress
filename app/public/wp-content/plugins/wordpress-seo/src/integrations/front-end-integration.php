@@ -137,7 +137,6 @@ class Front_End_Integration implements Integration_Interface {
 	 * @var array<string>
 	 */
 	protected $webmaster_verification_presenters = [
-		'Webmaster\Ahrefs',
 		'Webmaster\Baidu',
 		'Webmaster\Bing',
 		'Webmaster\Google',

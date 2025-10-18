@@ -66,13 +66,11 @@ function wpforms_get_form_preview_url( $form_id, $new_window = false ) {
  * Using wpforms_decode() on wpforms_encode() result directly
  * (without using wp_insert_post() or wp_update_post() first) always returns null or false.
  *
- * The json_decode failure returns an empty array.
- *
  * @since 1.0.0
  *
  * @param string $data Data to decode.
  *
- * @return array|false|null Empty array if json_decode fails, false if $data is empty, or decoded data.
+ * @return array|false|null
  */
 function wpforms_decode( $data ) {
 
@@ -80,14 +78,7 @@ function wpforms_decode( $data ) {
 		return false;
 	}
 
-	$decoded_data = json_decode( $data, true );
-
-	// If json_decode fails, return an empty array to prevent possible fatal errors due to type mismatch.
-	if ( json_last_error() !== JSON_ERROR_NONE ) {
-		return [];
-	}
-
-	return wp_unslash( $decoded_data );
+	return wp_unslash( json_decode( $data, true ) );
 }
 
 /**
@@ -221,7 +212,7 @@ function wpforms_update_settings( $settings ) {
  *
  * @return bool
  */
-function wpforms_has_field_type( $type, $form, $multiple = false ) {
+function wpforms_has_field_type( $type, $form, $multiple = false ) { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
 
 	$form_data = '';
 	$field     = false;
@@ -271,7 +262,7 @@ function wpforms_has_field_type( $type, $form, $multiple = false ) {
  *
  * @return bool
  */
-function wpforms_has_field_setting( $setting, $form, $multiple = false ) {
+function wpforms_has_field_setting( $setting, $form, $multiple = false ) { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
 
 	$form_data = '';
 	$field     = false;
@@ -323,7 +314,7 @@ function wpforms_has_field_setting( $setting, $form, $multiple = false ) {
  *
  * @return mixed boolean false or array
  */
-function wpforms_get_form_fields( $form = false, $allowlist = [] ) { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh, Generic.Metrics.NestingLevel.MaxExceeded
+function wpforms_get_form_fields( $form = false, $allowlist = [] ) { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.MaxExceeded, Generic.Metrics.NestingLevel.MaxExceeded
 
 	// Accept form (post) object or form ID.
 	if ( is_object( $form ) ) {

@@ -152,7 +152,7 @@ class RequirementsAlerts {
 	 *
 	 * @return array
 	 */
-	private static function get_addons_require_for_product_quantities(): array {
+	private static function get_addons_require_for_product_quantities(): array { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
 
 		static $addons;
 

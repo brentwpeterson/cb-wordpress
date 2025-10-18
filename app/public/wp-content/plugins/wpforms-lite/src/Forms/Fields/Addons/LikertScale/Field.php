@@ -66,7 +66,7 @@ class Field extends WPForms_Field {
 	 *
 	 * @param array $field Field settings.
 	 */
-	public function field_options( $field ) {
+	public function field_options( $field ) { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
 
 		/**
 		 * Basic field options.
@@ -286,7 +286,7 @@ class Field extends WPForms_Field {
 	 *
 	 * @param array $field Field settings.
 	 */
-	public function field_preview( $field ) { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
+	public function field_preview( $field ) { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.MaxExceeded
 
 		// Define data.
 		$rows       = ! empty( $field['rows'] ) ? $field['rows'] : $this->default_settings['rows'];

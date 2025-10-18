@@ -3,7 +3,6 @@
 namespace Yoast\WP\SEO\Conditionals\Admin;
 
 use Yoast\WP\SEO\Conditionals\Conditional;
-use Yoast\WP\SEO\Plans\User_Interface\Plans_Page_Integration;
 
 /**
  * Conditional that is only met when current page is the tools page.
@@ -23,7 +22,7 @@ class Licenses_Page_Conditional implements Conditional {
 		}
 
 		// phpcs:ignore WordPress.Security.NonceVerification -- This is not a form.
-		if ( isset( $_GET['page'] ) && $_GET['page'] === Plans_Page_Integration::PAGE ) {
+		if ( isset( $_GET['page'] ) && $_GET['page'] === 'wpseo_licenses' ) {
 			return true;
 		}
 

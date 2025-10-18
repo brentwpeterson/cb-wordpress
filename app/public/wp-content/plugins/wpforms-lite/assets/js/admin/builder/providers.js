@@ -156,9 +156,7 @@ WPForms.Admin.Builder.Providers = WPForms.Admin.Builder.Providers || ( function(
 			 */
 			request( provider, custom ) {
 				const $holder = app.getProviderHolder( provider ),
-					$lock = $holder.find( '.wpforms-builder-provider-connections-save-lock' ),
-					$addNewConnectionBtn = $holder.find( '.js-wpforms-builder-provider-connection-add' ),
-					isInitialConnectionsGetTask = custom?.data?.task === 'connections_get';
+					$lock = $holder.find( '.wpforms-builder-provider-connections-save-lock' );
 
 				const params = {
 					url: wpforms_builder.ajax_url,
@@ -166,19 +164,13 @@ WPForms.Admin.Builder.Providers = WPForms.Admin.Builder.Providers || ( function(
 					dataType: 'json',
 					beforeSend() {
 						$holder.addClass( 'loading' );
-
-						// Disable the "Add new connection" button for initial get connections request to prevent interaction before the data is ready.
-						if ( isInitialConnectionsGetTask ) {
-							$addNewConnectionBtn.addClass( 'wpforms-disabled' );
-						}
-
 						$lock.val( 1 );
 						app.ui.getProviderError( provider ).hide();
 					},
 				};
 
 				// Hidden class is used only for initial get connections request when connections are not set yet.
-				if ( ! isInitialConnectionsGetTask ) {
+				if ( custom.data.task !== 'connections_get' ) {
 					$holder.find( '.wpforms-builder-provider-title-spinner' ).removeClass( 'wpforms-hidden' );
 				}
 
@@ -201,12 +193,9 @@ WPForms.Admin.Builder.Providers = WPForms.Admin.Builder.Providers || ( function(
 					} )
 					.always( function( dataOrjqXHR, textStatus, jqXHROrerrorThrown ) { // eslint-disable-line no-unused-vars
 						$holder.removeClass( 'loading' );
-					} )
-					.done( function() {
-						$lock.val( 0 );
-						// Enable the "Add new connection" button for initial get connections request when the data is successfully loaded.
-						if ( isInitialConnectionsGetTask ) {
-							$addNewConnectionBtn.removeClass( 'wpforms-disabled' );
+
+						if ( 'success' === textStatus ) {
+							$lock.val( 0 );
 						}
 					} );
 			},
@@ -544,7 +533,7 @@ WPForms.Admin.Builder.Providers = WPForms.Admin.Builder.Providers || ( function(
 		 *
 		 * @param {Object} $connections jQuery selector for active connections.
 		 */
-		// eslint-disable-next-line max-lines-per-function
+		// eslint-disable-next-line max-lines-per-function,complexity
 		updateMapSelects( $connections ) {
 			const fields = $.extend( {}, wpf.getFields() );
 
@@ -743,8 +732,8 @@ WPForms.Admin.Builder.Providers = WPForms.Admin.Builder.Providers || ( function(
 					}
 				} );
 
-				// Remove the error class in required fields if a value is supplied.
-				app.panelHolder.on( 'input change', '.wpforms-builder-provider .wpforms-required', function() {
+				// Remove error class in required fields if a value is supplied.
+				app.panelHolder.on( 'change', '.wpforms-builder-provider select.wpforms-required', function() {
 					const $this = $( this );
 
 					if ( ! $this.hasClass( 'wpforms-error' ) || $this.val().length === 0 ) {

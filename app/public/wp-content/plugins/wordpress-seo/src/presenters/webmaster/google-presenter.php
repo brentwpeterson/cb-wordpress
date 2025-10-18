@@ -22,7 +22,6 @@ class Google_Presenter extends Abstract_Indexable_Tag_Presenter {
 	 * @return string The webmaster tool site verification value.
 	 */
 	public function get() {
-
 		return $this->helpers->options->get( 'googleverify', '' );
 	}
 }

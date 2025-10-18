@@ -229,7 +229,6 @@ const WPFormsSquare = window.WPFormsSquare || ( function( document, window, $ ) 
 			}
 
 			try {
-
 				return Square.payments( wpforms_square.client_id, wpforms_square.location_id );
 			} catch ( e ) {
 				const message = ( typeof e === 'object' && Object.prototype.hasOwnProperty.call( e, 'message' ) ) ? e.message : wpforms_square.i18n.missing_creds;
@@ -272,10 +271,6 @@ const WPFormsSquare = window.WPFormsSquare || ( function( document, window, $ ) 
 						// Card field is filled.
 						cardData[ e.detail.field ].empty = e.detail.currentState.isEmpty;
 						cardData[ e.detail.field ].valid = e.detail.currentState.isCompletelyValid;
-
-						if ( cardData[ e.detail.field ].valid ) {
-							app.removeFieldError( $form );
-						}
 					} );
 				}
 
@@ -605,17 +600,6 @@ const WPFormsSquare = window.WPFormsSquare || ( function( document, window, $ ) 
 		},
 
 		/**
-		 * Remove field error.
-		 *
-		 * @param {jQuery} $form Form element.
-		 *
-		 * @since 1.9.7
-		 */
-		removeFieldError( $form ) {
-			$form.find( '.wpforms-field-square-number .wpforms-error' ).remove();
-		},
-
-		/**
 		 * Display a field error using jQuery Validate library.
 		 *
 		 * @param {jQuery} $field  Form element.
@@ -693,7 +677,7 @@ const WPFormsSquare = window.WPFormsSquare || ( function( document, window, $ ) 
 			}
 
 			if ( app.isCardDataValid() ) {
-				app.removeFieldError( $form );
+				$squareDiv.parent().find( 'label.wpforms-error' ).remove();
 
 				return;
 			}

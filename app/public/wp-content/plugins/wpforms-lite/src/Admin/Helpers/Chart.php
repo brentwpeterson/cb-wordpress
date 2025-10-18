@@ -38,7 +38,7 @@ class Chart {
 	 *
 	 * @return array
 	 */
-	public static function process_chart_dataset_data( $query, $start_date, $end_date ) {
+	public static function process_chart_dataset_data( $query, $start_date, $end_date ) { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
 
 		// Bail early if the given query contains no records to iterate.
 		if ( ! is_array( $query ) || empty( $query ) ) {

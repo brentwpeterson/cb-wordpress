@@ -245,7 +245,7 @@ class AntiSpam {
 	 * @return bool True if the entry is valid, false otherwise.
 	 * @noinspection PhpUnusedParameterInspection
 	 */
-	public function validate( array $form_data, array $fields, array &$entry ): bool {
+	public function validate( array $form_data, array $fields, array &$entry ): bool { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
 
 		// Bail out if the modern Anti-Spam is not enabled.
 		if ( ! $this->is_honeypot_enabled( $form_data ) ) {
