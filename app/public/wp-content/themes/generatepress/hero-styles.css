@@ -1,0 +1,54 @@
+/**
+ * Hero Page Styles
+ * Custom CSS for hero sections and headings
+ * Loaded after GenerateBlocks to ensure proper override
+ */
+
+.hero__heading {
+    margin-bottom: 32px;
+    color: #292b2c;
+}
+
+.text-h1 {
+    font-family: "GT America Standard";
+    font-style: normal;
+    font-weight: 700;
+    font-size: 36px;
+    line-height: 130%;
+}
+
+@media (min-width: 1024px) {
+    .text-h1 {
+        font-size: 72px;
+        line-height: 120%;
+    }
+}
+
+/* Hero Element Override - High Specificity to Beat GenerateBlocks */
+.gb-container .gb-text.gb-text-5d75bda6,
+.gb-element-ee65084a .gb-text.gb-text-5d75bda6,
+div.gb-text.gb-text.gb-text-5d75bda6,
+h1.gb-text.gb-text.gb-text-5d75bda6 {
+    font-family: "GT America Standard" !important;
+    font-style: normal !important;
+    font-weight: 700 !important;
+    font-size: 36px !important;
+    line-height: 130% !important;
+    margin-bottom: 32px !important;
+    color: #292b2c !important;
+    /* Override existing GenerateBlocks styles */
+    background-color: transparent !important;
+    padding-bottom: 0 !important;
+    padding-top: 0 !important;
+    text-align: left !important;
+}
+
+@media (min-width: 1024px) {
+    .gb-container .gb-text.gb-text-5d75bda6,
+    .gb-element-ee65084a .gb-text.gb-text-5d75bda6,
+    div.gb-text.gb-text.gb-text-5d75bda6,
+    h1.gb-text.gb-text.gb-text-5d75bda6 {
+        font-size: 72px !important;
+        line-height: 120% !important;
+    }
+}

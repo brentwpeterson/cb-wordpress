@@ -1,0 +1,14 @@
+/*
+Theme Name: Cucumber GP Child
+Description: Content Cucumber's child theme for GeneratePress with custom styles and functionality
+Template: generatepress
+Version: 1.0.0
+Author: Content Cucumber Team
+Author URI: https://contentcucumber.com
+Text Domain: cucumber-gp-child
+*/
+
+/* Import parent theme styles */
+@import url("../generatepress/style.css");
+
+/* Child theme customizations start here */

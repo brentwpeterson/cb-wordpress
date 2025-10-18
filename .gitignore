@@ -35,6 +35,14 @@ app/public/wp-content/*
 # Ignore default themes except custom ones
 app/public/wp-content/themes/twenty*/
 
+# Track custom child theme and modifications
+!app/public/wp-content/themes/cucumber-gp-child/
+!app/public/wp-content/themes/generatepress/*.css
+!app/public/wp-content/themes/generatepress/*.php
+
+# Track custom plugins
+!app/public/wp-content/plugins/cucumber-custom/
+
 # Uploads directory - media files should not be in version control
 app/public/wp-content/uploads/
 
