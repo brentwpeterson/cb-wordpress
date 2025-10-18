@@ -12,12 +12,12 @@ class DB {
 	/**
 	 * Unprefixed site-wide table name.
 	 */
-	public const TABLE_NAME = 'snippets';
+	const TABLE_NAME = 'snippets';
 
 	/**
 	 * Unprefixed network-wide table name.
 	 */
-	public const MS_TABLE_NAME = 'ms_snippets';
+	const MS_TABLE_NAME = 'ms_snippets';
 
 	/**
 	 * Side-wide table name.
@@ -168,18 +168,17 @@ class DB {
 
 		/* Create the database table */
 		$sql = "CREATE TABLE $table_name (
-				id           BIGINT(20)   NOT NULL AUTO_INCREMENT,
-				name         TINYTEXT     NOT NULL,
-				description  TEXT         NOT NULL,
-				code         LONGTEXT     NOT NULL,
-				tags         LONGTEXT     NOT NULL,
-				scope        VARCHAR(15)  NOT NULL DEFAULT 'global',
-				condition_id BIGINT(20)   NOT NULL DEFAULT 0,
-				priority     SMALLINT     NOT NULL DEFAULT 10,
-				active       TINYINT(1)   NOT NULL DEFAULT 0,
-				modified     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-				revision     BIGINT(20)   NOT NULL DEFAULT 1,
-				cloud_id     VARCHAR(255) NULL,
+				id          BIGINT(20)   NOT NULL AUTO_INCREMENT,
+				name        TINYTEXT     NOT NULL,
+				description TEXT         NOT NULL,
+				code        LONGTEXT     NOT NULL,
+				tags        LONGTEXT     NOT NULL,
+				scope       VARCHAR(15)  NOT NULL DEFAULT 'global',
+				priority    SMALLINT     NOT NULL DEFAULT 10,
+				active      TINYINT(1)   NOT NULL DEFAULT 0,
+				modified    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+				revision    BIGINT(20)   NOT NULL DEFAULT 1,
+				cloud_id    VARCHAR(255) NULL,
 				PRIMARY KEY  (id),
 				KEY scope (scope),
 				KEY active (active)
@@ -228,7 +227,7 @@ class DB {
 		$snippets = $wpdb->get_results(
 			$wpdb->prepare(
 				"
-				SELECT id, code, scope, active, priority
+				SELECT id, code, scope, active
 				FROM $table_name
 				WHERE scope IN ($scopes_format) $extra_where
 				ORDER BY priority, id",
@@ -247,100 +246,38 @@ class DB {
 	}
 
 	/**
-	 * Sort the active snippets by priority, table, and ID.
-	 *
-	 * @param array $active_snippets List of active snippets to sort.
-	 */
-	private function sort_active_snippets( array &$active_snippets ): void {
-		$comparisons = [
-			function ( array $a, array $b ) {
-				return $a['priority'] <=> $b['priority'];
-			},
-			function ( array $a, array $b ) {
-				$a_table = $a['table'] === $this->ms_table ? 0 : 1;
-				$b_table = $b['table'] === $this->ms_table ? 0 : 1;
-				return $a_table <=> $b_table;
-			},
-			function ( array $a, array $b ) {
-				return $a['id'] <=> $b['id'];
-			},
-		];
-
-		usort(
-			$active_snippets,
-			static function ( $a, $b ) use ( $comparisons ) {
-				foreach ( $comparisons as $comparison ) {
-					$result = $comparison( $a, $b );
-					if ( 0 !== $result ) {
-						return $result;
-					}
-				}
-
-				return 0;
-			}
-		);
-	}
-
-	/**
 	 * Generate the SQL for fetching active snippets from the database.
 	 *
-	 * @param string[] $scopes List of scopes to retrieve in.
+	 * @param array<string>|string $scopes List of scopes to retrieve in.
 	 *
-	 * @return array{
-	 *     id: int,
-	 *     code: string,
-	 *     scope: string,
-	 *     table: string,
-	 *     network: bool,
-	 *     priority: int,
-	 * } List of active snippets.
+	 * @return array<string, array<string, mixed>> List of active snippets, indexed by table.
 	 */
-	public function fetch_active_snippets( array $scopes ): array {
-		$active_snippets = [];
+	public function fetch_active_snippets( $scopes ): array {
+		$active_snippets = array();
+
+		// Ensure that the list of scopes is an array.
+		if ( ! is_array( $scopes ) ) {
+			$scopes = array( $scopes );
+		}
 
 		// Fetch the active snippets for the current site, if there are any.
-		$snippets = $this->fetch_snippets_from_table( $this->table, $scopes, true );
+		$snippets = $this->fetch_snippets_from_table( $this->table, $scopes );
 		if ( $snippets ) {
-			foreach ( $snippets as $snippet ) {
-				$active_snippets[] = [
-					'id'       => intval( $snippet['id'] ),
-					'code'     => $snippet['code'],
-					'scope'    => $snippet['scope'],
-					'table'    => $this->table,
-					'network'  => false,
-					'priority' => intval( $snippet['priority'] ),
-				];
-			}
+			$active_snippets[ $this->table ] = $snippets;
 		}
 
 		// If multisite is enabled, fetch all snippets from the network table, and filter down to only active snippets.
 		if ( is_multisite() ) {
+			$active_shared_ids = (array) get_option( 'active_shared_network_snippets', array() );
 			$ms_snippets = $this->fetch_snippets_from_table( $this->ms_table, $scopes, false );
 
 			if ( $ms_snippets ) {
-				$active_shared_ids = get_option( 'active_shared_network_snippets', [] );
-				$active_shared_ids = is_array( $active_shared_ids )
-					? array_map( 'intval', $active_shared_ids )
-					: [];
-
-				foreach ( $ms_snippets as $snippet ) {
-					$id = intval( $snippet['id'] );
-
-					if ( ! $snippet['active'] && ! in_array( $id, $active_shared_ids, true ) ) {
-						continue;
+				$active_snippets[ $this->ms_table ] = array_filter(
+					$ms_snippets,
+					function ( $snippet ) use ( $active_shared_ids ) {
+						return $snippet['active'] || in_array( intval( $snippet['id'] ), $active_shared_ids, true );
 					}
-
-					$active_snippets[] = [
-						'id'       => $id,
-						'code'     => $snippet['code'],
-						'scope'    => $snippet['scope'],
-						'table'    => $this->ms_table,
-						'network'  => true,
-						'priority' => intval( $snippet['priority'] ),
-					];
-				}
-
-				$this->sort_active_snippets( $active_snippets );
+				);
 			}
 		}
 

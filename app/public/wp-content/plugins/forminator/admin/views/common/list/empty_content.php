@@ -5,7 +5,9 @@
  * @package Forminator
  */
 
-if ( ! isset( $module_slug ) ) {
+if ( isset( static::$module_slug ) ) {
+	$module_slug = static::$module_slug;
+} else {
 	$module_slug = Forminator_Admin_Module_Edit_Page::get_slug_ajax();
 }
 

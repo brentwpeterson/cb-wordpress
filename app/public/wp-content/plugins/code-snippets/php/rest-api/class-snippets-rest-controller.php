@@ -29,12 +29,12 @@ final class Snippets_REST_Controller extends WP_REST_Controller {
 	/**
 	 * Current API version.
 	 */
-	public const VERSION = 1;
+	const VERSION = 1;
 
 	/**
 	 * The base of this controller's route.
 	 */
-	public const BASE_ROUTE = 'snippets';
+	const BASE_ROUTE = 'snippets';
 
 	/**
 	 * The namespace of this controller's route.
@@ -511,17 +511,10 @@ final class Snippets_REST_Controller extends WP_REST_Controller {
 				'tags'           => [
 					'description' => esc_html__( 'List of tag categories the snippet belongs to.', 'code-snippets' ),
 					'type'        => 'array',
-					'items'       => [
-						'type' => 'string',
-					],
 				],
 				'scope'          => [
 					'description' => esc_html__( 'Context in which the snippet is executable.', 'code-snippets' ),
 					'type'        => 'string',
-				],
-				'condition_id'   => [
-					'description' => esc_html__( 'Identifier of condition linked to this snippet.', 'code-snippets' ),
-					'type'        => 'integer',
 				],
 				'active'         => [
 					'description' => esc_html__( 'Snippet activation status.', 'code-snippets' ),
@@ -533,23 +526,16 @@ final class Snippets_REST_Controller extends WP_REST_Controller {
 				],
 				'network'        => [
 					'description' => esc_html__( 'Whether the snippet is network-wide instead of site-wide.', 'code-snippets' ),
-					'type'        => [ 'boolean', 'null' ],
+					'type'        => 'boolean',
 					'default'     => null,
 				],
 				'shared_network' => [
 					'description' => esc_html__( 'If a network snippet, whether can be activated on discrete sites instead of network-wide.', 'code-snippets' ),
-					'type'        => [ 'boolean', 'null' ],
+					'type'        => 'boolean',
 				],
 				'modified'       => [
 					'description' => esc_html__( 'Date and time when the snippet was last modified, in ISO format.', 'code-snippets' ),
 					'type'        => 'string',
-					'format'      => 'date-time',
-					'readonly'    => true,
-				],
-				'code_error'     => [
-					'description' => esc_html__( 'Error message if the snippet code could not be parsed.', 'code-snippets' ),
-					'type'        => 'string',
-					'readonly'    => true,
 				],
 			],
 		];

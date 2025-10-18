@@ -48,34 +48,19 @@ const initializeEditor = (onChange: (content: string) => void) => {
 	})
 }
 
-const DescriptionEditorTextarea: React.FC = () => {
+export const DescriptionEditor: React.FC = () => {
 	const { snippet, setSnippet, isReadOnly } = useSnippetForm()
 
-	const handleChange = useCallback(
+	const onChange = useCallback(
 		(desc: string) => setSnippet(previous => ({ ...previous, desc })),
 		[setSnippet]
 	)
 
 	useEffect(() => {
-		domReady(() => initializeEditor(handleChange))
-	}, [handleChange])
+		domReady(() => initializeEditor(onChange))
+	}, [onChange])
 
-	return (
-		<textarea
-			id={EDITOR_ID}
-			className="wp-editor-area"
-			onChange={event => handleChange(event.target.value)}
-			autoComplete="off"
-			disabled={isReadOnly}
-			rows={window.CODE_SNIPPETS_EDIT?.descEditorOptions.rows}
-			cols={40}
-			value={snippet.desc}
-		/>
-	)
-}
-
-export const DescriptionEditor: React.FC = () =>
-	window.CODE_SNIPPETS_EDIT?.enableDescription
+	return window.CODE_SNIPPETS_EDIT?.enableDescription
 		? <div className="snippet-description-container">
 			<h2>
 				<label htmlFor={EDITOR_ID}>
@@ -83,6 +68,15 @@ export const DescriptionEditor: React.FC = () =>
 				</label>
 			</h2>
 
-			<DescriptionEditorTextarea />
+			<textarea
+				id={EDITOR_ID}
+				className="wp-editor-area"
+				onChange={event => onChange(event.target.value)}
+				autoComplete="off"
+				disabled={isReadOnly}
+				rows={window.CODE_SNIPPETS_EDIT.descEditorOptions.rows}
+				cols={40}
+			>{snippet.desc}</textarea>
 		</div>
 		: null
+}

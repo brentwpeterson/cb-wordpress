@@ -16,17 +16,22 @@ class Front_End {
 	/**
 	 * Name of the shortcode tag for rendering the code source
 	 */
-	public const SOURCE_SHORTCODE = 'code_snippet_source';
+	const SOURCE_SHORTCODE = 'code_snippet_source';
 
 	/**
 	 * Name of the shortcode tag for rendering content snippets
 	 */
-	public const CONTENT_SHORTCODE = 'code_snippet';
+	const CONTENT_SHORTCODE = 'code_snippet';
 
 	/**
 	 * Handle to use for front-end scripts and styles.
 	 */
-	public const PRISM_HANDLE = 'code-snippets-prism';
+	const PRISM_HANDLE = 'code-snippets-prism';
+
+	/**
+	 * Maximum depth for shortcode recursion.
+	 */
+	const MAX_SHORTCODE_DEPTH = 5;
 
 	/**
 	 * Class constructor
@@ -167,19 +172,19 @@ class Front_End {
 	public static function register_prism_assets() {
 		$plugin = code_snippets();
 
+		wp_register_style(
+			self::PRISM_HANDLE,
+			plugins_url( 'dist/prism.css', $plugin->file ),
+			array(),
+			$plugin->version
+		);
+
 		wp_register_script(
 			self::PRISM_HANDLE,
 			plugins_url( 'dist/prism.js', $plugin->file ),
 			array(),
 			$plugin->version,
 			true
-		);
-
-		wp_register_style(
-			self::PRISM_HANDLE,
-			plugins_url( 'dist/prism.css', $plugin->file ),
-			array(),
-			$plugin->version
 		);
 	}
 
@@ -249,7 +254,7 @@ class Front_End {
 		extract( $atts );
 
 		ob_start();
-		eval( "?>\n\n" . $snippet->code );
+		eval( "?>\n\n" . $snippet->code . "\n\n<?php" );
 
 		return ob_get_clean();
 	}
@@ -298,12 +303,11 @@ class Front_End {
 			}
 
 			/* translators: 1: snippet name, 2: snippet edit link */
-			$text = __( '%1$s is currently inactive. You can <a href="%2$s">edit this snippet</a> to activate it and make it visible. This message will not appear in the published post.', 'code-snippets' );
-			$snippet_name = '<strong>' . $snippet->name . '</strong>';
-			$edit_url = add_query_arg( 'id', $snippet->id, code_snippets()->get_menu_url( 'edit' ) );
+			$text = __( '<strong>%1$s</strong> is currently inactive. You can <a href="%2$s">edit this snippet</a> to activate it and make it visible. This message will not appear in the published post.', 'code-snippets' );
 
+			$edit_url = add_query_arg( 'id', $snippet->id, code_snippets()->get_menu_url( 'edit' ) );
 			return wp_kses(
-				sprintf( $text, $snippet_name, $edit_url ),
+				sprintf( $text, $snippet->name, $edit_url ),
 				[
 					'strong' => [],
 					'a'      => [

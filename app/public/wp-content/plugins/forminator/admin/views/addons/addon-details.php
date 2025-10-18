@@ -54,9 +54,7 @@ $addon_slug = Forminator_Admin_Addons_Page::get_addon_slug( $pid );
 
 				<button class="sui-button-icon sui-button-float--right" data-modal-close>
 					<span class="sui-icon-close sui-md" aria-hidden="true"></span>
-					<span class="sui-screen-reader-text">
-						<?php esc_html_e( 'Close this modal', 'forminator' ); ?>
-					</span>
+					<span class="sui-screen-reader-text">Close this modal</span>
 				</button>
 
 				<div class="forminator-details-header">

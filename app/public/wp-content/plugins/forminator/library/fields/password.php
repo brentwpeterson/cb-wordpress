@@ -425,7 +425,7 @@ class Forminator_Password extends Forminator_Field {
 						$id,
 						$field
 					);
-					$messages        .= '"maxlength": "' . forminator_addcslashes( $max_length_error ) . '",' . "\n";
+					$messages        .= '"maxlength": "' . $max_length_error . '",' . "\n";
 				} else {
 					$max_words_error = apply_filters(
 						'forminator_text_field_words_validation_message',
@@ -433,7 +433,7 @@ class Forminator_Password extends Forminator_Field {
 						$id,
 						$field
 					);
-					$messages       .= '"maxwords": "' . forminator_addcslashes( $max_words_error ) . '",' . "\n";
+					$messages       .= '"maxwords": "' . $max_words_error . '",' . "\n";
 				}
 			}
 		}
@@ -446,7 +446,7 @@ class Forminator_Password extends Forminator_Field {
 				$id,
 				$field
 			);
-			$messages                   .= '"forminatorPasswordStrength": "' . forminator_addcslashes( $min_strength_error ) . '",' . "\n";
+			$messages                   .= '"forminatorPasswordStrength": "' . esc_html( $min_strength_error ) . '",' . "\n";
 		}
 		$messages .= '},';
 
@@ -472,7 +472,7 @@ class Forminator_Password extends Forminator_Field {
 				$id,
 				$field
 			);
-			$messages                    .= '"equalTo": "' . forminator_addcslashes( $not_match_error ) . '",' . "\n";
+			$messages                    .= '"equalTo": "' . $not_match_error . '",' . "\n";
 			$messages                    .= '},';
 		}
 

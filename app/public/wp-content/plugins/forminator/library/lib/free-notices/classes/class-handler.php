@@ -30,63 +30,56 @@ if ( ! class_exists( __NAMESPACE__ . '\\Handler' ) ) {
 		/**
 		 * Current version.
 		 *
-		 * @var string $version
-		 *
 		 * @since 2.0
+		 * @var string $version
 		 */
-		public $version = '2.0.6';
+		public $version = '2.0.5';
 
 		/**
 		 * Option name to store data.
 		 *
-		 * @var string $option_name
-		 *
 		 * @since 2.0
+		 * @var string $option_name
 		 */
 		protected $option_name = 'wpmudev_notices';
 
 		/**
 		 * Registered plugins for the opt-ins.
 		 *
-		 * @var array[] $plugins
-		 *
 		 * @since 2.0
+		 * @var array[] $plugins
 		 */
 		private $plugins = array();
 
 		/**
 		 * WordPress screen IDs to show notices on.
 		 *
-		 * @var array[] $screens
-		 *
 		 * @since 2.0
+		 * @var array[] $screens
 		 */
 		private $screens = array();
 
 		/**
 		 * Disabled notice types.
 		 *
-		 * @var string[] $disabled
-		 *
 		 * @since 2.0
+		 * @var string[] $disabled
 		 */
 		private $disabled = array( 'email', 'giveaway' );
 
 		/**
 		 * Registered plugin notices data from db.
 		 *
-		 * @var array|null $queue
-		 *
 		 * @since 2.0
+		 * @var array|null $queue
 		 */
 		private $stored = null;
 
 		/**
 		 * Notice types that are shown on WP Dashboard.
 		 *
-		 * @var array $wp_notices
-		 *
 		 * @since 2.0
+		 * @var array $wp_notices
 		 */
 		private $wp_notices = array(
 			'email' => '\WPMUDEV\Notices\Notices\Email',
@@ -96,22 +89,11 @@ if ( ! class_exists( __NAMESPACE__ . '\\Handler' ) ) {
 		/**
 		 * Notice type that are shown within plugin pages.
 		 *
-		 * @var array $plugin_notices
-		 *
 		 * @since 2.0
+		 * @var array $plugin_notices
 		 */
 		private $plugin_notices = array(
 			'giveaway' => '\WPMUDEV\Notices\Notices\Giveaway',
-		);
-
-		/**
-		 * List of allowed actions.
-		 *
-		 * @var string[]
-		 */
-		private $allowed_actions = array(
-			'dismiss_notice',
-			'extend_notice',
 		);
 
 		/**
@@ -172,10 +154,11 @@ if ( ! class_exists( __NAMESPACE__ . '\\Handler' ) ) {
 		 * );
 		 * ```
 		 *
-		 * @param string $plugin_id Plugin ID.
+		 * @since 2.0
+		 *
 		 * @param array  $options   Options.
 		 *
-		 * @since 2.0
+		 * @param string $plugin_id Plugin ID.
 		 */
 		public function register( $plugin_id, array $options = array() ) {
 			// Plugin ID can't be empty.
@@ -282,11 +265,6 @@ if ( ! class_exists( __NAMESPACE__ . '\\Handler' ) ) {
 				wp_die( esc_html__( 'Nonce verification failed.', 'wdev_frash' ) );
 			}
 
-			// Check if action is valid.
-			if ( ! in_array( $action, $this->allowed_actions, true ) ) {
-				wp_die( esc_html__( 'Invalid action.', 'wdev_frash' ) );
-			}
-
 			// Initialize the options.
 			$this->init_option();
 
@@ -304,11 +282,12 @@ if ( ! class_exists( __NAMESPACE__ . '\\Handler' ) ) {
 			/**
 			 * Action hook to do something after a notice action is performed.
 			 *
-			 * @param string $action Action.
+			 * @since 2.0
+			 *
 			 * @param string $plugin Plugin ID.
 			 * @param string $type   Notice type.
 			 *
-			 * @since 2.0
+			 * @param string $action Action.
 			 */
 			do_action( 'wpmudev_notices_after_notice_action', $action, $plugin, $type );
 
@@ -318,10 +297,11 @@ if ( ! class_exists( __NAMESPACE__ . '\\Handler' ) ) {
 		/**
 		 * Remove a notice from the queue.
 		 *
-		 * @param string $plugin Plugin ID.
+		 * @since 2.0
+		 *
 		 * @param string $type   Notice type.
 		 *
-		 * @since 2.0
+		 * @param string $plugin Plugin ID.
 		 *
 		 * @return void
 		 */
@@ -359,9 +339,9 @@ if ( ! class_exists( __NAMESPACE__ . '\\Handler' ) ) {
 		/**
 		 * Update the notices stored data in db.
 		 *
-		 * @param array $data Option data (optional).
-		 *
 		 * @since 2.0
+		 *
+		 * @param array $data Option data (optional).
 		 *
 		 * @return bool
 		 */
@@ -378,10 +358,11 @@ if ( ! class_exists( __NAMESPACE__ . '\\Handler' ) ) {
 		/**
 		 * Render notice for the current screen.
 		 *
-		 * @param string|false $plugin_id Plugin id (false to check all plugins).
+		 * @since 2.0
+		 *
 		 * @param array        $types     Notice types to render.
 		 *
-		 * @since 2.0
+		 * @param string|false $plugin_id Plugin id (false to check all plugins).
 		 *
 		 * @return void|string
 		 */
@@ -408,10 +389,11 @@ if ( ! class_exists( __NAMESPACE__ . '\\Handler' ) ) {
 		 *
 		 * NOTE: Only one plugin can use one screen id.
 		 *
-		 * @param string $plugin_id Plugin ID.
+		 * @since 2.0
+		 *
 		 * @param array  $screens   Screen IDs.
 		 *
-		 * @since 2.0
+		 * @param string $plugin_id Plugin ID.
 		 *
 		 * @return void
 		 */
@@ -459,10 +441,11 @@ if ( ! class_exists( __NAMESPACE__ . '\\Handler' ) ) {
 		 * are disabled. Then only we can enable it later easily.
 		 * Disabled notices won't be considered when taken from the queue.
 		 *
-		 * @param string $plugin_id Plugin ID.
+		 * @since 2.0
+		 *
 		 * @param array  $options   Options.
 		 *
-		 * @since 2.0
+		 * @param string $plugin_id Plugin ID.
 		 *
 		 * @return void
 		 */
@@ -521,10 +504,11 @@ if ( ! class_exists( __NAMESPACE__ . '\\Handler' ) ) {
 		 * This is usually used for a common WP page where all plugins'
 		 * notices are shown. Eg: WP Dashboard page.
 		 *
-		 * @param array       $types     Notice types.
+		 * @since 2.0
+		 *
 		 * @param string|bool $plugin_id Plugin ID.
 		 *
-		 * @since 2.0
+		 * @param array       $types     Notice types.
 		 *
 		 * @return object|false
 		 */
@@ -554,10 +538,11 @@ if ( ! class_exists( __NAMESPACE__ . '\\Handler' ) ) {
 		 *
 		 * Select one with priority from the due list for the plugin.
 		 *
-		 * @param string $plugin_id Plugin ID.
+		 * @since 2.0
+		 *
 		 * @param array  $types     Notice types.
 		 *
-		 * @since 2.0
+		 * @param string $plugin_id Plugin ID.
 		 *
 		 * @return object|false
 		 */
@@ -580,11 +565,12 @@ if ( ! class_exists( __NAMESPACE__ . '\\Handler' ) ) {
 		 * Notice will be selected based on the order it's defined
 		 * in the $types property of this class.
 		 *
-		 * @param string $plugin_id Plugin ID.
+		 * @since 2.0
+		 *
 		 * @param array  $notices   Notices array.
 		 * @param array  $types     Notice types.
 		 *
-		 * @since 2.0
+		 * @param string $plugin_id Plugin ID.
 		 *
 		 * @return object|false
 		 */
@@ -623,10 +609,11 @@ if ( ! class_exists( __NAMESPACE__ . '\\Handler' ) ) {
 		/**
 		 * Get the notice type class instance.
 		 *
-		 * @param string $plugin_id Plugin ID.
+		 * @since 2.0
+		 *
 		 * @param string $type      Notice type.
 		 *
-		 * @since 2.0
+		 * @param string $plugin_id Plugin ID.
 		 *
 		 * @return bool|object
 		 */
@@ -720,11 +707,11 @@ if ( ! class_exists( __NAMESPACE__ . '\\Handler' ) ) {
 		 * If old data exist, we need to use it before registering new time.
 		 * Used only when registering for the first time.
 		 *
-		 * @param string $plugin_id Plugin ID.
-		 * @param string $basename  Plugin basename (used in old plugins).
-		 *
 		 * @since      2.0
 		 * @deprecated 2.0 We may remove this in future.
+		 *
+		 * @param string $plugin_id Plugin ID.
+		 * @param string $basename  Plugin basename (used in old plugins).
 		 *
 		 * @return void
 		 */

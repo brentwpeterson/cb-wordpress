@@ -335,12 +335,6 @@ abstract class Forminator_Render_Form {
 
 		$forminator_ui = 'forminator-ui ';
 
-		if ( ! empty( $form_settings['cform-color-option'] ) && 'theme' === $form_settings['cform-color-option'] ) {
-			$data_color_option = 'data-color-option="theme"';
-		} else {
-			$data_color_option = 'data-color-option="default"';
-		}
-
 		if ( 'quiz' === $form_type ) {
 			$data_design = 'data-design="' . $this->get_quiz_theme() . '"';
 		} else {
@@ -448,7 +442,6 @@ abstract class Forminator_Render_Form {
 				%s
 				%s
 				%s
-				%s
 			>',
 			$id,
 			$forminator_ui,
@@ -462,7 +455,6 @@ abstract class Forminator_Render_Form {
 			$id,
 			$quiz_type,
 			$data_design,
-			$data_color_option,
 			$quiz_spacing,
 			$quiz_columns,
 			$quiz_alignment,

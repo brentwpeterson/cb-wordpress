@@ -150,6 +150,7 @@ if ( FORMINATOR_PRO ) {
 						data-nonce="<?php echo esc_attr( wp_create_nonce( 'forminator_addons_page_details' ) ); ?>"
 						data-form-id="<?php echo esc_attr( $addons->pid ); ?>"
 						data-modal-title="<?php echo esc_attr( $addons->name ); ?>"
+						data-modal-open="forminator-modal-addons-details-<?php echo esc_attr( $addons->pid ); ?>"
 						data-modal-mask="false"
 						data-modal="addons_page_details"
 					>

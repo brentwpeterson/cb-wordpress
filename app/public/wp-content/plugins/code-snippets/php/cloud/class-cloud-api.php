@@ -27,6 +27,13 @@ class Cloud_API {
 	private const DAYS_TO_STORE_CS = 1;
 
 	/**
+	 * Name of key used to cache cloud settings.
+	 *
+	 * @var string
+	 */
+	private const CLOUD_SETTINGS_CACHE_KEY = 'code_snippets_cloud_settings';
+
+	/**
 	 * Token used for public API access.
 	 *
 	 * @var string
@@ -41,36 +48,9 @@ class Cloud_API {
 	private ?array $cached_cloud_links = null;
 
 	/**
-	 * 'Private' status code.
-	 */
-	public const STATUS_PRIVATE = 3;
-
-	/**
-	 * 'Public' status code.
-	 */
-	public const STATUS_PUBLIC = 4;
-
-	/**
-	 * 'Public' status code.
-	 */
-	public const STATUS_UNVERIFIED = 5;
-
-	/**
-	 * 'AI Verified' status code.
-	 */
-	public const STATUS_AI_VERIFIED = 6;
-
-	/**
-	 * 'Pro Verified' status code.
-	 */
-	public const STATUS_PRO_VERIFIED = 8;
-
-	/**
 	 * Retrieve the Cloud URL from wp-config or fallback to default.
 	 *
 	 * @return string
-	 *
-	 * @noinspection PhpUndefinedConstantInspection
 	 */
 	public static function get_cloud_url(): string {
 		return defined( 'CS_CLOUD_URL' )
@@ -82,8 +62,6 @@ class Cloud_API {
 	 * Retrieve the Cloud API URL from wp-config or fallback to default.
 	 *
 	 * @return string
-	 *
-	 * @noinspection PhpUndefinedConstantInspection
 	 */
 	public static function get_cloud_api_url(): string {
 		return defined( 'CS_CLOUD_API_URL' )
@@ -288,6 +266,7 @@ class Cloud_API {
 		$url = self::get_cloud_api_url() . sprintf( 'public/getsnippet/%s', $cloud_id );
 		$response = wp_remote_get( $url );
 		$cloud_snippet = self::unpack_request_json( $response );
+
 		return new Cloud_Snippet( $cloud_snippet['snippet'] );
 	}
 
@@ -323,6 +302,7 @@ class Cloud_API {
 	 */
 	public function download_or_update_snippet( int $cloud_id, string $source, string $action ): array {
 		$cloud_id = intval( $cloud_id );
+
 		$snippet_to_store = $this->get_single_snippet_from_cloud( $cloud_id );
 
 		switch ( $action ) {
@@ -459,41 +439,27 @@ class Cloud_API {
 	}
 
 	/**
-	 * Get the label for a given cloud status.
+	 * Translate a snippet status to a status-name.
 	 *
-	 * @param int $status Cloud status code.
+	 * @param int $status The scope of the snippet.
 	 *
-	 * @return string The label for the status.
+	 * @return string The style to be used for the stats badge.
 	 */
-	public static function get_status_label( int $status ): string {
-		$labels = [
-			self::STATUS_PRIVATE      => __( 'Private', 'code-snippets' ),
-			self::STATUS_PUBLIC       => __( 'Public', 'code-snippets' ),
-			self::STATUS_UNVERIFIED   => __( 'Unverified', 'code-snippets' ),
-			self::STATUS_AI_VERIFIED  => __( 'AI Verified', 'code-snippets' ),
-			self::STATUS_PRO_VERIFIED => __( 'Pro Verified', 'code-snippets' ),
-		];
-
-		return $labels[ $status ] ?? __( 'Unknown', 'code-snippets' );
-	}
-
-	/**
-	 * Get the badge class for a given cloud status.
-	 *
-	 * @param int $status Cloud status code.
-	 *
-	 * @return string
-	 */
-	public static function get_status_badge( int $status ): string {
-		$badge_names = [
-			self::STATUS_PRIVATE      => 'private',
-			self::STATUS_PUBLIC       => 'public',
-			self::STATUS_UNVERIFIED   => 'failure',
-			self::STATUS_AI_VERIFIED  => 'success',
-			self::STATUS_PRO_VERIFIED => 'info',
-		];
-
-		return $badge_names[ $status ] ?? 'neutral';
+	public static function get_status_name_from_status( int $status ): string {
+		switch ( $status ) {
+			case 3:
+				return __( 'Private', 'code-snippets' );
+			case 4:
+				return __( 'Public', 'code-snippets' );
+			case 5:
+				return __( 'Unverified', 'code-snippets' );
+			case 6:
+				return __( 'AI Verified', 'code-snippets' );
+			case 8:
+				return __( 'Pro Verified', 'code-snippets' );
+			default:
+				return '';
+		}
 	}
 
 	/**

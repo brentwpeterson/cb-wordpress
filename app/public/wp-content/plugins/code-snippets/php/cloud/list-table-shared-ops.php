@@ -30,15 +30,16 @@ function cloud_lts_display_column_hidden_input( string $column_name, Cloud_Snipp
 /**
  * Process the download snippet action
  *
- * @param string $action  Action - 'download' or 'update'.
- * @param string $source  Source - 'search' or 'cloud'.
- * @param string $snippet Snippet ID.
+ * @param string $action         Action - 'download' or 'update'.
+ * @param string $source         Source - 'search' or 'cloud'.
+ * @param string $snippet        Snippet ID.
+ * @param int    $codevault_page The current page of the codevault.
  *
  * @return void
  */
-function cloud_lts_process_download_action( string $action, string $source, string $snippet ) {
+function cloud_lts_process_download_action( string $action, string $source, string $snippet, int $codevault_page = 0 ) {
 	if ( 'download' === $action || 'update' === $action ) {
-		$result = code_snippets()->cloud_api->download_or_update_snippet( $snippet, $source, $action );
+		$result = code_snippets()->cloud_api->download_or_update_snippet( $snippet, $source, $action, $codevault_page );
 
 		if ( $result['success'] ) {
 			$redirect_uri = $result['snippet_id'] ?
@@ -57,16 +58,23 @@ function cloud_lts_process_download_action( string $action, string $source, stri
  * @param Cloud_Snippet $cloud_snippet Snippet/Column item.
  * @param string        $source        Source - 'search' or 'codevault'.
  *
- * @return void
+ * @return string
  */
-function cloud_lts_render_action_buttons( Cloud_Snippet $cloud_snippet, string $source ) {
+function cloud_lts_build_action_links( Cloud_Snippet $cloud_snippet, string $source ): string {
 	$lang = Cloud_API::get_type_from_scope( $cloud_snippet->scope );
 	$link = code_snippets()->cloud_api->get_link_for_cloud_snippet( $cloud_snippet );
+	$additional_classes = 'search' === $source ? 'action-button-link' : '';
 	$is_licensed = code_snippets()->licensing->is_licensed();
-	$download = $is_licensed || ! in_array( $lang, [ 'css', 'js' ], true );
+	$download = true;
+	$action_link = '';
+
+	if ( ! $is_licensed && in_array( $lang, [ 'css', 'js' ], true ) ) {
+		$download = false;
+	}
 
 	if ( $link ) {
 		if ( $is_licensed && $link->update_available ) {
+			$download = false;
 			$update_url = add_query_arg(
 				[
 					'action'  => 'update',
@@ -74,20 +82,20 @@ function cloud_lts_render_action_buttons( Cloud_Snippet $cloud_snippet, string $
 					'source'  => $source,
 				]
 			);
-			printf(
-				'<li><a class="button button-primary" href="%s">%s</a></li>',
+			$action_link = sprintf(
+				'<a class="cloud-snippet-update %s" href="%s">%s</a>',
+				$additional_classes,
 				esc_url( $update_url ),
 				esc_html__( 'Update Available', 'code-snippets' )
 			);
 		} else {
-			printf(
-				'<li><a class="button" href="%s">%s</a></li>',
+			return sprintf(
+				'<a href="%s" class="cloud-snippet-downloaded %s">%s</a>',
 				esc_url( code_snippets()->get_snippet_edit_url( $link->local_id ) ),
+				$additional_classes,
 				esc_html__( 'View', 'code-snippets' )
 			);
 		}
-
-		return;
 	}
 
 	if ( $download ) {
@@ -99,29 +107,35 @@ function cloud_lts_render_action_buttons( Cloud_Snippet $cloud_snippet, string $
 			]
 		);
 
-		printf(
-			'<li><a class="button button-primary" href="%s">%s</a></li>',
-			esc_url( $download_url ),
-			esc_html__( 'Download', 'code-snippets' )
-		);
-	} else {
-		printf(
-			'<li><span class="%s">%s <span class="tooltip-content">%s</span></span></li>',
-			'button button-primary button-disabled tooltip tooltip-block tooltip-end',
-			esc_html__( 'Download', 'code-snippets' ),
-			esc_html__( 'This snippet type is only available in Code Snippets Pro', 'code-snippets' )
-		);
+		$action_link = $is_licensed ?
+			sprintf(
+				'<a class="cloud-snippet-download %s" href="%s">%s</a>',
+				$additional_classes,
+				esc_url( $download_url ),
+				esc_html__( 'Download', 'code-snippets' )
+			) :
+			sprintf(
+				'<a class="cloud-snippet-download %s" href="%s" target="_blank"><span class="go-pro-badge">%s</span>%s</a>',
+				$additional_classes,
+				'https://codesnippets.pro/pricing/',
+				esc_html_x( 'Pro', 'pro only', 'code-snippets' ),
+				esc_html_x( ' Only', 'pro only', 'code-snippets' )
+			);
 	}
 
-	printf(
-		'<li><a href="%s" aria-label="%s" class="%s" data-snippet="%s" data-lang="%s">%s</a></li>',
-		'#TB_inline?&width=700&height=500&inlineId=show-code-preview',
+	$thickbox_url = '#TB_inline?&width=700&height=500&inlineId=show-code-preview';
+
+	$thickbox_link = sprintf(
+		'<a href="%s" title="%s" class="cloud-snippet-preview cloud-snippet-preview-style thickbox %s" data-snippet="%s" data-lang="%s">%s</a>',
+		esc_url( $thickbox_url ),
 		esc_attr( $cloud_snippet->name ),
-		'cloud-snippet-preview thickbox',
+		$additional_classes,
 		esc_attr( $cloud_snippet->id ),
 		esc_attr( $lang ),
 		esc_html__( 'Preview', 'code-snippets' )
 	);
+
+	return $action_link . $thickbox_link;
 }
 
 /**
@@ -168,7 +182,7 @@ function cloud_lts_pagination( string $which, string $source, int $total_items, 
 		$page_links[] = '<span class="tablenav-pages-navspan button disabled" aria-hidden="true">&laquo;</span>';
 	} else {
 		$page_links[] = sprintf(
-			'<a class="first-page button" href="%s"><span class="screen-reader-text">%s</span><span aria-hidden="true">&laquo;</span></a>',
+			'<a class="first-page button" href="%s"><span class="screen-reader-text">%s</span><span aria-hidden="true">&lsaquo;</span></a>',
 			esc_url( remove_query_arg( $source . '_page', $current_url ) ),
 			esc_html__( 'First page', 'code-snippets' )
 		);
@@ -178,7 +192,7 @@ function cloud_lts_pagination( string $which, string $source, int $total_items, 
 		$page_links[] = '<span class="tablenav-pages-navspan button disabled" aria-hidden="true">&lsaquo;</span>';
 	} else {
 		$page_links[] = sprintf(
-			'<a class="prev-page button" href="%s"><span class="screen-reader-text">%s</span><span aria-hidden="true">&lsaquo;</span></a>',
+			'<a class="prev-page button" href="%s"><span class="screen-reader-text">%s</span><span aria-hidden="true">&laquo;</span></a>',
 			esc_url( add_query_arg( $source . '_page', max( 1, $current - 1 ), $current_url ) ),
 			esc_html__( 'Previous page', 'code-snippets' )
 		);
@@ -211,7 +225,7 @@ function cloud_lts_pagination( string $which, string $source, int $total_items, 
 		$page_links[] = sprintf(
 			'<a class="next-page button" href="%s"><span class="screen-reader-text">%s</span><span aria-hidden="true">%s</span></a>',
 			esc_url( add_query_arg( $source . '_page', min( $total_pages, $current + 1 ), $current_url ) ),
-			esc_html__( 'Next page', 'code-snippets' ),
+			__( 'Next page' ),
 			'&rsaquo;'
 		);
 	}
@@ -222,7 +236,7 @@ function cloud_lts_pagination( string $which, string $source, int $total_items, 
 		$page_links[] = sprintf(
 			'<a class="last-page button" href="%s"><span class="screen-reader-text">%s</span><span aria-hidden="true">%s</span></a>',
 			esc_url( add_query_arg( $source . '_page', $total_pages, $current_url ) ),
-			esc_html__( 'Last page', 'code-snippets' ),
+			__( 'Last page', 'code-snippets' ),
 			'&raquo;'
 		);
 	}

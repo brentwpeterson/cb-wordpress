@@ -14,6 +14,8 @@ namespace WPMUDEV\Notices\Notices;
 // If this file is called directly, abort.
 defined( 'WPINC' ) || die;
 
+use WPMUDEV\Notices\Handler;
+
 if ( ! class_exists( __NAMESPACE__ . '\\Notice' ) ) {
 	/**
 	 * Class Notice

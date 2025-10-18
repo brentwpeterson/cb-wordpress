@@ -12,12 +12,12 @@ class Edit_Menu extends Admin_Menu {
 	/**
 	 * Handle for JavaScript asset file.
 	 */
-	public const JS_HANDLE = 'code-snippets-edit-menu';
+	const JS_HANDLE = 'code-snippets-edit-menu';
 
 	/**
 	 * Handle for CSS asset file.
 	 */
-	public const CSS_HANDLE = 'code-snippets-edit';
+	const CSS_HANDLE = 'code-snippets-edit';
 
 	/**
 	 * The snippet object currently being edited
@@ -67,7 +67,7 @@ class Edit_Menu extends Admin_Menu {
 		$this->add_menu(
 			code_snippets()->get_menu_slug( 'add' ),
 			_x( 'Add New', 'menu label', 'code-snippets' ),
-			__( 'Create New Snippet', 'code-snippets' )
+			__( 'Add New Snippet', 'code-snippets' )
 		);
 	}
 
@@ -132,7 +132,6 @@ class Edit_Menu extends Admin_Menu {
 				'css'  => 'site-css',
 				'html' => 'content',
 				'js'   => 'site-head-js',
-				'cond' => 'condition',
 			];
 
 			if ( isset( $default_scopes[ $type ] ) ) {
@@ -177,8 +176,9 @@ class Edit_Menu extends Admin_Menu {
 				'react-dom',
 				'wp-url',
 				'wp-i18n',
-				'wp-element',
+				'wp-api-fetch',
 				'wp-components',
+				'wp-block-editor',
 			],
 			$plugin->version,
 			true
@@ -202,9 +202,10 @@ class Edit_Menu extends Admin_Menu {
 				'isPreview'         => isset( $_REQUEST['preview'] ),
 				'activateByDefault' => get_setting( 'general', 'activate_by_default' ),
 				'editorTheme'       => get_setting( 'editor', 'theme' ),
+				'scrollToNotices'   => apply_filters( 'code_snippets/scroll_to_notices', true ),
+				'extraSaveButtons'  => apply_filters( 'code_snippets/extra_save_buttons', true ),
 				'enableDownloads'   => apply_filters( 'code_snippets/enable_downloads', true ),
 				'enableDescription' => $desc_enabled,
-				'hideUpsell'        => get_setting( 'general', 'hide_upgrade_menu' ),
 				'tagOptions'        => apply_filters(
 					'code_snippets/tag_editor_options',
 					[

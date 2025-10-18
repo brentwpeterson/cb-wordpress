@@ -113,38 +113,18 @@ class Export {
 	}
 
 	/**
-	 * Export conditions in JSON format.
+	 * Export snippets in a generic JSON format that is not intended for importing.
 	 *
 	 * @return string
 	 */
-	public function export_conditions_json(): string {
-		$conditions_data = [];
-		$fields_to_copy = [ 'name', 'desc', 'tags' ];
+	public function export_snippets_basic_json(): string {
+		$snippet_data = array();
 
 		foreach ( $this->snippets_list as $snippet ) {
-			$condition_data = [];
-
-			if ( ! $snippet->code || 'cond' !== $snippet->type ) {
-				continue;
-			}
-
-			$rules = json_decode( $snippet->code, false );
-
-			if ( json_last_error() !== JSON_ERROR_NONE ) {
-				continue;
-			}
-
-			foreach ( $fields_to_copy as $field ) {
-				if ( ! empty( $snippet->$field ) ) {
-					$condition_data[ $field ] = $snippet->$field;
-				}
-			}
-
-			$condition_data['rules'] = $rules;
-			$conditions_data[] = $condition_data;
+			$snippet_data[] = $snippet->get_modified_fields();
 		}
 
-		return wp_json_encode( 1 === count( $conditions_data ) ? $conditions_data[0] : $conditions_data, JSON_PRETTY_PRINT );
+		return wp_json_encode( 1 === count( $snippet_data ) ? $snippet_data[0] : $snippet_data );
 	}
 
 	/**
@@ -163,10 +143,6 @@ class Export {
 
 		if ( 'php' === $type || 'html' === $type ) {
 			return $this->export_snippets_php();
-		}
-
-		if ( 'cond' === $type ) {
-			return $this->export_conditions_json();
 		}
 
 		foreach ( $this->snippets_list as $snippet ) {
