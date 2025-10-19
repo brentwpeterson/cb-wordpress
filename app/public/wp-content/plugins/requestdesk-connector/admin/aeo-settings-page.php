@@ -1,0 +1,654 @@
+<?php
+/**
+ * RequestDesk AEO Settings Page
+ */
+
+/**
+ * Add AEO admin menu
+ */
+function requestdesk_aeo_add_admin_menu() {
+    add_submenu_page(
+        'requestdesk-settings',
+        'AEO Settings',
+        'AEO Settings',
+        'manage_options',
+        'requestdesk-aeo-settings',
+        'requestdesk_aeo_settings_page'
+    );
+
+    add_submenu_page(
+        'requestdesk-settings',
+        'AEO Analytics',
+        'AEO Analytics',
+        'manage_options',
+        'requestdesk-aeo-analytics',
+        'requestdesk_aeo_analytics_page'
+    );
+
+    add_submenu_page(
+        'requestdesk-settings',
+        'Bulk AEO Tools',
+        'Bulk AEO Tools',
+        'manage_options',
+        'requestdesk-aeo-bulk',
+        'requestdesk_aeo_bulk_page'
+    );
+}
+
+/**
+ * AEO Settings Page
+ */
+function requestdesk_aeo_settings_page() {
+    // Save settings if form submitted
+    if (isset($_POST['requestdesk_aeo_save_settings']) && wp_verify_nonce($_POST['requestdesk_aeo_nonce'], 'requestdesk_aeo_settings')) {
+        $settings = array(
+            'enabled' => isset($_POST['enabled']),
+            'auto_optimize_on_publish' => isset($_POST['auto_optimize_on_publish']),
+            'auto_optimize_on_update' => isset($_POST['auto_optimize_on_update']),
+            'generate_faq_schema' => isset($_POST['generate_faq_schema']),
+            'extract_qa_pairs' => isset($_POST['extract_qa_pairs']),
+            'track_citations' => isset($_POST['track_citations']),
+            'monitor_freshness' => isset($_POST['monitor_freshness']),
+            'min_content_length' => intval($_POST['min_content_length']),
+            'qa_extraction_confidence' => floatval($_POST['qa_extraction_confidence']),
+            'freshness_alert_days' => intval($_POST['freshness_alert_days'])
+        );
+
+        update_option('requestdesk_aeo_settings', $settings);
+        echo '<div class="notice notice-success"><p>AEO settings saved!</p></div>';
+    }
+
+    $settings = get_option('requestdesk_aeo_settings', array(
+        'enabled' => true,
+        'auto_optimize_on_publish' => true,
+        'auto_optimize_on_update' => false,
+        'generate_faq_schema' => true,
+        'extract_qa_pairs' => true,
+        'track_citations' => true,
+        'monitor_freshness' => true,
+        'min_content_length' => 300,
+        'qa_extraction_confidence' => 0.7,
+        'freshness_alert_days' => 90
+    ));
+
+    // Get system status
+    $aeo_core = new RequestDesk_AEO_Core();
+    $citation_tracker = new RequestDesk_Citation_Tracker();
+    $freshness_tracker = new RequestDesk_Freshness_Tracker();
+
+    $citation_analytics = $citation_tracker->get_citation_analytics();
+    $freshness_analytics = $freshness_tracker->get_freshness_analytics();
+    ?>
+
+    <div class="wrap">
+        <h1>RequestDesk AEO Settings</h1>
+
+        <div class="card">
+            <h2>📊 AEO System Overview</h2>
+            <div class="aeo-stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 20px 0;">
+                <div class="stat-box" style="background: #f9f9f9; padding: 15px; border-left: 4px solid #0073aa;">
+                    <h3 style="margin: 0; color: #0073aa;">Content Statistics</h3>
+                    <p style="margin: 5px 0 0 0; font-size: 24px; font-weight: bold;"><?php echo $citation_analytics['total_statistics']; ?></p>
+                    <small>Total citation-ready stats</small>
+                </div>
+                <div class="stat-box" style="background: #f9f9f9; padding: 15px; border-left: 4px solid #46b450;">
+                    <h3 style="margin: 0; color: #46b450;">Content Freshness</h3>
+                    <p style="margin: 5px 0 0 0; font-size: 24px; font-weight: bold;"><?php echo $freshness_analytics['avg_freshness_score']; ?>%</p>
+                    <small>Average freshness score</small>
+                </div>
+                <div class="stat-box" style="background: #f9f9f9; padding: 15px; border-left: 4px solid #ffb900;">
+                    <h3 style="margin: 0; color: #ffb900;">Needs Attention</h3>
+                    <p style="margin: 5px 0 0 0; font-size: 24px; font-weight: bold;"><?php echo $freshness_analytics['needs_attention']; ?></p>
+                    <small>Posts needing freshness updates</small>
+                </div>
+                <div class="stat-box" style="background: #f9f9f9; padding: 15px; border-left: 4px solid #d63638;">
+                    <h3 style="margin: 0; color: #d63638;">High Quality Stats</h3>
+                    <p style="margin: 5px 0 0 0; font-size: 24px; font-weight: bold;"><?php echo $citation_analytics['high_quality_stats']; ?></p>
+                    <small>Premium citation stats</small>
+                </div>
+            </div>
+        </div>
+
+        <form method="post" action="">
+            <?php wp_nonce_field('requestdesk_aeo_settings', 'requestdesk_aeo_nonce'); ?>
+
+            <div class="card">
+                <h2>🚀 Core AEO Settings</h2>
+                <table class="form-table">
+                    <tr>
+                        <th scope="row">Enable AEO System</th>
+                        <td>
+                            <label>
+                                <input type="checkbox" name="enabled" value="1" <?php checked($settings['enabled'], true); ?>>
+                                Enable Answer Engine Optimization features
+                            </label>
+                            <p class="description">
+                                Master switch for all AEO functionality. When disabled, no AEO processing will occur.
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Auto-Optimization</th>
+                        <td>
+                            <label>
+                                <input type="checkbox" name="auto_optimize_on_publish" value="1" <?php checked($settings['auto_optimize_on_publish'], true); ?>>
+                                Automatically optimize content when published
+                            </label><br>
+                            <label>
+                                <input type="checkbox" name="auto_optimize_on_update" value="1" <?php checked($settings['auto_optimize_on_update'], true); ?>>
+                                Automatically optimize content when updated
+                            </label>
+                            <p class="description">
+                                Choose when AEO optimization should run automatically. Manual optimization is always available.
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Minimum Content Length</th>
+                        <td>
+                            <input type="number" name="min_content_length" value="<?php echo esc_attr($settings['min_content_length']); ?>" min="100" max="2000" class="small-text">
+                            <p class="description">
+                                Minimum word count required for AEO optimization. Shorter content will be skipped.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="card">
+                <h2>❓ Question & Answer Extraction</h2>
+                <table class="form-table">
+                    <tr>
+                        <th scope="row">Extract Q&A Pairs</th>
+                        <td>
+                            <label>
+                                <input type="checkbox" name="extract_qa_pairs" value="1" <?php checked($settings['extract_qa_pairs'], true); ?>>
+                                Automatically extract question-answer pairs from content
+                            </label>
+                            <p class="description">
+                                AI engines love Q&A format. This extracts natural questions and answers from your content.
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Q&A Confidence Threshold</th>
+                        <td>
+                            <select name="qa_extraction_confidence">
+                                <option value="0.5" <?php selected($settings['qa_extraction_confidence'], 0.5); ?>>50% - More Q&A pairs, lower quality</option>
+                                <option value="0.6" <?php selected($settings['qa_extraction_confidence'], 0.6); ?>>60% - Balanced</option>
+                                <option value="0.7" <?php selected($settings['qa_extraction_confidence'], 0.7); ?>>70% - Recommended</option>
+                                <option value="0.8" <?php selected($settings['qa_extraction_confidence'], 0.8); ?>>80% - High quality only</option>
+                                <option value="0.9" <?php selected($settings['qa_extraction_confidence'], 0.9); ?>>90% - Excellent quality only</option>
+                            </select>
+                            <p class="description">
+                                Higher thresholds extract fewer but higher-quality Q&A pairs.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="card">
+                <h2>🏷️ Schema Markup Generation</h2>
+                <table class="form-table">
+                    <tr>
+                        <th scope="row">Generate FAQ Schema</th>
+                        <td>
+                            <label>
+                                <input type="checkbox" name="generate_faq_schema" value="1" <?php checked($settings['generate_faq_schema'], true); ?>>
+                                Automatically generate FAQ structured data
+                            </label>
+                            <p class="description">
+                                Creates schema.org FAQ markup for extracted Q&A pairs. Helps AI engines understand your content structure.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="card">
+                <h2>📈 Citation Tracking</h2>
+                <table class="form-table">
+                    <tr>
+                        <th scope="row">Track Citation Statistics</th>
+                        <td>
+                            <label>
+                                <input type="checkbox" name="track_citations" value="1" <?php checked($settings['track_citations'], true); ?>>
+                                Extract and track citation-ready statistics
+                            </label>
+                            <p class="description">
+                                Identifies statistics, percentages, and data points that AI engines can cite from your content.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="card">
+                <h2>🕒 Content Freshness Monitoring</h2>
+                <table class="form-table">
+                    <tr>
+                        <th scope="row">Monitor Content Freshness</th>
+                        <td>
+                            <label>
+                                <input type="checkbox" name="monitor_freshness" value="1" <?php checked($settings['monitor_freshness'], true); ?>>
+                                Track and monitor content freshness
+                            </label>
+                            <p class="description">
+                                AI engines prefer fresh, up-to-date content. This monitors and scores content freshness.
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Freshness Alert Threshold</th>
+                        <td>
+                            <input type="number" name="freshness_alert_days" value="<?php echo esc_attr($settings['freshness_alert_days']); ?>" min="30" max="365" class="small-text"> days
+                            <p class="description">
+                                Get alerts when content hasn't been updated for this many days.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <p class="submit">
+                <input type="submit" name="requestdesk_aeo_save_settings" class="button-primary" value="Save AEO Settings">
+            </p>
+        </form>
+
+        <div class="card">
+            <h2>🔧 System Information</h2>
+            <table class="widefat">
+                <thead>
+                    <tr>
+                        <th>Component</th>
+                        <th>Status</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>AEO Core</td>
+                        <td><span style="color: #46b450;">✓ Active</span></td>
+                        <td>Main AEO engine running</td>
+                    </tr>
+                    <tr>
+                        <td>Content Analyzer</td>
+                        <td><span style="color: #46b450;">✓ Active</span></td>
+                        <td>Analyzing content for optimization opportunities</td>
+                    </tr>
+                    <tr>
+                        <td>Schema Generator</td>
+                        <td><span style="color: #46b450;">✓ Active</span></td>
+                        <td>Generating structured data markup</td>
+                    </tr>
+                    <tr>
+                        <td>Citation Tracker</td>
+                        <td><span style="color: #46b450;">✓ Active</span></td>
+                        <td><?php echo $citation_analytics['posts_with_stats']; ?> posts with statistics tracked</td>
+                    </tr>
+                    <tr>
+                        <td>Freshness Monitor</td>
+                        <td><span style="color: #46b450;">✓ Active</span></td>
+                        <td><?php echo $freshness_analytics['total_content']; ?> pieces of content monitored</td>
+                    </tr>
+                    <tr>
+                        <td>Database Tables</td>
+                        <td>
+                            <?php
+                            global $wpdb;
+                            $table_exists = $wpdb->get_var("SHOW TABLES LIKE '{$wpdb->prefix}requestdesk_aeo_data'");
+                            if ($table_exists) {
+                                echo '<span style="color: #46b450;">✓ Created</span>';
+                            } else {
+                                echo '<span style="color: #d63638;">✗ Missing</span>';
+                            }
+                            ?>
+                        </td>
+                        <td>AEO data storage tables</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>📚 Documentation & Help</h2>
+            <p>Learn more about AEO optimization:</p>
+            <ul>
+                <li><strong>Answer Engine Optimization (AEO):</strong> Optimizing content for AI-powered search engines like ChatGPT, Claude, and Perplexity</li>
+                <li><strong>AI Optimization (AIO):</strong> Using AI tools to enhance content creation and optimization</li>
+                <li><strong>Generative Engine Optimization (GEO):</strong> Optimizing for AI engines that generate responses</li>
+            </ul>
+            <p>
+                <a href="https://requestdesk.ai/docs/aeo-guide" target="_blank" class="button">📖 Read AEO Guide</a>
+                <a href="https://requestdesk.ai/support" target="_blank" class="button">🆘 Get Support</a>
+            </p>
+        </div>
+    </div>
+
+    <style>
+        .card {
+            background: white;
+            border: 1px solid #ccd0d4;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 1px 1px rgba(0,0,0,.04);
+        }
+        .aeo-stats-grid .stat-box h3 {
+            font-size: 14px;
+            margin: 0 0 10px 0;
+        }
+        .aeo-stats-grid .stat-box p {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0;
+            line-height: 1.2;
+        }
+        .aeo-stats-grid .stat-box small {
+            color: #666;
+            font-size: 12px;
+        }
+    </style>
+    <?php
+}
+
+/**
+ * AEO Analytics Page
+ */
+function requestdesk_aeo_analytics_page() {
+    $citation_tracker = new RequestDesk_Citation_Tracker();
+    $freshness_tracker = new RequestDesk_Freshness_Tracker();
+
+    $citation_analytics = $citation_tracker->get_citation_analytics();
+    $freshness_analytics = $freshness_tracker->get_freshness_analytics();
+    $posts_needing_attention = $freshness_tracker->get_posts_needing_attention(20);
+    ?>
+
+    <div class="wrap">
+        <h1>AEO Analytics Dashboard</h1>
+
+        <div class="card">
+            <h2>📊 Content Statistics Overview</h2>
+            <div class="analytics-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                <div class="metric-card" style="background: #f9f9f9; padding: 20px; border-left: 4px solid #0073aa;">
+                    <h3>Citation Statistics</h3>
+                    <div class="metric-value" style="font-size: 32px; font-weight: bold; color: #0073aa;"><?php echo $citation_analytics['total_statistics']; ?></div>
+                    <div class="metric-details">
+                        <p>High Quality: <strong><?php echo $citation_analytics['high_quality_stats']; ?></strong></p>
+                        <p>Posts with Stats: <strong><?php echo $citation_analytics['posts_with_stats']; ?></strong></p>
+                        <p>Avg per Post: <strong><?php echo $citation_analytics['avg_stats_per_post']; ?></strong></p>
+                    </div>
+                </div>
+
+                <div class="metric-card" style="background: #f9f9f9; padding: 20px; border-left: 4px solid #46b450;">
+                    <h3>Content Freshness</h3>
+                    <div class="metric-value" style="font-size: 32px; font-weight: bold; color: #46b450;"><?php echo $freshness_analytics['avg_freshness_score']; ?>%</div>
+                    <div class="metric-details">
+                        <p>Excellent: <strong><?php echo $freshness_analytics['excellent_count']; ?></strong></p>
+                        <p>Good: <strong><?php echo $freshness_analytics['good_count']; ?></strong></p>
+                        <p>Needs Work: <strong><?php echo $freshness_analytics['needs_attention']; ?></strong></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🎯 Statistic Types Distribution</h2>
+            <?php if (!empty($citation_analytics['top_stat_types'])): ?>
+            <table class="wp-list-table widefat fixed striped">
+                <thead>
+                    <tr>
+                        <th>Statistic Type</th>
+                        <th>Count</th>
+                        <th>Percentage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($citation_analytics['top_stat_types'] as $type => $count): ?>
+                    <tr>
+                        <td><?php echo ucfirst($type); ?></td>
+                        <td><?php echo $count; ?></td>
+                        <td><?php echo round(($count / $citation_analytics['total_statistics']) * 100, 1); ?>%</td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+            <?php else: ?>
+            <p>No statistics data available yet. <a href="<?php echo admin_url('admin.php?page=requestdesk-aeo-bulk'); ?>">Run bulk analysis</a> to generate data.</p>
+            <?php endif; ?>
+        </div>
+
+        <div class="card">
+            <h2>🕒 Content Freshness Breakdown</h2>
+            <div class="freshness-chart" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; margin: 20px 0;">
+                <div class="freshness-item" style="text-align: center; padding: 15px; background: #e8f5e8; border-radius: 8px;">
+                    <div style="font-size: 24px; font-weight: bold; color: #46b450;"><?php echo $freshness_analytics['excellent_count']; ?></div>
+                    <div style="color: #46b450;">Excellent</div>
+                    <small>80-100%</small>
+                </div>
+                <div class="freshness-item" style="text-align: center; padding: 15px; background: #f0f8ff; border-radius: 8px;">
+                    <div style="font-size: 24px; font-weight: bold; color: #0073aa;"><?php echo $freshness_analytics['good_count']; ?></div>
+                    <div style="color: #0073aa;">Good</div>
+                    <small>60-79%</small>
+                </div>
+                <div class="freshness-item" style="text-align: center; padding: 15px; background: #fff8e1; border-radius: 8px;">
+                    <div style="font-size: 24px; font-weight: bold; color: #ffb900;"><?php echo $freshness_analytics['fair_count']; ?></div>
+                    <div style="color: #ffb900;">Fair</div>
+                    <small>40-59%</small>
+                </div>
+                <div class="freshness-item" style="text-align: center; padding: 15px; background: #fff3e0; border-radius: 8px;">
+                    <div style="font-size: 24px; font-weight: bold; color: #f56e28;"><?php echo $freshness_analytics['poor_count']; ?></div>
+                    <div style="color: #f56e28;">Poor</div>
+                    <small>20-39%</small>
+                </div>
+                <div class="freshness-item" style="text-align: center; padding: 15px; background: #ffebee; border-radius: 8px;">
+                    <div style="font-size: 24px; font-weight: bold; color: #d63638;"><?php echo $freshness_analytics['critical_count']; ?></div>
+                    <div style="color: #d63638;">Critical</div>
+                    <small>0-19%</small>
+                </div>
+            </div>
+        </div>
+
+        <?php if (!empty($posts_needing_attention)): ?>
+        <div class="card">
+            <h2>⚠️ Content Needing Attention</h2>
+            <table class="wp-list-table widefat fixed striped">
+                <thead>
+                    <tr>
+                        <th>Post Title</th>
+                        <th>Freshness Score</th>
+                        <th>Last Modified</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($posts_needing_attention as $post): ?>
+                    <?php
+                    $freshness_score = get_post_meta($post->ID, '_requestdesk_freshness_score', true);
+                    $freshness_status = get_post_meta($post->ID, '_requestdesk_freshness_status', true);
+                    ?>
+                    <tr>
+                        <td>
+                            <strong><a href="<?php echo get_edit_post_link($post->ID); ?>"><?php echo esc_html($post->post_title); ?></a></strong>
+                            <div class="row-actions">
+                                <span class="edit"><a href="<?php echo get_edit_post_link($post->ID); ?>">Edit</a> | </span>
+                                <span class="view"><a href="<?php echo get_permalink($post->ID); ?>">View</a></span>
+                            </div>
+                        </td>
+                        <td>
+                            <span style="color: <?php echo $freshness_score < 20 ? '#d63638' : '#f56e28'; ?>; font-weight: bold;">
+                                <?php echo $freshness_score ?: 'N/A'; ?>%
+                            </span>
+                            <br><small><?php echo ucfirst($freshness_status ?: 'unknown'); ?></small>
+                        </td>
+                        <td><?php echo get_the_modified_date('M j, Y', $post->ID); ?></td>
+                        <td>
+                            <a href="<?php echo get_edit_post_link($post->ID); ?>" class="button button-small">Update</a>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        <?php endif; ?>
+    </div>
+    <?php
+}
+
+/**
+ * Bulk AEO Tools Page
+ */
+function requestdesk_aeo_bulk_page() {
+    // Handle bulk operations
+    if (isset($_POST['bulk_action']) && wp_verify_nonce($_POST['requestdesk_aeo_bulk_nonce'], 'requestdesk_aeo_bulk')) {
+        $action = sanitize_text_field($_POST['bulk_action']);
+        $post_ids = array_map('intval', $_POST['post_ids'] ?? array());
+
+        if (!empty($post_ids)) {
+            $aeo_core = new RequestDesk_AEO_Core();
+            $results = array('success' => 0, 'failed' => 0, 'skipped' => 0);
+
+            foreach ($post_ids as $post_id) {
+                $result = $aeo_core->optimize_post($post_id, true);
+                if (is_wp_error($result)) {
+                    $results['failed']++;
+                } else {
+                    $results['success']++;
+                }
+            }
+
+            echo '<div class="notice notice-success"><p>';
+            echo sprintf('Bulk operation completed: %d successful, %d failed', $results['success'], $results['failed']);
+            echo '</p></div>';
+        }
+    }
+
+    // Get posts for bulk operations
+    $posts = get_posts(array(
+        'post_type' => array('post', 'page'),
+        'post_status' => 'publish',
+        'posts_per_page' => 50,
+        'orderby' => 'modified',
+        'order' => 'DESC'
+    ));
+    ?>
+
+    <div class="wrap">
+        <h1>Bulk AEO Tools</h1>
+
+        <div class="card">
+            <h2>🚀 Bulk AEO Optimization</h2>
+            <p>Select posts and pages to optimize for AEO. This will analyze content, extract Q&A pairs, generate schema markup, and update freshness scores.</p>
+
+            <form method="post" action="">
+                <?php wp_nonce_field('requestdesk_aeo_bulk', 'requestdesk_aeo_bulk_nonce'); ?>
+
+                <div class="tablenav top">
+                    <div class="alignleft actions">
+                        <select name="bulk_action">
+                            <option value="optimize">Optimize for AEO</option>
+                            <option value="analyze_only">Analyze Only</option>
+                            <option value="regenerate_schema">Regenerate Schema</option>
+                        </select>
+                        <input type="submit" class="button action" value="Apply to Selected">
+                    </div>
+                </div>
+
+                <table class="wp-list-table widefat fixed striped">
+                    <thead>
+                        <tr>
+                            <td class="check-column"><input type="checkbox" id="select-all"></td>
+                            <th>Title</th>
+                            <th>Type</th>
+                            <th>AEO Score</th>
+                            <th>Freshness</th>
+                            <th>Last Modified</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($posts as $post): ?>
+                        <?php
+                        $aeo_score = get_post_meta($post->ID, '_requestdesk_aeo_score', true);
+                        $freshness_score = get_post_meta($post->ID, '_requestdesk_freshness_score', true);
+                        $freshness_status = get_post_meta($post->ID, '_requestdesk_freshness_status', true);
+                        ?>
+                        <tr>
+                            <th class="check-column">
+                                <input type="checkbox" name="post_ids[]" value="<?php echo $post->ID; ?>" class="post-checkbox">
+                            </th>
+                            <td>
+                                <strong><a href="<?php echo get_edit_post_link($post->ID); ?>"><?php echo esc_html($post->post_title); ?></a></strong>
+                                <div class="row-actions">
+                                    <span class="edit"><a href="<?php echo get_edit_post_link($post->ID); ?>">Edit</a> | </span>
+                                    <span class="view"><a href="<?php echo get_permalink($post->ID); ?>">View</a></span>
+                                </div>
+                            </td>
+                            <td><?php echo ucfirst($post->post_type); ?></td>
+                            <td>
+                                <?php if ($aeo_score): ?>
+                                    <span style="color: <?php echo $aeo_score >= 70 ? '#46b450' : ($aeo_score >= 40 ? '#ffb900' : '#d63638'); ?>; font-weight: bold;">
+                                        <?php echo $aeo_score; ?>%
+                                    </span>
+                                <?php else: ?>
+                                    <span style="color: #999;">Not analyzed</span>
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <?php if ($freshness_score): ?>
+                                    <span style="color: <?php echo $freshness_score >= 60 ? '#46b450' : ($freshness_score >= 40 ? '#ffb900' : '#d63638'); ?>; font-weight: bold;">
+                                        <?php echo $freshness_score; ?>%
+                                    </span>
+                                    <br><small><?php echo ucfirst($freshness_status ?: 'unknown'); ?></small>
+                                <?php else: ?>
+                                    <span style="color: #999;">Not analyzed</span>
+                                <?php endif; ?>
+                            </td>
+                            <td><?php echo get_the_modified_date('M j, Y g:i A', $post->ID); ?></td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+
+                <div class="tablenav bottom">
+                    <div class="alignleft actions">
+                        <select name="bulk_action">
+                            <option value="optimize">Optimize for AEO</option>
+                            <option value="analyze_only">Analyze Only</option>
+                            <option value="regenerate_schema">Regenerate Schema</option>
+                        </select>
+                        <input type="submit" class="button action" value="Apply to Selected">
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>⚡ Quick Actions</h2>
+            <p>
+                <a href="<?php echo wp_nonce_url(admin_url('admin-post.php?action=requestdesk_optimize_all'), 'requestdesk_optimize_all'); ?>" class="button button-primary">
+                    Optimize All Published Content
+                </a>
+                <a href="<?php echo wp_nonce_url(admin_url('admin-post.php?action=requestdesk_analyze_all'), 'requestdesk_analyze_all'); ?>" class="button">
+                    Analyze All Content
+                </a>
+                <a href="<?php echo wp_nonce_url(admin_url('admin-post.php?action=requestdesk_refresh_freshness'), 'requestdesk_refresh_freshness'); ?>" class="button">
+                    Refresh Freshness Scores
+                </a>
+            </p>
+            <p class="description">
+                <strong>Note:</strong> Bulk operations on large sites may take several minutes to complete.
+                Operations run in the background and you'll be notified when complete.
+            </p>
+        </div>
+    </div>
+
+    <script>
+    document.getElementById('select-all').addEventListener('change', function() {
+        const checkboxes = document.querySelectorAll('.post-checkbox');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+        });
+    });
+    </script>
+    <?php
+}

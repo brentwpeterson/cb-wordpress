@@ -41,6 +41,61 @@ This file contains important configuration and guidance for Claude when working 
 - Focus searches on tracked files only: custom themes, plugins, and configuration files
 - Use git-tracked files as the primary search scope for troubleshooting
 
+## Module Development and Testing
+
+### RequestDesk Plugin Development
+- **Plugin Path**: `app/public/wp-content/plugins/requestdesk-connector/`
+- **Main Plugin File**: `requestdesk-connector.php`
+- **API Class**: `includes/class-requestdesk-api.php`
+- **Admin Settings**: `admin/settings-page.php`
+
+### Development Workflow
+1. **Making Changes**:
+   - Edit plugin files in `app/public/wp-content/plugins/requestdesk-connector/`
+   - Changes are immediately reflected in LocalWP environment
+   - No build process required for PHP changes
+
+2. **Testing Changes in LocalWP**:
+   - Access WordPress admin: `https://contentcucumber.local/wp-admin`
+   - Plugin settings: `https://contentcucumber.local/wp-admin/admin.php?page=requestdesk-settings`
+   - Test API connections through plugin interface
+   - Check WordPress debug log for errors
+
+3. **Activating/Deactivating Plugin**:
+   - Navigate to: `https://contentcucumber.local/wp-admin/plugins.php`
+   - Find "RequestDesk Connector" plugin
+   - Use Activate/Deactivate links to test plugin lifecycle
+   - **Note**: Deactivation/reactivation helps test initialization code
+
+4. **Database Changes**:
+   - Access database through LocalWP interface (right-click site → Database → Adminer)
+   - Plugin tables use prefix: `wp_83rxila95v_`
+   - Check plugin options in `wp_83rxila95v_options` table
+
+### Local Testing Best Practices
+- **Enable WordPress Debug Mode**: Add to `wp-config.php`:
+  ```php
+  define('WP_DEBUG', true);
+  define('WP_DEBUG_LOG', true);
+  define('WP_DEBUG_DISPLAY', false);
+  ```
+- **Debug Log Location**: `app/public/wp-content/debug.log`
+- **Clear Cache**: If using caching plugins, clear cache after changes
+- **Test Different User Roles**: Test plugin functionality with different WordPress user permissions
+
+### Plugin Update Workflow
+1. **Update Plugin Files**: Make changes to plugin files in the repository
+2. **Version Bump**: Update version number in main plugin file header
+3. **Test Locally**: Verify changes work in LocalWP environment
+4. **Commit Changes**: Use git to commit and push changes
+5. **Deploy**: Upload changes to production environment
+
+### Common Development Tasks
+- **Add New API Endpoints**: Extend `class-requestdesk-api.php`
+- **Update Settings Page**: Modify `admin/settings-page.php`
+- **Add Database Tables**: Use WordPress `dbDelta()` function in activation hook
+- **Debug API Calls**: Check WordPress debug log and browser network tab
+
 ## GP Premium Elements Management
 - **Admin Interface**: https://contentcucumber.local/wp-admin/edit.php?post_type=gp_elements
 - GP Premium Elements are stored as WordPress posts with `post_type = 'gp_elements'`
