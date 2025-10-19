@@ -7,6 +7,12 @@
 
 class RequestDesk_Content_Analyzer {
 
+    private $claude_integration;
+
+    public function __construct() {
+        $this->claude_integration = new RequestDesk_Claude_Integration();
+    }
+
     /**
      * Analyze content for AEO optimization
      */
@@ -14,6 +20,7 @@ class RequestDesk_Content_Analyzer {
         $content = $post->post_content;
         $title = $post->post_title;
 
+        // Start with basic analysis
         $analysis = array(
             'post_id' => $post->ID,
             'word_count' => $this->get_word_count($content),
@@ -32,8 +39,32 @@ class RequestDesk_Content_Analyzer {
             'ai_readiness_score' => 0
         );
 
-        // Calculate AI readiness score
-        $analysis['ai_readiness_score'] = $this->calculate_ai_readiness_score($analysis);
+        // If Claude AI is available, enhance analysis with AI insights
+        if ($this->claude_integration->is_available()) {
+            $claude_analysis = $this->claude_integration->analyze_content($title, strip_tags($content));
+
+            if (!is_wp_error($claude_analysis)) {
+                // Merge Claude AI insights with basic analysis
+                $analysis['claude_aeo_score'] = $claude_analysis['aeo_score'] ?? 0;
+                $analysis['claude_readability_score'] = $claude_analysis['readability_score'] ?? $analysis['readability_score'];
+                $analysis['claude_structure_score'] = $claude_analysis['structure_score'] ?? 0;
+                $analysis['keyword_density'] = $claude_analysis['keyword_density'] ?? array();
+                $analysis['improvements'] = $claude_analysis['improvements'] ?? array();
+                $analysis['questions_answered'] = $claude_analysis['questions_answered'] ?? array();
+                $analysis['missing_elements'] = $claude_analysis['missing_elements'] ?? array();
+                $analysis['schema_suggestions'] = $claude_analysis['schema_suggestions'] ?? array();
+
+                // Use Claude's AEO score as the primary AI readiness score
+                $analysis['ai_readiness_score'] = $claude_analysis['aeo_score'] ?? $this->calculate_ai_readiness_score($analysis);
+            } else {
+                // Fallback to calculated score if Claude fails
+                $analysis['ai_readiness_score'] = $this->calculate_ai_readiness_score($analysis);
+                $analysis['claude_error'] = $claude_analysis->get_error_message();
+            }
+        } else {
+            // Calculate AI readiness score using basic metrics
+            $analysis['ai_readiness_score'] = $this->calculate_ai_readiness_score($analysis);
+        }
 
         return $analysis;
     }
@@ -41,7 +72,17 @@ class RequestDesk_Content_Analyzer {
     /**
      * Extract question-answer pairs from content
      */
-    public function extract_qa_pairs($content) {
+    public function extract_qa_pairs($content, $title = '') {
+        // If Claude AI is available, use it for intelligent Q&A extraction
+        if ($this->claude_integration->is_available()) {
+            $claude_qa = $this->claude_integration->extract_qa_pairs($title, strip_tags($content));
+
+            if (!is_wp_error($claude_qa) && is_array($claude_qa) && !empty($claude_qa)) {
+                return $claude_qa;
+            }
+        }
+
+        // Fallback to basic regex-based extraction
         $qa_pairs = array();
 
         // Remove HTML tags but keep structure

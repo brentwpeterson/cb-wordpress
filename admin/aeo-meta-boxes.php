@@ -388,8 +388,11 @@ function requestdesk_aeo_citations_meta_box($post) {
                 <button type="button" class="button citations-refresh-btn" data-post-id="<?php echo $post->ID; ?>">
                     Refresh Citations
                 </button>
-                <button type="button" class="button citations-export-btn" data-post-id="<?php echo $post->ID; ?>">
+                <button type="button" class="button citations-export-btn" data-post-id="<?php echo $post->ID; ?>" disabled style="position: relative;">
                     Export Statistics
+                    <span style="background: #e74c3c; color: white; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-left: 5px; font-weight: bold;">
+                        COMING SOON
+                    </span>
                 </button>
             </div>
         <?php else: ?>
@@ -420,11 +423,12 @@ function requestdesk_aeo_citations_meta_box($post) {
             });
         });
 
-        $('.citations-export-btn').on('click', function() {
-            const postId = $(this).data('post-id');
-            // This could open a modal or trigger a download
-            alert('Export functionality coming soon!');
-        });
+        // Export button is disabled with "Coming Soon" badge
+        // $('.citations-export-btn').on('click', function() {
+        //     const postId = $(this).data('post-id');
+        //     // This could open a modal or trigger a download
+        //     alert('Export functionality coming soon!');
+        // });
     });
     </script>
     <?php

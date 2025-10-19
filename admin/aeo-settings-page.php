@@ -523,11 +523,11 @@ function requestdesk_aeo_bulk_page() {
         }
     }
 
-    // Get posts for bulk operations
+    // Get posts for bulk operations (increased limit for better visibility)
     $posts = get_posts(array(
         'post_type' => array('post', 'page'),
         'post_status' => 'publish',
-        'posts_per_page' => 50,
+        'posts_per_page' => 200, // Show more posts in admin interface
         'orderby' => 'modified',
         'order' => 'DESC'
     ));

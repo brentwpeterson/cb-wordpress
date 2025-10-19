@@ -7,7 +7,10 @@
 
 class RequestDesk_Freshness_Tracker {
 
+    private $claude_integration;
+
     public function __construct() {
+        $this->claude_integration = new RequestDesk_Claude_Integration();
         // Hook into post updates
         add_action('save_post', array($this, 'update_freshness_data'), 10, 2);
         add_action('transition_post_status', array($this, 'handle_status_change'), 10, 3);
@@ -237,6 +240,44 @@ class RequestDesk_Freshness_Tracker {
     private function generate_freshness_recommendations($post, $score_data) {
         $recommendations = array();
 
+        // Get Claude AI freshness assessment if available
+        if ($this->claude_integration->is_available()) {
+            $claude_freshness = $this->claude_integration->assess_content_freshness(
+                $post->post_title,
+                strip_tags($post->post_content),
+                $post->post_date,
+                $post->post_modified
+            );
+
+            if (!is_wp_error($claude_freshness)) {
+                // Use Claude's detailed recommendations
+                if (!empty($claude_freshness['update_suggestions'])) {
+                    foreach ($claude_freshness['update_suggestions'] as $suggestion) {
+                        $recommendations[] = array(
+                            'type' => 'claude_ai',
+                            'priority' => $claude_freshness['update_priority'] ?? 'medium',
+                            'message' => $suggestion,
+                            'action' => 'AI-powered content update recommendation',
+                            'freshness_score' => $claude_freshness['freshness_score'] ?? 0
+                        );
+                    }
+                }
+
+                // Add Claude's specific outdated elements
+                if (!empty($claude_freshness['outdated_elements'])) {
+                    foreach ($claude_freshness['outdated_elements'] as $element) {
+                        $recommendations[] = array(
+                            'type' => 'outdated_content',
+                            'priority' => 'high',
+                            'message' => "Outdated content detected: " . $element,
+                            'action' => 'Update or remove outdated information'
+                        );
+                    }
+                }
+            }
+        }
+
+        // Fallback to basic recommendations if Claude not available or as supplements
         // Age-based recommendations
         if ($score_data['age_score'] < 50) {
             $recommendations[] = array(
@@ -355,7 +396,7 @@ class RequestDesk_Freshness_Tracker {
         $stale_posts = get_posts(array(
             'post_type' => array('post', 'page'),
             'post_status' => 'publish',
-            'posts_per_page' => 50,
+            'posts_per_page' => -1, // Process all posts for complete analytics
             'meta_query' => array(
                 'relation' => 'OR',
                 array(

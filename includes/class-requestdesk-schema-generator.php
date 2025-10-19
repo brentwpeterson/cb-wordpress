@@ -7,6 +7,12 @@
 
 class RequestDesk_Schema_Generator {
 
+    private $claude_integration;
+
+    public function __construct() {
+        $this->claude_integration = new RequestDesk_Claude_Integration();
+    }
+
     /**
      * Generate FAQ schema markup
      */
@@ -421,7 +427,24 @@ class RequestDesk_Schema_Generator {
     public function generate_comprehensive_schema($post, $aeo_data = array()) {
         $schemas = array();
 
-        // Always include Article schema
+        // Get Claude AI schema suggestions if available
+        if ($this->claude_integration->is_available()) {
+            $claude_suggestions = $this->claude_integration->generate_schema_suggestions(
+                $post->post_title,
+                strip_tags($post->post_content),
+                $post->post_type
+            );
+
+            if (!is_wp_error($claude_suggestions)) {
+                // Use Claude's primary schema suggestion if available
+                $primary_schema_type = $claude_suggestions['primary_schema'] ?? 'Article';
+
+                // Store Claude suggestions in AEO data for future reference
+                $aeo_data['claude_schema_suggestions'] = $claude_suggestions;
+            }
+        }
+
+        // Always include Article schema (or Claude's primary suggestion)
         $schemas[] = $this->generate_article_schema($post, $aeo_data);
 
         // Add FAQ schema if Q&A pairs exist
@@ -432,8 +455,18 @@ class RequestDesk_Schema_Generator {
             }
         }
 
-        // Add HowTo schema for instructional content
-        if (stripos($post->post_title, 'how to') !== false || stripos($post->post_content, 'step') !== false) {
+        // Add HowTo schema for instructional content (enhanced with Claude suggestions)
+        $is_howto_content = (stripos($post->post_title, 'how to') !== false ||
+                            stripos($post->post_content, 'step') !== false);
+
+        // Also check Claude's suggestions for HowTo recommendation
+        if (isset($aeo_data['claude_schema_suggestions']['additional_schemas']) &&
+            is_array($aeo_data['claude_schema_suggestions']['additional_schemas']) &&
+            in_array('HowTo', $aeo_data['claude_schema_suggestions']['additional_schemas'])) {
+            $is_howto_content = true;
+        }
+
+        if ($is_howto_content) {
             $howto_schema = $this->generate_howto_schema($post);
             if (!empty($howto_schema)) {
                 $schemas[] = $howto_schema;

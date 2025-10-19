@@ -351,7 +351,7 @@ class RequestDesk_Citation_Tracker {
         $posts = get_posts(array(
             'post_type' => array('post', 'page'),
             'post_status' => 'publish',
-            'posts_per_page' => 50,
+            'posts_per_page' => -1, // Process all posts for complete analytics
             'meta_query' => array(
                 'relation' => 'OR',
                 array(

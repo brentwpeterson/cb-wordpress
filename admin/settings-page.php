@@ -4,12 +4,37 @@
  */
 
 function requestdesk_settings_page() {
-    // DEBUG: Check if ANY form submission is happening
-    if (isset($_POST['requestdesk_save_settings'])) {
-        echo '<div class="notice notice-info"><p>DEBUG: Form submitted!</p></div>';
-        if (!wp_verify_nonce($_POST['requestdesk_nonce'], 'requestdesk_settings')) {
-            echo '<div class="notice notice-error"><p>DEBUG: Nonce failed!</p></div>';
-        }
+    // Check and create missing AEO tables if needed
+    global $wpdb;
+    $aeo_table_name = $wpdb->prefix . 'requestdesk_aeo_data';
+
+    if ($wpdb->get_var("SHOW TABLES LIKE '$aeo_table_name'") != $aeo_table_name) {
+        // Create the missing AEO table
+        $charset_collate = $wpdb->get_charset_collate();
+
+        $aeo_sql = "CREATE TABLE IF NOT EXISTS $aeo_table_name (
+            id mediumint(9) NOT NULL AUTO_INCREMENT,
+            post_id bigint(20) NOT NULL,
+            content_type varchar(20) DEFAULT 'post',
+            aeo_score tinyint(3) DEFAULT 0,
+            last_analyzed datetime DEFAULT CURRENT_TIMESTAMP,
+            ai_questions longtext,
+            faq_data longtext,
+            citation_stats longtext,
+            optimization_status varchar(20) DEFAULT 'pending',
+            created_at datetime DEFAULT CURRENT_TIMESTAMP,
+            updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            UNIQUE KEY post_id (post_id),
+            KEY content_type (content_type),
+            KEY optimization_status (optimization_status),
+            KEY aeo_score (aeo_score)
+        ) $charset_collate;";
+
+        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+        dbDelta($aeo_sql);
+
+        echo '<div class="notice notice-success"><p>✅ AEO database tables created successfully!</p></div>';
     }
 
     // Save settings if form submitted
@@ -138,17 +163,11 @@ function requestdesk_settings_page() {
                 
                 <h3>Bulk Sync All Posts</h3>
                 <p>Push all published posts to RequestDesk's RAG system at once.</p>
-                <?php 
+                <?php
                 $post_count = wp_count_posts('post');
                 $published_count = $post_count->publish;
                 ?>
                 <p>You have <strong><?php echo $published_count; ?></strong> published posts ready to sync.</p>
-                <form method="post" action="<?php echo admin_url('admin-post.php'); ?>" style="display: inline;">
-                    <input type="hidden" name="action" value="requestdesk_bulk_sync">
-                    <?php wp_nonce_field('requestdesk_bulk_sync'); ?>
-                    <input type="submit" class="button button-primary" value="Sync All Published Posts" 
-                           onclick="return confirm('This will sync all <?php echo $published_count; ?> published posts to RequestDesk. Continue?');">
-                </form>
                 <p class="description">
                     This will push all published posts to RequestDesk's RAG system. Posts that haven't changed since the last sync will be skipped.
                 </p>
@@ -238,6 +257,19 @@ function requestdesk_settings_page() {
                 <input type="submit" name="requestdesk_save_settings" class="button-primary" value="Save Settings">
             </p>
         </form>
+
+        <!-- Bulk Sync Form (separate from main settings form) -->
+        <div class="card">
+            <h2>Bulk Operations</h2>
+            <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
+                <input type="hidden" name="action" value="requestdesk_bulk_sync">
+                <?php wp_nonce_field('requestdesk_bulk_sync'); ?>
+                <p>
+                    <input type="submit" class="button button-primary" value="Sync All Published Posts (<?php echo $published_count; ?>)"
+                           onclick="return confirm('This will sync all <?php echo $published_count; ?> published posts to RequestDesk. Continue?');">
+                </p>
+            </form>
+        </div>
         
         <div class="card">
             <h2>Test Connection</h2>
