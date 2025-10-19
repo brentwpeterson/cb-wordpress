@@ -16,9 +16,9 @@ function requestdesk_settings_page() {
             'auto_sync_on_publish' => isset($_POST['auto_sync_on_publish']),
             'auto_sync_on_update' => isset($_POST['auto_sync_on_update'])
         );
-        
+
         update_option('requestdesk_settings', $settings);
-        echo '<div class="notice notice-success"><p>Settings saved!</p></div>';
+        echo '<div class="notice notice-success"><p>Settings saved! Claude API key: ' . (empty($_POST['claude_api_key']) ? 'EMPTY' : 'PROVIDED') . '</p></div>';
     }
     
     // Check for bulk sync results
