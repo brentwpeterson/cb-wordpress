@@ -342,7 +342,8 @@ curl -X POST \
 
         /* Form cards should span appropriately */
         .requestdesk-cards-container > form {
-            display: contents; /* This makes form children participate in grid */
+            /* display: contents; - TEMPORARILY DISABLED FOR DEBUGGING */
+            grid-column: 1 / -1; /* Ensure form spans full width */
         }
 
         /* Specific wider cards */
