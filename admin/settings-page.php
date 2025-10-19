@@ -11,6 +11,7 @@ function requestdesk_settings_page() {
             'default_post_status' => sanitize_text_field($_POST['default_post_status']),
             'allowed_post_types' => array('post'), // For MVP, only posts
             'api_key' => sanitize_text_field($_POST['api_key']),
+            'claude_api_key' => sanitize_text_field($_POST['claude_api_key']),
             'requestdesk_endpoint' => sanitize_text_field($_POST['requestdesk_endpoint']),
             'auto_sync_on_publish' => isset($_POST['auto_sync_on_publish']),
             'auto_sync_on_update' => isset($_POST['auto_sync_on_update'])
@@ -36,7 +37,8 @@ function requestdesk_settings_page() {
         'debug_mode' => false,
         'default_post_status' => 'draft',
         'allowed_post_types' => array('post'),
-        'api_key' => ''
+        'api_key' => '',
+        'claude_api_key' => ''
     ));
     
     // Get sync logs
@@ -150,7 +152,7 @@ function requestdesk_settings_page() {
                 <h2>🔐 Security Settings</h2>
                 <table class="form-table">
                     <tr>
-                        <th scope="row">Allowed API Key</th>
+                        <th scope="row">RequestDesk API Key</th>
                         <td>
                             <input type="password" name="api_key" value="<?php echo esc_attr($settings['api_key']); ?>" class="regular-text" placeholder="Enter your RequestDesk Agent API Key">
                             <p class="description">
@@ -161,6 +163,26 @@ function requestdesk_settings_page() {
                             <?php if (empty($settings['api_key']) && !$settings['debug_mode']): ?>
                             <div class="notice notice-warning inline">
                                 <p><strong>⚠️ Warning:</strong> No API key configured! Your WordPress site will reject all RequestDesk connections until you set an API key.</p>
+                            </div>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Claude AI API Key</th>
+                        <td>
+                            <input type="password" name="claude_api_key" value="<?php echo esc_attr($settings['claude_api_key']); ?>" class="regular-text" placeholder="sk-ant-api03-...">
+                            <p class="description">
+                                <strong>Required for AEO Features:</strong> Enter your Claude AI API key to enable Answer Engine Optimization.<br>
+                                This powers content analysis, Q&A generation, optimization scoring, and schema markup.<br>
+                                Get your API key from <a href="https://console.anthropic.com/" target="_blank">Anthropic Console</a>.
+                            </p>
+                            <?php if (empty($settings['claude_api_key'])): ?>
+                            <div class="notice notice-info inline">
+                                <p><strong>ℹ️ Info:</strong> Claude API key required for AEO features. Content analysis and optimization will be disabled until configured.</p>
+                            </div>
+                            <?php else: ?>
+                            <div class="notice notice-success inline">
+                                <p><strong>✅ Ready:</strong> Claude AI integration enabled for AEO features.</p>
                             </div>
                             <?php endif; ?>
                         </td>
