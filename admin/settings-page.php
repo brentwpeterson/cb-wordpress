@@ -170,7 +170,7 @@ function requestdesk_settings_page() {
                     <tr>
                         <th scope="row">Claude AI API Key</th>
                         <td>
-                            <input type="password" id="claude_api_key" name="claude_api_key" value="<?php echo esc_attr($settings['claude_api_key']); ?>" class="regular-text" placeholder="sk-ant-api03-...">
+                            <input type="password" id="claude_api_key" name="claude_api_key" value="<?php echo esc_attr($settings['claude_api_key'] ?? ''); ?>" class="regular-text" placeholder="sk-ant-api03-...">
                             <button type="button" id="test_claude_connection" class="button" style="margin-left: 10px;">Test Connection</button>
                             <div id="claude_test_result" style="margin-top: 10px;"></div>
                             <p class="description">
