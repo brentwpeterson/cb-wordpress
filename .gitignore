@@ -4,3 +4,5 @@ node_modules/
 vendor/
 .env
 .env.local
+# Claude AI directory (workspace should handle Claude context, not subprojects)
+.claude/
