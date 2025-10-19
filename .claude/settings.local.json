@@ -12,7 +12,10 @@
       "Bash(git push)",
       "Bash(git commit:*)",
       "Bash(git remote add cb-wordpress https://github.com/brentwpeterson/cb-wordpress.git)",
-      "Bash(git fetch cb-wordpress)"
+      "Bash(git fetch cb-wordpress)",
+      "Bash(php -l wp-content/plugins/requestdesk-connector/includes/class-requestdesk-aeo-core.php)",
+      "Bash(php -l wp-content/plugins/requestdesk-connector/admin/aeo-settings-page.php)",
+      "Bash(git checkout -b feature/requestdesk-aeo-extension)"
     ],
     "deny": []
   },
