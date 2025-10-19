@@ -4,6 +4,14 @@
  */
 
 function requestdesk_settings_page() {
+    // DEBUG: Check if ANY form submission is happening
+    if (isset($_POST['requestdesk_save_settings'])) {
+        echo '<div class="notice notice-info"><p>DEBUG: Form submitted!</p></div>';
+        if (!wp_verify_nonce($_POST['requestdesk_nonce'], 'requestdesk_settings')) {
+            echo '<div class="notice notice-error"><p>DEBUG: Nonce failed!</p></div>';
+        }
+    }
+
     // Save settings if form submitted
     if (isset($_POST['requestdesk_save_settings']) && wp_verify_nonce($_POST['requestdesk_nonce'], 'requestdesk_settings')) {
         $settings = array(
