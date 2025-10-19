@@ -10,7 +10,9 @@
       "Read(/Users/brent/LocalSites/contentcucumber/**)",
       "Bash(git add:*)",
       "Bash(git push)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git remote add cb-wordpress https://github.com/brentwpeterson/cb-wordpress.git)",
+      "Bash(git fetch cb-wordpress)"
     ],
     "deny": []
   },
