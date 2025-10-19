@@ -15,7 +15,8 @@
       "Bash(git fetch cb-wordpress)",
       "Bash(php -l wp-content/plugins/requestdesk-connector/includes/class-requestdesk-aeo-core.php)",
       "Bash(php -l wp-content/plugins/requestdesk-connector/admin/aeo-settings-page.php)",
-      "Bash(git checkout -b feature/requestdesk-aeo-extension)"
+      "Bash(git checkout -b feature/requestdesk-aeo-extension)",
+      "Bash(git push cb-wordpress feature/requestdesk-aeo-extension)"
     ],
     "deny": []
   },
