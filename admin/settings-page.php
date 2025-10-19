@@ -170,7 +170,9 @@ function requestdesk_settings_page() {
                     <tr>
                         <th scope="row">Claude AI API Key</th>
                         <td>
-                            <input type="password" name="claude_api_key" value="<?php echo esc_attr($settings['claude_api_key']); ?>" class="regular-text" placeholder="sk-ant-api03-...">
+                            <input type="password" id="claude_api_key" name="claude_api_key" value="<?php echo esc_attr($settings['claude_api_key']); ?>" class="regular-text" placeholder="sk-ant-api03-...">
+                            <button type="button" id="test_claude_connection" class="button" style="margin-left: 10px;">Test Connection</button>
+                            <div id="claude_test_result" style="margin-top: 10px;"></div>
                             <p class="description">
                                 <strong>Required for AEO Features:</strong> Enter your Claude AI API key to enable Answer Engine Optimization.<br>
                                 This powers content analysis, Q&A generation, optimization scoring, and schema markup.<br>
@@ -352,5 +354,46 @@ curl -X POST \
         .text-success { color: #46b450; }
         .text-error { color: #dc3232; }
     </style>
+
+    <script>
+    jQuery(document).ready(function($) {
+        $('#test_claude_connection').click(function() {
+            var button = $(this);
+            var apiKey = $('#claude_api_key').val();
+            var resultDiv = $('#claude_test_result');
+
+            if (!apiKey) {
+                resultDiv.html('<div class="notice notice-error inline"><p><strong>Error:</strong> Please enter a Claude API key first.</p></div>');
+                return;
+            }
+
+            button.prop('disabled', true).text('Testing...');
+            resultDiv.html('<div class="notice notice-info inline"><p>Testing Claude API connection...</p></div>');
+
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'test_claude_connection',
+                    api_key: apiKey,
+                    nonce: '<?php echo wp_create_nonce('test_claude_connection'); ?>'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        resultDiv.html('<div class="notice notice-success inline"><p><strong>✅ Success:</strong> ' + response.data.message + '</p></div>');
+                    } else {
+                        resultDiv.html('<div class="notice notice-error inline"><p><strong>❌ Error:</strong> ' + response.data.message + '</p></div>');
+                    }
+                },
+                error: function() {
+                    resultDiv.html('<div class="notice notice-error inline"><p><strong>❌ Error:</strong> Failed to test connection. Please try again.</p></div>');
+                },
+                complete: function() {
+                    button.prop('disabled', false).text('Test Connection');
+                }
+            });
+        });
+    });
+    </script>
     <?php
 }

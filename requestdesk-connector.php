@@ -31,6 +31,7 @@ require_once REQUESTDESK_PLUGIN_DIR . 'includes/class-requestdesk-content-analyz
 require_once REQUESTDESK_PLUGIN_DIR . 'includes/class-requestdesk-schema-generator.php';
 require_once REQUESTDESK_PLUGIN_DIR . 'includes/class-requestdesk-freshness-tracker.php';
 require_once REQUESTDESK_PLUGIN_DIR . 'includes/class-requestdesk-citation-tracker.php';
+require_once REQUESTDESK_PLUGIN_DIR . 'includes/class-requestdesk-claude-integration.php';
 require_once REQUESTDESK_PLUGIN_DIR . 'admin/aeo-settings-page.php';
 require_once REQUESTDESK_PLUGIN_DIR . 'admin/aeo-meta-boxes.php';
 
@@ -168,4 +169,50 @@ register_deactivation_hook(__FILE__, 'requestdesk_deactivate');
 
 function requestdesk_deactivate() {
     flush_rewrite_rules();
+}
+
+/**
+ * AJAX handler for testing Claude API connection
+ */
+add_action('wp_ajax_test_claude_connection', 'requestdesk_test_claude_connection');
+
+function requestdesk_test_claude_connection() {
+    // Verify nonce
+    if (!wp_verify_nonce($_POST['nonce'], 'test_claude_connection')) {
+        wp_die('Invalid nonce');
+    }
+
+    // Check user permissions
+    if (!current_user_can('manage_options')) {
+        wp_die('Insufficient permissions');
+    }
+
+    $api_key = sanitize_text_field($_POST['api_key']);
+
+    if (empty($api_key)) {
+        wp_send_json_error(array('message' => 'API key is required'));
+        return;
+    }
+
+    // Temporarily store the API key for testing
+    $original_settings = get_option('requestdesk_settings', array());
+    $test_settings = $original_settings;
+    $test_settings['claude_api_key'] = $api_key;
+    update_option('requestdesk_settings', $test_settings);
+
+    // Test the connection
+    $claude = new RequestDesk_Claude_Integration();
+    $result = $claude->test_connection();
+
+    // Restore original settings
+    update_option('requestdesk_settings', $original_settings);
+
+    if (is_wp_error($result)) {
+        wp_send_json_error(array('message' => $result->get_error_message()));
+    } else {
+        wp_send_json_success(array(
+            'message' => 'Connection successful! Model: ' . $result['model'],
+            'response' => $result['response']
+        ));
+    }
 }
