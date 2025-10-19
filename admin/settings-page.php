@@ -50,8 +50,6 @@ function requestdesk_settings_page() {
     <div class="wrap">
         <h1>RequestDesk Connector Settings</h1>
 
-        <div class="requestdesk-cards-container">
-
         <div class="card">
             <h2>Connection Information</h2>
             <table class="form-table">
@@ -308,50 +306,16 @@ curl -X POST \
                 <li><a href="https://requestdesk.ai/support" target="_blank">Get Support</a></li>
             </ul>
         </div>
-
-        </div> <!-- Close requestdesk-cards-container -->
     </div>
 
     <style>
-        .requestdesk-cards-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-
-        @media (max-width: 1200px) {
-            .requestdesk-cards-container {
-                grid-template-columns: 1fr;
-            }
-        }
-
         .card {
             background: white;
             border: 1px solid #ccd0d4;
             padding: 20px;
-            margin: 0;
+            margin: 20px 0;
             box-shadow: 0 1px 1px rgba(0,0,0,.04);
-            height: fit-content;
         }
-
-        /* Connection Information card - smaller, fits in grid */
-        .card:first-child {
-            /* Connection Information card */
-        }
-
-        /* Form cards should span appropriately */
-        .requestdesk-cards-container > form {
-            /* display: contents; - TEMPORARILY DISABLED FOR DEBUGGING */
-            grid-column: 1 / -1; /* Ensure form spans full width */
-        }
-
-        /* Specific wider cards */
-        .card:has(table.wp-list-table),
-        .card:has(pre) {
-            grid-column: 1 / -1; /* Span full width */
-        }
-
         .text-success { color: #46b450; }
         .text-error { color: #dc3232; }
     </style>
