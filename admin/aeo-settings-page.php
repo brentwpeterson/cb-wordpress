@@ -807,7 +807,7 @@ function requestdesk_perform_full_rescan() {
             $aeo_result = $aeo_core->optimize_post($post->ID, true);
 
             // Citation extraction
-            $citation_tracker->extract_citations($post);
+            $citation_tracker->extract_statistics($post->post_content);
 
             // Freshness calculation
             $freshness_tracker->update_freshness_data($post->ID, $post);
