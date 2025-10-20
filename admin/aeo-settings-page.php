@@ -7,28 +7,11 @@
  * Add AEO admin menu
  */
 function requestdesk_aeo_add_admin_menu() {
+    // Bulk AEO Tools submenu
     add_submenu_page(
-        'requestdesk-settings',
-        'AEO Settings',
-        'AEO Settings',
-        'manage_options',
-        'requestdesk-aeo-settings',
-        'requestdesk_aeo_settings_page'
-    );
-
-    add_submenu_page(
-        'requestdesk-settings',
-        'AEO Analytics',
-        'AEO Analytics',
-        'manage_options',
         'requestdesk-aeo-analytics',
-        'requestdesk_aeo_analytics_page'
-    );
-
-    add_submenu_page(
-        'requestdesk-settings',
         'Bulk AEO Tools',
-        'Bulk AEO Tools',
+        'Bulk Tools',
         'manage_options',
         'requestdesk-aeo-bulk',
         'requestdesk_aeo_bulk_page'

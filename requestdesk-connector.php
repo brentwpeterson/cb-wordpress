@@ -72,15 +72,102 @@ function requestdesk_register_api_endpoints() {
  * Add admin menu
  */
 function requestdesk_add_admin_menu() {
+    // Main menu page - AEO Analytics Dashboard
     add_menu_page(
-        'RequestDesk Settings',
+        'RequestDesk AEO Dashboard',
         'RequestDesk',
         'manage_options',
-        'requestdesk-settings',
-        'requestdesk_settings_page',
-        'dashicons-edit-page',
+        'requestdesk-aeo-analytics',
+        'requestdesk_aeo_analytics_page',
+        'dashicons-chart-area',
         30
     );
+
+    // Combined Settings page (RequestDesk + AEO settings)
+    add_submenu_page(
+        'requestdesk-aeo-analytics',
+        'RequestDesk Settings',
+        'Settings',
+        'manage_options',
+        'requestdesk-settings',
+        'requestdesk_combined_settings_page'
+    );
+}
+
+/**
+ * Combined Settings Page (RequestDesk + AEO Settings)
+ */
+function requestdesk_combined_settings_page() {
+    ?>
+    <div class="wrap">
+        <h1>RequestDesk Settings</h1>
+
+        <nav class="nav-tab-wrapper">
+            <a href="#general" class="nav-tab nav-tab-active" onclick="openTab(event, 'general')">General Settings</a>
+            <a href="#aeo" class="nav-tab" onclick="openTab(event, 'aeo')">AEO Settings</a>
+        </nav>
+
+        <!-- General RequestDesk Settings Tab -->
+        <div id="general" class="tab-content" style="display: block;">
+            <?php
+            // Include the original RequestDesk settings content
+            ob_start();
+            requestdesk_settings_page();
+            $settings_content = ob_get_clean();
+
+            // Remove the outer wrap div and h1 to avoid duplication
+            $settings_content = preg_replace('/<div class="wrap">.*?<h1>.*?<\/h1>/s', '', $settings_content);
+            $settings_content = preg_replace('/<\/div>\s*$/', '', $settings_content);
+
+            echo $settings_content;
+            ?>
+        </div>
+
+        <!-- AEO Settings Tab -->
+        <div id="aeo" class="tab-content" style="display: none;">
+            <?php
+            // Include the AEO settings content
+            ob_start();
+            requestdesk_aeo_settings_page();
+            $aeo_content = ob_get_clean();
+
+            // Remove the outer wrap div and h1 to avoid duplication
+            $aeo_content = preg_replace('/<div class="wrap">.*?<h1>.*?<\/h1>/s', '', $aeo_content);
+            $aeo_content = preg_replace('/<\/div>\s*$/', '', $aeo_content);
+
+            echo $aeo_content;
+            ?>
+        </div>
+    </div>
+
+    <style>
+    .nav-tab-wrapper {
+        margin-bottom: 20px;
+    }
+    .tab-content {
+        display: none;
+    }
+    .tab-content.active {
+        display: block;
+    }
+    </style>
+
+    <script>
+    function openTab(evt, tabName) {
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tab-content");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+        }
+        tablinks = document.getElementsByClassName("nav-tab");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].classList.remove("nav-tab-active");
+        }
+        document.getElementById(tabName).style.display = "block";
+        evt.currentTarget.classList.add("nav-tab-active");
+    }
+    </script>
+    <?php
 }
 
 /**
