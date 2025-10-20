@@ -523,6 +523,61 @@ function requestdesk_aeo_bulk_page() {
         }
     }
 
+    // Handle rescan operations
+    if (isset($_POST['action'])) {
+        $action = sanitize_text_field($_POST['action']);
+
+        // Full Site Rescan
+        if ($action === 'full_rescan' && wp_verify_nonce($_POST['requestdesk_full_rescan_nonce'], 'requestdesk_full_rescan')) {
+            $results = requestdesk_perform_full_rescan();
+            echo '<div class="notice notice-success"><p>';
+            echo sprintf('🌟 Full site rescan completed: %d posts processed, %d successful, %d failed',
+                $results['total'], $results['success'], $results['failed']);
+            echo '</p></div>';
+        }
+
+        // Citations Rescan
+        elseif ($action === 'citations_rescan' && wp_verify_nonce($_POST['requestdesk_citations_rescan_nonce'], 'requestdesk_citations_rescan')) {
+            $results = requestdesk_perform_citations_rescan();
+            echo '<div class="notice notice-success"><p>';
+            echo sprintf('📊 Citations rescan completed: %d posts processed', $results['processed']);
+            echo '</p></div>';
+        }
+
+        // Freshness Rescan
+        elseif ($action === 'freshness_rescan' && wp_verify_nonce($_POST['requestdesk_freshness_rescan_nonce'], 'requestdesk_freshness_rescan')) {
+            $results = requestdesk_perform_freshness_rescan();
+            echo '<div class="notice notice-success"><p>';
+            echo sprintf('🕒 Freshness rescan completed: %d posts processed', $results['processed']);
+            echo '</p></div>';
+        }
+
+        // Claude AI Reanalysis
+        elseif ($action === 'claude_rescan' && wp_verify_nonce($_POST['requestdesk_claude_rescan_nonce'], 'requestdesk_claude_rescan')) {
+            $results = requestdesk_perform_claude_rescan();
+            echo '<div class="notice notice-success"><p>';
+            echo sprintf('🤖 Claude AI reanalysis completed: %d posts processed, %d analyzed',
+                $results['processed'], $results['analyzed']);
+            echo '</p></div>';
+        }
+
+        // Clear Cache
+        elseif ($action === 'clear_cache' && wp_verify_nonce($_POST['requestdesk_clear_cache_nonce'], 'requestdesk_clear_cache')) {
+            $results = requestdesk_clear_aeo_cache();
+            echo '<div class="notice notice-success"><p>';
+            echo sprintf('🗑️ AEO cache cleared: %d entries removed', $results['cleared']);
+            echo '</p></div>';
+        }
+
+        // Reset All Data
+        elseif ($action === 'reset_all' && wp_verify_nonce($_POST['requestdesk_reset_all_nonce'], 'requestdesk_reset_all')) {
+            $results = requestdesk_reset_all_aeo_data();
+            echo '<div class="notice notice-success"><p>';
+            echo sprintf('⚠️ All AEO data reset: %d records deleted', $results['deleted']);
+            echo '</p></div>';
+        }
+    }
+
     // Get posts for bulk operations (increased limit for better visibility)
     $posts = get_posts(array(
         'post_type' => array('post', 'page'),
@@ -535,6 +590,93 @@ function requestdesk_aeo_bulk_page() {
 
     <div class="wrap">
         <h1>Bulk AEO Tools</h1>
+
+        <!-- Site Rescan Tools -->
+        <div class="card">
+            <h2>🔄 Site Rescan & Refresh</h2>
+            <p>Use these tools after plugin updates, configuration changes, or to refresh all analysis data.</p>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin: 20px 0;">
+                <!-- Full Site Rescan -->
+                <div class="rescan-option" style="border: 1px solid #ddd; padding: 15px; border-radius: 5px;">
+                    <h3>🌟 Complete Site Rescan</h3>
+                    <p><strong>Reprocesses everything:</strong> Citations, freshness, AEO scores, Q&A pairs, schema markup</p>
+                    <form method="post" action="" style="margin-top: 10px;">
+                        <?php wp_nonce_field('requestdesk_full_rescan', 'requestdesk_full_rescan_nonce'); ?>
+                        <input type="hidden" name="action" value="full_rescan">
+                        <input type="submit" class="button button-primary" value="🔄 Full Site Rescan"
+                               onclick="return confirm('This will reprocess ALL content on your site. This may take several minutes. Continue?');">
+                    </form>
+                    <small style="color: #666;">Recommended after major plugin updates or configuration changes.</small>
+                </div>
+
+                <!-- Citations Only -->
+                <div class="rescan-option" style="border: 1px solid #ddd; padding: 15px; border-radius: 5px;">
+                    <h3>📊 Refresh Citations</h3>
+                    <p><strong>Re-extracts:</strong> Statistics and citation data from all content</p>
+                    <form method="post" action="" style="margin-top: 10px;">
+                        <?php wp_nonce_field('requestdesk_citations_rescan', 'requestdesk_citations_rescan_nonce'); ?>
+                        <input type="hidden" name="action" value="citations_rescan">
+                        <input type="submit" class="button" value="📊 Refresh Citations"
+                               onclick="return confirm('This will re-extract citations from all posts. Continue?');">
+                    </form>
+                    <small style="color: #666;">Updates citation statistics and quality scores.</small>
+                </div>
+
+                <!-- Freshness Only -->
+                <div class="rescan-option" style="border: 1px solid #ddd; padding: 15px; border-radius: 5px;">
+                    <h3>🕒 Recalculate Freshness</h3>
+                    <p><strong>Recalculates:</strong> Content freshness scores and recommendations</p>
+                    <form method="post" action="" style="margin-top: 10px;">
+                        <?php wp_nonce_field('requestdesk_freshness_rescan', 'requestdesk_freshness_rescan_nonce'); ?>
+                        <input type="hidden" name="action" value="freshness_rescan">
+                        <input type="submit" class="button" value="🕒 Recalculate Freshness"
+                               onclick="return confirm('This will recalculate freshness scores for all content. Continue?');">
+                    </form>
+                    <small style="color: #666;">Updates content age and freshness metrics.</small>
+                </div>
+
+                <!-- Claude AI Reanalysis -->
+                <div class="rescan-option" style="border: 1px solid #ddd; padding: 15px; border-radius: 5px;">
+                    <h3>🤖 Claude AI Reanalysis</h3>
+                    <p><strong>Re-runs:</strong> Claude AI analysis for enhanced AEO insights</p>
+                    <form method="post" action="" style="margin-top: 10px;">
+                        <?php wp_nonce_field('requestdesk_claude_rescan', 'requestdesk_claude_rescan_nonce'); ?>
+                        <input type="hidden" name="action" value="claude_rescan">
+                        <input type="submit" class="button" value="🤖 Claude AI Reanalysis"
+                               onclick="return confirm('This will re-run Claude AI analysis on all content. This may consume API credits. Continue?');"
+                               <?php echo empty(get_option('requestdesk_settings')['claude_api_key']) ? 'disabled title="Claude API key required"' : ''; ?>>
+                    </form>
+                    <small style="color: #666;">Requires Claude API key. May consume API credits.</small>
+                </div>
+
+                <!-- Clear Cache -->
+                <div class="rescan-option" style="border: 1px solid #ddd; padding: 15px; border-radius: 5px;">
+                    <h3>🗑️ Clear AEO Cache</h3>
+                    <p><strong>Clears:</strong> All cached AEO data to force fresh analysis</p>
+                    <form method="post" action="" style="margin-top: 10px;">
+                        <?php wp_nonce_field('requestdesk_clear_cache', 'requestdesk_clear_cache_nonce'); ?>
+                        <input type="hidden" name="action" value="clear_cache">
+                        <input type="submit" class="button" value="🗑️ Clear AEO Cache"
+                               onclick="return confirm('This will clear all AEO cache data. Next analysis will be slower but completely fresh. Continue?');">
+                    </form>
+                    <small style="color: #666;">Forces fresh analysis on next content access.</small>
+                </div>
+
+                <!-- Reset All Data -->
+                <div class="rescan-option" style="border: 1px solid #ddd; padding: 15px; border-radius: 5px; border-color: #dc3232;">
+                    <h3 style="color: #dc3232;">⚠️ Reset All AEO Data</h3>
+                    <p><strong>DANGER:</strong> Deletes all AEO data and starts fresh</p>
+                    <form method="post" action="" style="margin-top: 10px;">
+                        <?php wp_nonce_field('requestdesk_reset_all', 'requestdesk_reset_all_nonce'); ?>
+                        <input type="hidden" name="action" value="reset_all">
+                        <input type="submit" class="button button-delete" value="⚠️ Reset All Data" style="background: #dc3232; color: white;"
+                               onclick="return confirm('DANGER: This will permanently delete ALL AEO data! This cannot be undone. Are you absolutely sure?');">
+                    </form>
+                    <small style="color: #dc3232;">⚠️ PERMANENT: Cannot be undone!</small>
+                </div>
+            </div>
+        </div>
 
         <div class="card">
             <h2>🚀 Bulk AEO Optimization</h2>
@@ -651,4 +793,194 @@ function requestdesk_aeo_bulk_page() {
     });
     </script>
     <?php
+}
+
+/**
+ * Rescan Functions
+ */
+
+/**
+ * Perform full site rescan
+ */
+function requestdesk_perform_full_rescan() {
+    $results = array('total' => 0, 'success' => 0, 'failed' => 0);
+
+    // Get all published posts and pages
+    $posts = get_posts(array(
+        'post_type' => array('post', 'page'),
+        'post_status' => 'publish',
+        'posts_per_page' => -1
+    ));
+
+    $aeo_core = new RequestDesk_AEO_Core();
+    $citation_tracker = new RequestDesk_Citation_Tracker();
+    $freshness_tracker = new RequestDesk_Freshness_Tracker();
+
+    foreach ($posts as $post) {
+        $results['total']++;
+
+        try {
+            // Full AEO optimization
+            $aeo_result = $aeo_core->optimize_post($post->ID, true);
+
+            // Citation extraction
+            $citation_tracker->extract_citations($post);
+
+            // Freshness calculation
+            $freshness_tracker->update_freshness_data($post->ID, $post);
+
+            if (!is_wp_error($aeo_result)) {
+                $results['success']++;
+            } else {
+                $results['failed']++;
+            }
+        } catch (Exception $e) {
+            $results['failed']++;
+        }
+    }
+
+    return $results;
+}
+
+/**
+ * Perform citations rescan
+ */
+function requestdesk_perform_citations_rescan() {
+    $results = array('processed' => 0);
+
+    $posts = get_posts(array(
+        'post_type' => array('post', 'page'),
+        'post_status' => 'publish',
+        'posts_per_page' => -1
+    ));
+
+    $citation_tracker = new RequestDesk_Citation_Tracker();
+
+    foreach ($posts as $post) {
+        $citation_tracker->extract_citations($post);
+        $results['processed']++;
+    }
+
+    return $results;
+}
+
+/**
+ * Perform freshness rescan
+ */
+function requestdesk_perform_freshness_rescan() {
+    $results = array('processed' => 0);
+
+    $posts = get_posts(array(
+        'post_type' => array('post', 'page'),
+        'post_status' => 'publish',
+        'posts_per_page' => -1
+    ));
+
+    $freshness_tracker = new RequestDesk_Freshness_Tracker();
+
+    foreach ($posts as $post) {
+        $freshness_tracker->update_freshness_data($post->ID, $post);
+        $results['processed']++;
+    }
+
+    return $results;
+}
+
+/**
+ * Perform Claude AI reanalysis
+ */
+function requestdesk_perform_claude_rescan() {
+    $results = array('processed' => 0, 'analyzed' => 0);
+
+    $posts = get_posts(array(
+        'post_type' => array('post', 'page'),
+        'post_status' => 'publish',
+        'posts_per_page' => -1
+    ));
+
+    $content_analyzer = new RequestDesk_Content_Analyzer();
+    $claude_integration = new RequestDesk_Claude_Integration();
+
+    if (!$claude_integration->is_available()) {
+        return array('processed' => 0, 'analyzed' => 0, 'error' => 'Claude API key not configured');
+    }
+
+    foreach ($posts as $post) {
+        $results['processed']++;
+
+        try {
+            // Force re-analysis with Claude
+            $analysis = $content_analyzer->analyze_content($post);
+            if (!empty($analysis['claude_aeo_score'])) {
+                $results['analyzed']++;
+            }
+        } catch (Exception $e) {
+            // Continue with other posts if one fails
+        }
+    }
+
+    return $results;
+}
+
+/**
+ * Clear AEO cache
+ */
+function requestdesk_clear_aeo_cache() {
+    global $wpdb;
+
+    $results = array('cleared' => 0);
+
+    // Clear all AEO-related post meta
+    $meta_keys = array(
+        '_requestdesk_aeo_score',
+        '_requestdesk_freshness_score',
+        '_requestdesk_freshness_status',
+        '_requestdesk_citation_stats',
+        '_requestdesk_citation_updated',
+        '_requestdesk_freshness_updated',
+        '_requestdesk_aeo_analyzed'
+    );
+
+    foreach ($meta_keys as $meta_key) {
+        $deleted = $wpdb->delete($wpdb->postmeta, array('meta_key' => $meta_key));
+        $results['cleared'] += $deleted;
+    }
+
+    // Clear AEO database table
+    $aeo_table = $wpdb->prefix . 'requestdesk_aeo_data';
+    $wpdb->query("UPDATE $aeo_table SET ai_questions = '', faq_data = '', citation_stats = ''");
+
+    return $results;
+}
+
+/**
+ * Reset all AEO data
+ */
+function requestdesk_reset_all_aeo_data() {
+    global $wpdb;
+
+    $results = array('deleted' => 0);
+
+    // Delete all AEO-related post meta
+    $meta_keys = array(
+        '_requestdesk_aeo_score',
+        '_requestdesk_freshness_score',
+        '_requestdesk_freshness_status',
+        '_requestdesk_citation_stats',
+        '_requestdesk_citation_updated',
+        '_requestdesk_freshness_updated',
+        '_requestdesk_aeo_analyzed'
+    );
+
+    foreach ($meta_keys as $meta_key) {
+        $deleted = $wpdb->delete($wpdb->postmeta, array('meta_key' => $meta_key));
+        $results['deleted'] += $deleted;
+    }
+
+    // Clear AEO database table
+    $aeo_table = $wpdb->prefix . 'requestdesk_aeo_data';
+    $deleted_rows = $wpdb->query("DELETE FROM $aeo_table");
+    $results['deleted'] += $deleted_rows;
+
+    return $results;
 }
