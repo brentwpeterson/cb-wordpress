@@ -213,7 +213,11 @@ class RequestDesk_AEO_Core {
 
         // Content freshness (15 points)
         if (isset($data['freshness_score'])) {
-            $score += ($data['freshness_score'] / 100) * 15;
+            // freshness_score is an array with overall_score key
+            $freshness_value = is_array($data['freshness_score'])
+                ? ($data['freshness_score']['overall_score'] ?? 0)
+                : $data['freshness_score'];
+            $score += ($freshness_value / 100) * 15;
         }
 
         // Content analysis (20 points)

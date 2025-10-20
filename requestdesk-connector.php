@@ -34,6 +34,7 @@ require_once REQUESTDESK_PLUGIN_DIR . 'includes/class-requestdesk-citation-track
 require_once REQUESTDESK_PLUGIN_DIR . 'includes/class-requestdesk-claude-integration.php';
 require_once REQUESTDESK_PLUGIN_DIR . 'admin/aeo-settings-page.php';
 require_once REQUESTDESK_PLUGIN_DIR . 'admin/aeo-meta-boxes.php';
+require_once REQUESTDESK_PLUGIN_DIR . 'admin/aeo-bulk-optimizer.php';
 
 // Initialize the plugin
 add_action('init', 'requestdesk_init');
