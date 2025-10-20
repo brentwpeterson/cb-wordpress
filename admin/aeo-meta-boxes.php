@@ -455,7 +455,7 @@ function requestdesk_save_aeo_meta_box_data($post_id) {
     }
 
     // Save manual Q&A pairs if provided
-    if (isset($_POST['requestdesk_qa_pairs'])) {
+    if (isset($_POST['requestdesk_qa_pairs']) && !empty($_POST['requestdesk_qa_pairs'])) {
         $qa_pairs = json_decode(stripslashes($_POST['requestdesk_qa_pairs']), true);
         if (is_array($qa_pairs)) {
             // Update the AEO data with manual Q&A pairs

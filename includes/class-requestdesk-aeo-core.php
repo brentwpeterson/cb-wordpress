@@ -267,10 +267,10 @@ class RequestDesk_AEO_Core {
             return $this->get_aeo_data($post_id);
         }
 
-        // Decode JSON fields
-        $data['ai_questions'] = json_decode($data['ai_questions'], true) ?? array();
-        $data['faq_data'] = json_decode($data['faq_data'], true) ?? array();
-        $data['citation_stats'] = json_decode($data['citation_stats'], true) ?? array();
+        // Decode JSON fields with null safety
+        $data['ai_questions'] = !empty($data['ai_questions']) ? json_decode($data['ai_questions'], true) : array();
+        $data['faq_data'] = !empty($data['faq_data']) ? json_decode($data['faq_data'], true) : array();
+        $data['citation_stats'] = !empty($data['citation_stats']) ? json_decode($data['citation_stats'], true) : array();
 
         return $data;
     }
