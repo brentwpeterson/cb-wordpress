@@ -409,10 +409,13 @@ class RequestDesk_API {
                 foreach ($categories as $category_name) {
                     $category = get_category_by_slug(sanitize_title($category_name));
                     if (!$category) {
-                        // Create category if it doesn't exist
-                        $category_id = wp_create_category(sanitize_text_field($category_name));
-                        if (!is_wp_error($category_id)) {
-                            $category_ids[] = $category_id;
+                        // Create category if it doesn't exist using wp_insert_term
+                        $new_category = wp_insert_term(
+                            sanitize_text_field($category_name),
+                            'category'
+                        );
+                        if (!is_wp_error($new_category)) {
+                            $category_ids[] = $new_category['term_id'];
                         }
                     } else {
                         $category_ids[] = $category->term_id;
