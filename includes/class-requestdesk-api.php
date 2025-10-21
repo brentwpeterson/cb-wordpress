@@ -118,6 +118,23 @@ class RequestDesk_API {
                 'agent_id' => array(
                     'required' => false,
                     'type' => 'string'
+                ),
+                'featured_image' => array(
+                    'required' => false,
+                    'type' => 'string',
+                    'description' => 'URL of the featured image to set for the post'
+                ),
+                'excerpt' => array(
+                    'required' => false,
+                    'type' => 'string'
+                ),
+                'categories' => array(
+                    'required' => false,
+                    'type' => 'array'
+                ),
+                'tags' => array(
+                    'required' => false,
+                    'type' => 'array'
                 )
             )
         ));
@@ -357,6 +374,10 @@ class RequestDesk_API {
             $status = sanitize_text_field($request->get_param('status')) ?: 'draft';
             $ticket_id = sanitize_text_field($request->get_param('ticket_id'));
             $agent_id = sanitize_text_field($request->get_param('agent_id'));
+            $featured_image = esc_url_raw($request->get_param('featured_image'));
+            $excerpt = sanitize_textarea_field($request->get_param('excerpt'));
+            $categories = $request->get_param('categories') ?: array();
+            $tags = $request->get_param('tags') ?: array();
 
             // Create post
             $post_data = array(
@@ -366,10 +387,46 @@ class RequestDesk_API {
                 'post_type' => 'post'
             );
 
+            // Add excerpt if provided
+            if (!empty($excerpt)) {
+                $post_data['post_excerpt'] = $excerpt;
+            }
+
             $post_id = wp_insert_post($post_data);
 
             if (is_wp_error($post_id)) {
                 throw new Exception('Failed to create post: ' . $post_id->get_error_message());
+            }
+
+            // Handle featured image
+            if (!empty($featured_image)) {
+                $this->set_featured_image_from_url($post_id, $featured_image);
+            }
+
+            // Handle categories
+            if (!empty($categories) && is_array($categories)) {
+                $category_ids = array();
+                foreach ($categories as $category_name) {
+                    $category = get_category_by_slug(sanitize_title($category_name));
+                    if (!$category) {
+                        // Create category if it doesn't exist
+                        $category_id = wp_create_category(sanitize_text_field($category_name));
+                        if (!is_wp_error($category_id)) {
+                            $category_ids[] = $category_id;
+                        }
+                    } else {
+                        $category_ids[] = $category->term_id;
+                    }
+                }
+                if (!empty($category_ids)) {
+                    wp_set_post_categories($post_id, $category_ids);
+                }
+            }
+
+            // Handle tags
+            if (!empty($tags) && is_array($tags)) {
+                $tag_names = array_map('sanitize_text_field', $tags);
+                wp_set_post_tags($post_id, $tag_names);
             }
 
             // Add metadata for tracking
@@ -387,7 +444,10 @@ class RequestDesk_API {
                 'success' => true,
                 'post_id' => $post_id,
                 'post_url' => get_permalink($post_id),
-                'edit_url' => get_edit_post_link($post_id, 'raw')
+                'edit_url' => get_edit_post_link($post_id, 'raw'),
+                'featured_image_set' => !empty($featured_image),
+                'categories_set' => count($category_ids ?? []),
+                'tags_set' => count($tag_names ?? [])
             ), 201);
 
         } catch (Exception $e) {
@@ -398,6 +458,64 @@ class RequestDesk_API {
                 'Failed to publish content: ' . $e->getMessage(),
                 array('status' => 500)
             );
+        }
+    }
+
+    /**
+     * Set featured image from URL
+     */
+    private function set_featured_image_from_url($post_id, $image_url) {
+        if (empty($image_url)) {
+            return false;
+        }
+
+        // Include WordPress media functions
+        require_once(ABSPATH . 'wp-admin/includes/media.php');
+        require_once(ABSPATH . 'wp-admin/includes/file.php');
+        require_once(ABSPATH . 'wp-admin/includes/image.php');
+
+        try {
+            // Download image
+            $temp_file = download_url($image_url);
+
+            if (is_wp_error($temp_file)) {
+                error_log('RequestDesk: Failed to download featured image: ' . $temp_file->get_error_message());
+                return false;
+            }
+
+            // Prepare file array
+            $file_array = array(
+                'name' => basename($image_url),
+                'tmp_name' => $temp_file
+            );
+
+            // Upload to media library
+            $attachment_id = media_handle_sideload($file_array, $post_id);
+
+            // Clean up temp file
+            if (file_exists($temp_file)) {
+                unlink($temp_file);
+            }
+
+            if (is_wp_error($attachment_id)) {
+                error_log('RequestDesk: Failed to create attachment: ' . $attachment_id->get_error_message());
+                return false;
+            }
+
+            // Set as featured image
+            set_post_thumbnail($post_id, $attachment_id);
+
+            return $attachment_id;
+
+        } catch (Exception $e) {
+            error_log('RequestDesk: Exception setting featured image: ' . $e->getMessage());
+
+            // Clean up temp file if it exists
+            if (isset($temp_file) && file_exists($temp_file)) {
+                unlink($temp_file);
+            }
+
+            return false;
         }
     }
 
