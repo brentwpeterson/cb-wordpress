@@ -102,7 +102,9 @@ function requestdesk_template_importer_page() {
                             <option value="aeo_homepage">🎯 AEO Homepage Template</option>
                             <option value="aeo_service_page" disabled>🔧 Service Page (Coming Soon)</option>
                             <option value="aeo_about_page">📋 AEO About Page Template</option>
+                            <option value="auto_detect">🔍 Auto-Detect from CSV</option>
                         </select>
+                        <p style="font-size: 12px; color: #666; margin-top: 5px;">💡 <strong>Tip:</strong> Use "Auto-Detect" if your CSV has a <code>template_type</code> column (homepage, about)</p>
                     </div>
 
                     <div>
@@ -128,9 +130,10 @@ function requestdesk_template_importer_page() {
 
                     <div>
                         <h4 style="margin: 0 0 10px 0;">📥 Download Example:</h4>
-                        <a href="<?php echo REQUESTDESK_PLUGIN_URL . 'admin/aeo-template-csv-example.csv'; ?>" class="button button-secondary" download="aeo-template-example.csv">
-                            <span class="dashicons dashicons-download" style="vertical-align: middle;"></span> Download Example CSV
+                        <a href="<?php echo REQUESTDESK_PLUGIN_URL . 'admin/aeo-universal-template-csv-example.csv'; ?>" class="button button-secondary" download="aeo-universal-template-example.csv">
+                            <span class="dashicons dashicons-download" style="vertical-align: middle;"></span> Download Universal CSV Template
                         </a>
+                        <p style="font-size: 12px; color: #666; margin-top: 5px;">Contains examples for both Homepage and About page templates</p>
                         <p style="font-size: 12px; color: #666; margin: 5px 0 0 0;">Use this as a starting point for your content</p>
                     </div>
                 </div>
@@ -281,19 +284,50 @@ function requestdesk_import_csv_template($template_type, $csv_file) {
     global $wpdb;
 
     try {
-        // Validate CSV file
-        $validation_result = requestdesk_validate_csv_file($csv_file, $template_type);
-        if (!$validation_result['success']) {
-            return $validation_result;
-        }
-
-        // Parse CSV data
+        // Parse CSV data first to check for template_type column
         $csv_data = requestdesk_parse_csv_file($csv_file['tmp_name']);
         if (!$csv_data || empty($csv_data)) {
             return array(
                 'success' => false,
                 'message' => 'Could not parse CSV file or file is empty.'
             );
+        }
+
+        // Auto-detect template type from CSV if auto_detect is selected OR template_type column exists
+        if ($template_type === 'auto_detect' || (isset($csv_data['template_type']) && !empty($csv_data['template_type']))) {
+            // Check if template_type column exists in CSV
+            if (!isset($csv_data['template_type']) || empty($csv_data['template_type'])) {
+                return array(
+                    'success' => false,
+                    'message' => 'Auto-detect selected but CSV file is missing "template_type" column or it is empty. Please add template_type column with value: homepage, about'
+                );
+            }
+            $csv_template_type = sanitize_text_field($csv_data['template_type']);
+
+            // Convert CSV template type to internal format
+            switch (strtolower($csv_template_type)) {
+                case 'homepage':
+                    $detected_type = 'aeo_homepage';
+                    break;
+                case 'about':
+                case 'about_page':
+                    $detected_type = 'aeo_about_page';
+                    break;
+                default:
+                    return array(
+                        'success' => false,
+                        'message' => 'Invalid template_type in CSV: ' . $csv_template_type . '. Valid types: homepage, about'
+                    );
+            }
+
+            // Override the selected template type with CSV detected type
+            $template_type = $detected_type;
+        }
+
+        // Validate CSV file for the determined template type
+        $validation_result = requestdesk_validate_csv_file($csv_file, $template_type);
+        if (!$validation_result['success']) {
+            return $validation_result;
         }
 
         // Import template with CSV data
