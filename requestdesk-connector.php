@@ -37,6 +37,7 @@ require_once REQUESTDESK_PLUGIN_DIR . 'admin/aeo-meta-boxes.php';
 require_once REQUESTDESK_PLUGIN_DIR . 'admin/aeo-bulk-optimizer.php';
 require_once REQUESTDESK_PLUGIN_DIR . 'admin/aeo-template-importer.php';
 require_once REQUESTDESK_PLUGIN_DIR . 'admin/aeo-template-enhanced.php';
+require_once REQUESTDESK_PLUGIN_DIR . 'admin/aeo-template-about.php';
 
 // Initialize the plugin
 add_action('init', 'requestdesk_init');

@@ -101,7 +101,7 @@ function requestdesk_template_importer_page() {
                             <option value="">Choose Template...</option>
                             <option value="aeo_homepage">🎯 AEO Homepage Template</option>
                             <option value="aeo_service_page" disabled>🔧 Service Page (Coming Soon)</option>
-                            <option value="aeo_about_page" disabled>📋 About Page (Coming Soon)</option>
+                            <option value="aeo_about_page">📋 AEO About Page Template</option>
                         </select>
                     </div>
 
@@ -300,6 +300,8 @@ function requestdesk_import_csv_template($template_type, $csv_file) {
         switch ($template_type) {
             case 'aeo_homepage':
                 return requestdesk_import_aeo_homepage_csv($csv_data);
+            case 'aeo_about_page':
+                return requestdesk_import_aeo_about_csv($csv_data);
             default:
                 return array(
                     'success' => false,
@@ -324,6 +326,8 @@ function requestdesk_import_template($template_type) {
         switch ($template_type) {
             case 'aeo_homepage':
                 return requestdesk_import_aeo_homepage();
+            case 'aeo_about_page':
+                return requestdesk_import_aeo_about();
             default:
                 return array(
                     'success' => false,
@@ -697,6 +701,314 @@ function requestdesk_get_aeo_template_content() {
 
 <!-- wp:paragraph {"style":{"color":{"background":"#fff3cd","text":"#856404"},"spacing":{"padding":{"top":"20px","bottom":"20px","left":"20px","right":"20px"}},"border":{"radius":"8px","color":"#ffeaa7","width":"1px"}}} -->
 <p class="has-text-color has-background has-border-color" style="border-color:#ffeaa7;border-width:1px;border-radius:8px;background-color:#fff3cd;color:#856404;padding-top:20px;padding-bottom:20px;padding-left:20px;padding-right:20px"><strong>⚠️ Enhanced Template Missing:</strong> The comprehensive AEO template could not be loaded. This is a basic fallback. Please ensure aeo-template-enhanced.php is properly installed.</p>
+<!-- /wp:paragraph -->';
+}
+
+/**
+ * Import AEO About Page Template
+ */
+function requestdesk_import_aeo_about() {
+    global $wpdb;
+
+    // Check if template already exists (exclude trashed posts)
+    $existing_page = $wpdb->get_var($wpdb->prepare("
+        SELECT ID FROM {$wpdb->posts}
+        WHERE post_title = %s
+        AND post_type = 'page'
+        AND post_status != 'trash'
+        LIMIT 1
+    ", 'About Us - AEO Template'));
+
+    if ($existing_page) {
+        return array(
+            'success' => false,
+            'message' => 'About page template already exists (ID: ' . $existing_page . '). Delete the existing page first or use the CSV import to create a new customized page.'
+        );
+    }
+
+    // Get template content
+    $template_content = requestdesk_get_about_template();
+
+    // Prepare page data
+    $current_time = current_time('mysql');
+    $current_time_gmt = current_time('mysql', 1);
+
+    $page_data = array(
+        'post_author' => get_current_user_id(),
+        'post_date' => $current_time,
+        'post_date_gmt' => $current_time_gmt,
+        'post_content' => $template_content,
+        'post_title' => 'About Us - AEO Template',
+        'post_excerpt' => 'AEO-optimized About page template with comprehensive schema markup and E-E-A-T signals.',
+        'post_status' => 'draft',
+        'comment_status' => 'closed',
+        'ping_status' => 'closed',
+        'post_password' => '',
+        'post_name' => 'about-aeo-template',
+        'to_ping' => '',
+        'pinged' => '',
+        'post_modified' => $current_time,
+        'post_modified_gmt' => $current_time_gmt,
+        'post_content_filtered' => '',
+        'post_parent' => 0,
+        'guid' => '',
+        'menu_order' => 0,
+        'post_type' => 'page',
+        'post_mime_type' => '',
+        'comment_count' => 0
+    );
+
+    // Insert the page
+    $result = $wpdb->insert($wpdb->posts, $page_data);
+
+    if ($result !== false) {
+        $page_id = $wpdb->insert_id;
+
+        // Update GUID
+        $wpdb->update(
+            $wpdb->posts,
+            array('guid' => get_permalink($page_id)),
+            array('ID' => $page_id)
+        );
+
+        // Add to AEO tracking (optional)
+        $aeo_table = $wpdb->prefix . 'requestdesk_aeo_data';
+        if ($wpdb->get_var("SHOW TABLES LIKE '$aeo_table'") == $aeo_table) {
+            $wpdb->insert(
+                $aeo_table,
+                array(
+                    'post_id' => $page_id,
+                    'content_type' => 'page',
+                    'aeo_score' => 85, // High score for optimized template
+                    'optimization_status' => 'optimized',
+                    'ai_questions' => json_encode(array(
+                        'What makes this company different?',
+                        'How long has the company been in business?',
+                        'What industries do they work with?'
+                    )),
+                    'created_at' => $current_time,
+                    'updated_at' => $current_time
+                ),
+                array('%d', '%s', '%d', '%s', '%s', '%s', '%s')
+            );
+        }
+
+        return array(
+            'success' => true,
+            'page_id' => $page_id,
+            'template_name' => 'AEO About Page Template'
+        );
+    } else {
+        return array(
+            'success' => false,
+            'message' => 'Database insertion failed: ' . $wpdb->last_error
+        );
+    }
+}
+
+/**
+ * Import AEO About Page with CSV data
+ */
+function requestdesk_import_aeo_about_csv($csv_data) {
+    global $wpdb;
+
+    // Validate required fields
+    $required_fields = array('company_name', 'company_mission', 'founder_name');
+    foreach ($required_fields as $field) {
+        if (empty($csv_data[$field])) {
+            return array(
+                'success' => false,
+                'message' => 'Required field missing: ' . $field
+            );
+        }
+    }
+
+    // Generate unique page title
+    $company_name = sanitize_text_field($csv_data['company_name']);
+    $timestamp = current_time('Y-m-d H:i');
+    $page_title = 'About ' . $company_name . ' - ' . $timestamp;
+    $page_slug = sanitize_title('about-' . $company_name . '-' . current_time('Y-m-d-H-i'));
+
+    // Get template content and replace placeholders
+    $template_content = requestdesk_get_about_template_with_csv($csv_data);
+
+    // Prepare page data
+    $current_time = current_time('mysql');
+    $current_time_gmt = current_time('mysql', 1);
+
+    $page_data = array(
+        'post_author' => get_current_user_id(),
+        'post_date' => $current_time,
+        'post_date_gmt' => $current_time_gmt,
+        'post_content' => $template_content,
+        'post_title' => $page_title,
+        'post_excerpt' => 'About ' . $company_name . ' - Our mission, team, and values. Learn about our company story and what drives our success.',
+        'post_status' => 'draft',
+        'comment_status' => 'closed',
+        'ping_status' => 'closed',
+        'post_password' => '',
+        'post_name' => $page_slug,
+        'to_ping' => '',
+        'pinged' => '',
+        'post_modified' => $current_time,
+        'post_modified_gmt' => $current_time_gmt,
+        'post_content_filtered' => '',
+        'post_parent' => 0,
+        'guid' => '',
+        'menu_order' => 0,
+        'post_type' => 'page',
+        'post_mime_type' => '',
+        'comment_count' => 0
+    );
+
+    // Insert the page
+    $result = $wpdb->insert($wpdb->posts, $page_data);
+
+    if ($result !== false) {
+        $page_id = $wpdb->insert_id;
+
+        // Update GUID
+        $wpdb->update(
+            $wpdb->posts,
+            array('guid' => get_permalink($page_id)),
+            array('ID' => $page_id)
+        );
+
+        // Add to AEO tracking (optional)
+        $aeo_table = $wpdb->prefix . 'requestdesk_aeo_data';
+        if ($wpdb->get_var("SHOW TABLES LIKE '$aeo_table'") == $aeo_table) {
+            $wpdb->insert(
+                $aeo_table,
+                array(
+                    'post_id' => $page_id,
+                    'content_type' => 'page',
+                    'aeo_score' => 92, // Higher score for CSV-customized content
+                    'optimization_status' => 'optimized',
+                    'ai_questions' => json_encode(array(
+                        $csv_data['faq_1_question'] ?? 'What makes this company different?',
+                        $csv_data['faq_2_question'] ?? 'How long has the company been in business?',
+                        $csv_data['faq_3_question'] ?? 'What industries do they work with?'
+                    )),
+                    'created_at' => $current_time,
+                    'updated_at' => $current_time
+                ),
+                array('%d', '%s', '%d', '%s', '%s', '%s', '%s')
+            );
+        }
+
+        return array(
+            'success' => true,
+            'page_id' => $page_id,
+            'page_title' => $page_title,
+            'template_name' => 'AEO About Page Template (CSV)'
+        );
+    } else {
+        return array(
+            'success' => false,
+            'message' => 'Database insertion failed: ' . $wpdb->last_error
+        );
+    }
+}
+
+/**
+ * Get About template content with CSV data replacements
+ */
+function requestdesk_get_about_template_with_csv($csv_data) {
+    // Load the base About template
+    $template_content = requestdesk_get_about_template();
+
+    // Replace placeholders with CSV data
+    $replacements = array(
+        // Company Information
+        '[CUSTOMIZE: Add your business name]' => $csv_data['company_name'] ?? 'Your Company',
+        'Content Cucumber' => $csv_data['company_name'] ?? 'Your Company',
+        'https://contentcucumber.com' => $csv_data['company_url'] ?? 'https://yourwebsite.com',
+
+        // Mission and Story
+        'We drive sustainable business growth through expert content marketing, SEO optimization, and AI-powered digital strategies. [CUSTOMIZE: Add your company mission statement here]' => $csv_data['company_mission'] ?? 'Your company mission statement here.',
+        'Content Cucumber was born from a simple observation: businesses were struggling to cut through the digital noise.' => $csv_data['company_story_intro'] ?? 'Your company story begins here.',
+        'Our founder, [CUSTOMIZE: Founder Name], recognized that the future of marketing lay in the perfect fusion of human creativity and artificial intelligence.' => str_replace('[CUSTOMIZE: Founder Name]', $csv_data['founder_name'] ?? 'Our founder', $csv_data['company_story_body'] ?? 'Your company story continues here.'),
+        '[CUSTOMIZE: Add 2-3 paragraphs about your company\'s specific journey, key milestones, challenges overcome, and what drives your mission. Include specific dates, achievements, and growth metrics to build credibility.]' => $csv_data['company_story_conclusion'] ?? 'Share your company\'s journey, milestones, and what drives your mission here.',
+
+        // Team Information
+        '[CUSTOMIZE: Founder Name]' => $csv_data['founder_name'] ?? 'Founder Name',
+        '[CUSTOMIZE: CEO Name]' => $csv_data['founder_name'] ?? 'CEO Name',
+        '[CUSTOMIZE: CTO Name]' => $csv_data['cto_name'] ?? 'CTO Name',
+        'CEO & Founder' => $csv_data['founder_title'] ?? 'CEO & Founder',
+        'Chief Technology Officer' => $csv_data['cto_title'] ?? 'Chief Technology Officer',
+        '[CUSTOMIZE: 2-3 sentences about CEO background, expertise, and key achievements. Include relevant certifications or industry recognition.]' => $csv_data['founder_bio'] ?? 'Background and achievements of the CEO.',
+        '[CUSTOMIZE: 2-3 sentences about CTO background, technical expertise, and innovations. Include relevant technical certifications or achievements.]' => $csv_data['cto_bio'] ?? 'Background and technical expertise of the CTO.',
+
+        // Photo URLs
+        'https://contentcucumber.com/wp-content/uploads/team-placeholder.jpg' => $csv_data['ceo_photo_url'] ?? 'https://contentcucumber.com/wp-content/uploads/team-placeholder.jpg',
+
+        // Values
+        'Results-Driven' => $csv_data['value_1_title'] ?? 'Results-Driven',
+        'Every strategy we develop is anchored in measurable outcomes. We believe in transparent reporting and data-driven decision making that delivers real ROI for our clients.' => $csv_data['value_1_description'] ?? 'Every strategy we develop is anchored in measurable outcomes.',
+        'Partnership' => $csv_data['value_2_title'] ?? 'Partnership',
+        'We don\'t just work for you—we work with you. Our collaborative approach ensures that every campaign aligns perfectly with your business goals and brand values.' => $csv_data['value_2_description'] ?? 'We work collaboratively with our clients.',
+        'Innovation' => $csv_data['value_3_title'] ?? 'Innovation',
+        'We stay ahead of industry trends and leverage cutting-edge AI tools to give our clients a competitive advantage in the digital marketplace.' => $csv_data['value_3_description'] ?? 'We leverage cutting-edge tools and industry trends.',
+
+        // Statistics
+        '60,000+' => $csv_data['stat_1_number'] ?? '1,000+',
+        'Projects Delivered' => $csv_data['stat_1_label'] ?? 'Projects Completed',
+        '4.9/5' => $csv_data['stat_2_number'] ?? '5.0/5',
+        'Client Satisfaction' => $csv_data['stat_2_label'] ?? 'Client Rating',
+        '1,000+' => $csv_data['stat_3_number'] ?? '500+',
+        'Companies Served' => $csv_data['stat_3_label'] ?? 'Companies Helped',
+        '6+ Years' => $csv_data['stat_4_number'] ?? '5+ Years',
+        'Industry Experience' => $csv_data['stat_4_label'] ?? 'Experience',
+
+        // FAQ Section
+        'What makes Content Cucumber different from other agencies?' => $csv_data['faq_1_question'] ?? 'What makes your company different?',
+        'We combine human expertise with AI-powered insights to deliver exceptional results. Our proprietary methodology and data-driven approach ensure measurable ROI for every client engagement.' => $csv_data['faq_1_answer'] ?? 'Answer about what makes your company different.',
+        'How long has Content Cucumber been in business?' => $csv_data['faq_2_question'] ?? 'How long has your company been in business?',
+        'Since 2018, we\'ve been helping businesses achieve sustainable growth through strategic content marketing and SEO optimization. Our experience spans over 60,000 successful projects.' => $csv_data['faq_2_answer'] ?? 'Information about your company history and experience.',
+        'What industries do you work with?' => $csv_data['faq_3_question'] ?? 'What industries do you serve?',
+        'We serve clients across all industries, from e-commerce and SaaS to professional services and manufacturing. Our diverse experience allows us to adapt our strategies to any market.' => $csv_data['faq_3_answer'] ?? 'Description of the industries you serve.',
+        '[CUSTOMIZE: Common Question About Your Company]' => $csv_data['faq_4_question'] ?? 'Common question about your company?',
+        '[CUSTOMIZE: Provide a comprehensive answer that addresses common concerns or questions your prospects have about your company, services, or approach.]' => $csv_data['faq_4_answer'] ?? 'Answer to common questions about your company.',
+
+        // Awards and Recognition
+        '[CUSTOMIZE: Industry Award 1]' => $csv_data['industry_award_1'] ?? 'Industry Award 1',
+        '[CUSTOMIZE: Industry Award 2]' => $csv_data['industry_award_2'] ?? 'Industry Award 2',
+
+        // Contact Information and URLs
+        '[CUSTOMIZE: Contact Page URL]' => $csv_data['contact_page_url'] ?? '/contact',
+        '[CUSTOMIZE: Services Page URL]' => $csv_data['services_page_url'] ?? '/services',
+
+        // Meta Information
+        'Learn about Content Cucumber\'s mission to drive business growth through expert content marketing and SEO. Meet our team of experienced writers, designers, and strategists. Trusted by 1,000+ companies worldwide.' => $csv_data['meta_description'] ?? 'Learn about our mission and meet our team.',
+        '2018' => $csv_data['founding_date'] ?? '2020',
+        '25' => $csv_data['team_size'] ?? '10',
+        'Worldwide' => $csv_data['area_served'] ?? 'United States'
+    );
+
+    // Apply replacements
+    foreach ($replacements as $search => $replace) {
+        $template_content = str_replace($search, $replace, $template_content);
+    }
+
+    return $template_content;
+}
+
+/**
+ * Get About template content (legacy or enhanced)
+ */
+function requestdesk_get_about_template() {
+    // Try to load enhanced template first
+    if (function_exists('requestdesk_get_about_aeo_template')) {
+        return requestdesk_get_about_aeo_template();
+    }
+
+    // If enhanced template is not available, return a basic fallback
+    return '<!-- wp:heading {"level":1,"style":{"color":{"text":"#ff0000"}}} -->
+<h1 class="wp-block-heading has-text-color" style="color:#ff0000">🚀 AEO/GEO OPTIMIZED ABOUT PAGE TEMPLATE</h1>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph {"style":{"color":{"background":"#fff3cd","text":"#856404"},"spacing":{"padding":{"top":"20px","bottom":"20px","left":"20px","right":"20px"}},"border":{"radius":"8px","color":"#ffeaa7","width":"1px"}}} -->
+<p class="has-text-color has-background has-border-color" style="border-color:#ffeaa7;border-width:1px;border-radius:8px;background-color:#fff3cd;color:#856404;padding-top:20px;padding-bottom:20px;padding-left:20px;padding-right:20px"><strong>⚠️ Enhanced About Template Missing:</strong> The comprehensive AEO About template could not be loaded. This is a basic fallback. Please ensure aeo-template-about.php is properly installed.</p>
 <!-- /wp:paragraph -->';
 }
 ?>
