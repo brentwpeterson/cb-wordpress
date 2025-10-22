@@ -212,18 +212,27 @@ class RequestDesk_API {
             $posts = array();
 
             foreach ($query->posts as $post) {
+                // Debug date processing
+                $published_timestamp = strtotime($post->post_date);
+                $modified_timestamp = strtotime($post->post_modified);
+
                 $post_data = array(
                     'id' => $post->ID,
                     'title' => $post->post_title,
                     'slug' => $post->post_name,
                     'url' => get_permalink($post->ID),
                     'excerpt' => get_the_excerpt($post),
-                    'published_date' => date('c', strtotime($post->post_date)),
-                    'modified_date' => date('c', strtotime($post->post_modified)),
+                    'published_date' => $published_timestamp ? date('c', $published_timestamp) : null,
+                    'modified_date' => $modified_timestamp ? date('c', $modified_timestamp) : null,
                     'author' => get_the_author_meta('display_name', $post->post_author),
                     'categories' => wp_get_post_categories($post->ID, array('fields' => 'names')),
                     'tags' => wp_get_post_tags($post->ID, array('fields' => 'names')),
-                    'word_count' => str_word_count(strip_tags($post->post_content))
+                    'word_count' => str_word_count(strip_tags($post->post_content)),
+                    // Debug fields - remove after testing
+                    'raw_post_date' => $post->post_date,
+                    'raw_post_modified' => $post->post_modified,
+                    'published_timestamp' => $published_timestamp,
+                    'modified_timestamp' => $modified_timestamp
                 );
 
                 // Add content if requested
