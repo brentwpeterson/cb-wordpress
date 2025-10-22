@@ -38,6 +38,10 @@ function requestdesk_get_enhanced_aeo_template() {
 <p class="has-text-color has-background" style="border-radius:6px;background-color:#e8f4fd;color:#0c5460;padding-top:15px;padding-bottom:15px;padding-left:15px;padding-right:15px"><strong>📝 OPTIMIZED META DESCRIPTION:</strong> "Content Cucumber delivers expert SEO, content marketing, and AI-powered digital strategies. Drive organic growth with our proven team of writers, designers, and developers. 60,000+ projects delivered. Get your free consultation today."</p>
 <!-- /wp:paragraph -->
 
+EOD;
+    $template_content .= requestdesk_get_action_instruction_block('meta_description');
+    $template_content .= <<<'EOD'
+
 <!-- wp:html -->
 <script type="application/ld+json">
 {
@@ -106,6 +110,10 @@ function requestdesk_get_enhanced_aeo_template() {
 }
 </script>
 <!-- /wp:html -->
+
+EOD;
+    $template_content .= requestdesk_get_action_instruction_block('hero_section');
+    $template_content .= <<<'EOD'
 
 <!-- Hero Section - Proven Content Cucumber Design -->
 <!-- wp:cover {"url":"","customOverlayColor":"#000000","minHeight":600,"isDark":true} -->
@@ -211,6 +219,10 @@ function requestdesk_get_enhanced_aeo_template() {
   <!-- /wp:list -->
 </div>
 <!-- /wp:group -->
+
+EOD;
+    $template_content .= requestdesk_get_action_instruction_block('services_section');
+    $template_content .= <<<'EOD'
 
 <!-- Services Section -->
 <!-- wp:generateblocks/container {"uniqueId":"8b3d5a2f","tagName":"section","className":"services-section","backgroundColor":"#ffffff","paddingTop":"80px","paddingBottom":"80px"} -->
@@ -319,6 +331,10 @@ function requestdesk_get_enhanced_aeo_template() {
 </div>
 <!-- /wp:group -->
 
+EOD;
+    $template_content .= requestdesk_get_action_instruction_block('faq_section');
+    $template_content .= <<<'EOD'
+
 <!-- FAQ Section - AEO Optimized -->
 <!-- wp:generateblocks/container {"uniqueId":"faq-section","tagName":"section","className":"faq-section","backgroundColor":"#f8f9fa","paddingTop":"80px","paddingBottom":"80px"} -->
 <section class="wp-block-generateblocks-container faq-section" id="faq" style="background-color:#f8f9fa;padding-top:80px;padding-bottom:80px">
@@ -409,6 +425,10 @@ function requestdesk_get_enhanced_aeo_template() {
   <!-- /wp:list -->
 </div>
 <!-- /wp:group -->
+
+EOD;
+    $template_content .= requestdesk_get_action_instruction_block('testimonials_section');
+    $template_content .= <<<'EOD'
 
 <!-- Reviews/Testimonials Section -->
 <!-- wp:generateblocks/container {"uniqueId":"reviews-section","tagName":"section","className":"reviews-section","backgroundColor":"#ffffff","paddingTop":"80px","paddingBottom":"80px"} -->
@@ -846,6 +866,10 @@ function requestdesk_get_enhanced_aeo_template() {
   <!-- /wp:paragraph -->
 </div>
 <!-- /wp:group -->
+
+EOD;
+    $template_content .= requestdesk_get_customization_reminder_block();
+    $template_content .= <<<'EOD'
 EOD;
 
     return $template_content;

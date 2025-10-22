@@ -36,6 +36,7 @@ require_once REQUESTDESK_PLUGIN_DIR . 'admin/aeo-settings-page.php';
 require_once REQUESTDESK_PLUGIN_DIR . 'admin/aeo-meta-boxes.php';
 require_once REQUESTDESK_PLUGIN_DIR . 'admin/aeo-bulk-optimizer.php';
 require_once REQUESTDESK_PLUGIN_DIR . 'admin/aeo-template-importer.php';
+require_once REQUESTDESK_PLUGIN_DIR . 'admin/aeo-action-instructions.php';
 require_once REQUESTDESK_PLUGIN_DIR . 'admin/aeo-template-enhanced.php';
 require_once REQUESTDESK_PLUGIN_DIR . 'admin/aeo-template-about.php';
 

@@ -38,6 +38,10 @@ function requestdesk_get_about_aeo_template() {
 <p class="has-text-color has-background" style="border-radius:6px;background-color:#e8f4fd;color:#0c5460;padding-top:15px;padding-bottom:15px;padding-left:15px;padding-right:15px"><strong>📝 OPTIMIZED META DESCRIPTION:</strong> "Learn about Content Cucumber's mission to drive business growth through expert content marketing and SEO. Meet our team of experienced writers, designers, and strategists. Trusted by 1,000+ companies worldwide."</p>
 <!-- /wp:paragraph -->
 
+EOD;
+    $template_content .= requestdesk_get_action_instruction_block('meta_description');
+    $template_content .= <<<'EOD'
+
 <!-- wp:html -->
 <script type="application/ld+json">
 {
@@ -129,6 +133,10 @@ function requestdesk_get_about_aeo_template() {
 <div style="height:50px" aria-hidden="true" class="wp-block-spacer"></div>
 <!-- /wp:spacer -->
 
+EOD;
+    $template_content .= requestdesk_get_action_instruction_block('company_story');
+    $template_content .= <<<'EOD'
+
 <!-- wp:heading {"level":2,"style":{"typography":{"fontSize":"36px","fontWeight":"600"},"color":{"text":"#2c3e50"}}} -->
 <h2 class="wp-block-heading has-text-color" style="color:#2c3e50;font-size:36px;font-weight:600">Our Story</h2>
 <!-- /wp:heading -->
@@ -152,6 +160,10 @@ function requestdesk_get_about_aeo_template() {
 <!-- wp:spacer {"height":"50px"} -->
 <div style="height:50px" aria-hidden="true" class="wp-block-spacer"></div>
 <!-- /wp:spacer -->
+
+EOD;
+    $template_content .= requestdesk_get_action_instruction_block('company_story', '🏢 Company Values Optimization');
+    $template_content .= <<<'EOD'
 
 <!-- wp:heading {"level":2,"style":{"typography":{"fontSize":"36px","fontWeight":"600"},"color":{"text":"#2c3e50"}}} -->
 <h2 class="wp-block-heading has-text-color" style="color:#2c3e50;font-size:36px;font-weight:600">Our Values & Approach</h2>
@@ -192,6 +204,10 @@ function requestdesk_get_about_aeo_template() {
 <!-- wp:spacer {"height":"50px"} -->
 <div style="height:50px" aria-hidden="true" class="wp-block-spacer"></div>
 <!-- /wp:spacer -->
+
+EOD;
+    $template_content .= requestdesk_get_action_instruction_block('team_profiles');
+    $template_content .= <<<'EOD'
 
 <!-- wp:heading {"level":2,"style":{"typography":{"fontSize":"36px","fontWeight":"600"},"color":{"text":"#2c3e50"}}} -->
 <h2 class="wp-block-heading has-text-color" style="color:#2c3e50;font-size:36px;font-weight:600">Meet Our Leadership Team</h2>
@@ -242,6 +258,10 @@ function requestdesk_get_about_aeo_template() {
 <!-- wp:spacer {"height":"50px"} -->
 <div style="height:50px" aria-hidden="true" class="wp-block-spacer"></div>
 <!-- /wp:spacer -->
+
+EOD;
+    $template_content .= requestdesk_get_action_instruction_block('achievement_stats');
+    $template_content .= <<<'EOD'
 
 <!-- wp:heading {"level":2,"style":{"typography":{"fontSize":"36px","fontWeight":"600"},"color":{"text":"#2c3e50"}}} -->
 <h2 class="wp-block-heading has-text-color" style="color:#2c3e50;font-size:36px;font-weight:600">Our Achievements & Recognition</h2>
@@ -386,6 +406,9 @@ function requestdesk_get_about_aeo_template() {
 <div style="height:40px" aria-hidden="true" class="wp-block-spacer"></div>
 <!-- /wp:spacer -->
 
+EOD;
+    $template_content .= requestdesk_get_customization_reminder_block();
+    $template_content .= <<<'EOD'
 EOD;
     return $template_content;
 }
