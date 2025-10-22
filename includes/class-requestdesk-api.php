@@ -218,11 +218,12 @@ class RequestDesk_API {
                     'slug' => $post->post_name,
                     'url' => get_permalink($post->ID),
                     'excerpt' => get_the_excerpt($post),
-                    'date' => $post->post_date,
-                    'modified' => $post->post_modified,
+                    'date' => date('c', strtotime($post->post_date)),
+                    'modified' => date('c', strtotime($post->post_modified)),
                     'author' => get_the_author_meta('display_name', $post->post_author),
                     'categories' => wp_get_post_categories($post->ID, array('fields' => 'names')),
-                    'tags' => wp_get_post_tags($post->ID, array('fields' => 'names'))
+                    'tags' => wp_get_post_tags($post->ID, array('fields' => 'names')),
+                    'word_count' => str_word_count(strip_tags($post->post_content))
                 );
 
                 // Add content if requested
@@ -312,11 +313,12 @@ class RequestDesk_API {
                     'slug' => $page->post_name,
                     'url' => get_permalink($page->ID),
                     'excerpt' => get_the_excerpt($page),
-                    'date' => $page->post_date,
-                    'modified' => $page->post_modified,
+                    'date' => date('c', strtotime($page->post_date)),
+                    'modified' => date('c', strtotime($page->post_modified)),
                     'author' => get_the_author_meta('display_name', $page->post_author),
                     'parent' => $page->post_parent,
-                    'menu_order' => $page->menu_order
+                    'menu_order' => $page->menu_order,
+                    'word_count' => str_word_count(strip_tags($page->post_content))
                 );
 
                 // Add content if requested
