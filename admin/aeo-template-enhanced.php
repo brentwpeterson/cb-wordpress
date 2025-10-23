@@ -49,10 +49,11 @@ EOD;
   "@type": "Organization",
   "name": "Content Cucumber",
   "alternateName": "[CUSTOMIZE: Add your business name]",
-  "url": "https://contentcucumber.com",
+  "url": "<?php echo esc_url(home_url()); ?>",
+  "version": "<?php echo esc_attr(REQUESTDESK_VERSION); ?>",
   "logo": {
     "@type": "ImageObject",
-    "url": "https://contentcucumber.com/wp-content/uploads/logo.png"
+    "url": "<?php echo esc_url(wp_upload_dir()['baseurl']); ?>/logo.png"
   },
   "description": "Professional content marketing and SEO services combining human expertise with AI-powered insights for measurable business growth.",
   "foundingDate": "2018",

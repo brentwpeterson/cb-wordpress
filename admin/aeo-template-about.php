@@ -51,10 +51,10 @@ EOD;
     "@type": "Organization",
     "name": "Content Cucumber",
     "alternateName": "[CUSTOMIZE: Add your business name]",
-    "url": "https://contentcucumber.com",
+    "url": "<?php echo esc_url(home_url()); ?>",
     "logo": {
       "@type": "ImageObject",
-      "url": "https://contentcucumber.com/wp-content/uploads/logo.png"
+      "url": "<?php echo esc_url(wp_upload_dir()['baseurl']); ?>/logo.png"
     },
     "description": "Content Cucumber is a leading content marketing and SEO agency combining human expertise with AI-powered insights to deliver measurable business growth for companies worldwide.",
     "foundingDate": "2018",
@@ -96,13 +96,13 @@ EOD;
       "@type": "ListItem",
       "position": 1,
       "name": "Home",
-      "item": "https://contentcucumber.com"
+      "item": "<?php echo esc_url(home_url()); ?>"
     },
     {
       "@type": "ListItem",
       "position": 2,
       "name": "About",
-      "item": "https://contentcucumber.com/about"
+      "item": "<?php echo esc_url(home_url('/about')); ?>"
     }
   ]
 }
@@ -220,7 +220,7 @@ EOD;
 <!-- wp:columns {"style":{"spacing":{"margin":{"top":"40px"},"blockGap":{"top":"40px","left":"40px"}}}} -->
 <div class="wp-block-columns" style="margin-top:40px"><!-- wp:column {"style":{"border":{"radius":"16px","color":"#f8f9fa","width":"2px"},"spacing":{"padding":{"top":"30px","bottom":"30px","left":"30px","right":"30px"}}}} -->
 <div class="wp-block-column has-border-color" style="border-color:#f8f9fa;border-width:2px;border-radius:16px;padding-top:30px;padding-right:30px;padding-bottom:30px;padding-left:30px"><!-- wp:image {"width":"120px","height":"120px","scale":"cover","sizeSlug":"full","style":{"border":{"radius":"60px"}}} -->
-<figure class="wp-block-image size-full is-resized" style="border-radius:60px"><img src="https://contentcucumber.com/wp-content/uploads/team-placeholder.jpg" alt="[CUSTOMIZE: CEO Name] - CEO & Founder" style="border-radius:60px;object-fit:cover;width:120px;height:120px"/></figure>
+<figure class="wp-block-image size-full is-resized" style="border-radius:60px"><img src="<?php echo esc_url(wp_upload_dir()['baseurl']); ?>/team-placeholder.jpg" alt="[CUSTOMIZE: CEO Name] - CEO & Founder" style="border-radius:60px;object-fit:cover;width:120px;height:120px"/></figure>
 <!-- /wp:image -->
 
 <!-- wp:heading {"level":3,"style":{"typography":{"fontSize":"24px","fontWeight":"600"},"color":{"text":"#2c3e50"},"spacing":{"margin":{"top":"20px"}}}} -->
@@ -238,7 +238,7 @@ EOD;
 
 <!-- wp:column {"style":{"border":{"radius":"16px","color":"#f8f9fa","width":"2px"},"spacing":{"padding":{"top":"30px","bottom":"30px","left":"30px","right":"30px"}}}} -->
 <div class="wp-block-column has-border-color" style="border-color:#f8f9fa;border-width:2px;border-radius:16px;padding-top:30px;padding-right:30px;padding-bottom:30px;padding-left:30px"><!-- wp:image {"width":"120px","height":"120px","scale":"cover","sizeSlug":"full","style":{"border":{"radius":"60px"}}} -->
-<figure class="wp-block-image size-full is-resized" style="border-radius:60px"><img src="https://contentcucumber.com/wp-content/uploads/team-placeholder.jpg" alt="[CUSTOMIZE: CTO Name] - Chief Technology Officer" style="border-radius:60px;object-fit:cover;width:120px;height:120px"/></figure>
+<figure class="wp-block-image size-full is-resized" style="border-radius:60px"><img src="<?php echo esc_url(wp_upload_dir()['baseurl']); ?>/team-placeholder.jpg" alt="[CUSTOMIZE: CTO Name] - Chief Technology Officer" style="border-radius:60px;object-fit:cover;width:120px;height:120px"/></figure>
 <!-- /wp:image -->
 
 <!-- wp:heading {"level":3,"style":{"typography":{"fontSize":"24px","fontWeight":"600"},"color":{"text":"#2c3e50"},"spacing":{"margin":{"top":"20px"}}}} -->
