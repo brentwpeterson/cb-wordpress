@@ -463,8 +463,10 @@ class RequestDesk_AEO_Core {
     }
 }
 
-// Schedule the optimization processing action
-add_action('requestdesk_process_aeo_optimization', function($post_id) {
-    $aeo_core = new RequestDesk_AEO_Core();
-    $aeo_core->optimize_post($post_id);
+// Schedule the optimization processing action - only after WordPress is initialized
+add_action('init', function() {
+    add_action('requestdesk_process_aeo_optimization', function($post_id) {
+        $aeo_core = new RequestDesk_AEO_Core();
+        $aeo_core->optimize_post($post_id);
+    });
 });

@@ -14,55 +14,114 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-// Define plugin constants
-define('REQUESTDESK_VERSION', '2.3.1');
-define('REQUESTDESK_PLUGIN_DIR', plugin_dir_path(__FILE__));
-define('REQUESTDESK_PLUGIN_URL', plugin_dir_url(__FILE__));
+// Define plugin constants with safety checks
+if (!defined('REQUESTDESK_VERSION')) {
+    define('REQUESTDESK_VERSION', '2.3.1');
+}
 
-// Load plugin files
-require_once REQUESTDESK_PLUGIN_DIR . 'includes/class-requestdesk-api.php';
-require_once REQUESTDESK_PLUGIN_DIR . 'includes/class-requestdesk-post-handler.php';
-require_once REQUESTDESK_PLUGIN_DIR . 'includes/class-requestdesk-push.php';
-require_once REQUESTDESK_PLUGIN_DIR . 'admin/settings-page.php';
+if (!defined('REQUESTDESK_PLUGIN_DIR')) {
+    if (function_exists('plugin_dir_path')) {
+        define('REQUESTDESK_PLUGIN_DIR', plugin_dir_path(__FILE__));
+    } else {
+        define('REQUESTDESK_PLUGIN_DIR', dirname(__FILE__) . '/');
+    }
+}
 
-// Load AEO/GEO extension files
-require_once REQUESTDESK_PLUGIN_DIR . 'includes/class-requestdesk-aeo-core.php';
-require_once REQUESTDESK_PLUGIN_DIR . 'includes/class-requestdesk-content-analyzer.php';
-require_once REQUESTDESK_PLUGIN_DIR . 'includes/class-requestdesk-schema-generator.php';
-require_once REQUESTDESK_PLUGIN_DIR . 'includes/class-requestdesk-freshness-tracker.php';
-require_once REQUESTDESK_PLUGIN_DIR . 'includes/class-requestdesk-citation-tracker.php';
-require_once REQUESTDESK_PLUGIN_DIR . 'includes/class-requestdesk-claude-integration.php';
-require_once REQUESTDESK_PLUGIN_DIR . 'admin/aeo-settings-page.php';
-require_once REQUESTDESK_PLUGIN_DIR . 'admin/aeo-meta-boxes.php';
-require_once REQUESTDESK_PLUGIN_DIR . 'admin/aeo-bulk-optimizer.php';
-require_once REQUESTDESK_PLUGIN_DIR . 'admin/aeo-template-importer.php';
-require_once REQUESTDESK_PLUGIN_DIR . 'admin/aeo-action-instructions.php';
-require_once REQUESTDESK_PLUGIN_DIR . 'admin/aeo-template-enhanced.php';
-require_once REQUESTDESK_PLUGIN_DIR . 'admin/aeo-template-about.php';
+if (!defined('REQUESTDESK_PLUGIN_URL')) {
+    if (function_exists('plugin_dir_url')) {
+        define('REQUESTDESK_PLUGIN_URL', plugin_dir_url(__FILE__));
+    } else {
+        define('REQUESTDESK_PLUGIN_URL', '/wp-content/plugins/' . basename(dirname(__FILE__)) . '/');
+    }
+}
 
-// Initialize the plugin
-add_action('init', 'requestdesk_init');
+// Load plugin files with error handling
+$plugin_files = array(
+    'includes/class-requestdesk-api.php',
+    'includes/class-requestdesk-post-handler.php',
+    'includes/class-requestdesk-push.php',
+    'admin/settings-page.php',
+    'includes/class-requestdesk-aeo-core.php',
+    'includes/class-requestdesk-content-analyzer.php',
+    'includes/class-requestdesk-schema-generator.php',
+    'includes/class-requestdesk-freshness-tracker.php',
+    'includes/class-requestdesk-citation-tracker.php',
+    'includes/class-requestdesk-claude-integration.php',
+    'admin/aeo-settings-page.php',
+    'admin/aeo-meta-boxes.php',
+    'admin/aeo-bulk-optimizer.php',
+    'admin/aeo-template-importer.php',
+    'admin/aeo-action-instructions.php',
+    'admin/aeo-template-enhanced.php',
+    'admin/aeo-template-about.php'
+);
+
+foreach ($plugin_files as $file) {
+    $file_path = REQUESTDESK_PLUGIN_DIR . $file;
+    if (file_exists($file_path)) {
+        require_once $file_path;
+    } else {
+        // Log missing file but don't stop execution
+        if (function_exists('error_log')) {
+            error_log('RequestDesk: Missing plugin file: ' . $file_path);
+        }
+    }
+}
+
+// Initialize the plugin with safety checks
+if (function_exists('add_action')) {
+    add_action('init', 'requestdesk_init');
+} else {
+    // Fallback initialization if add_action isn't available
+    if (function_exists('requestdesk_init')) {
+        requestdesk_init();
+    }
+}
 
 function requestdesk_init() {
-    // Register REST API endpoints
-    add_action('rest_api_init', 'requestdesk_register_api_endpoints');
+    // Register REST API endpoints with safety check
+    if (function_exists('add_action')) {
+        add_action('rest_api_init', 'requestdesk_register_api_endpoints');
 
-    // Add admin menu
-    add_action('admin_menu', 'requestdesk_add_admin_menu');
+        // Add admin menu
+        add_action('admin_menu', 'requestdesk_add_admin_menu');
 
-    // Initialize push functionality
-    new RequestDesk_Push();
+        // Initialize AEO admin functionality
+        add_action('admin_menu', 'requestdesk_aeo_add_admin_menu');
+        add_action('add_meta_boxes', 'requestdesk_aeo_add_meta_boxes');
+    }
 
-    // Initialize AEO functionality
-    new RequestDesk_AEO_Core();
-    new RequestDesk_Content_Analyzer();
-    new RequestDesk_Schema_Generator();
-    new RequestDesk_Freshness_Tracker();
-    new RequestDesk_Citation_Tracker();
+    // Initialize push functionality with error handling
+    if (class_exists('RequestDesk_Push')) {
+        try {
+            new RequestDesk_Push();
+        } catch (Throwable $e) {
+            if (function_exists('error_log')) {
+                error_log('RequestDesk: Failed to initialize Push: ' . $e->getMessage());
+            }
+        }
+    }
 
-    // Initialize AEO admin functionality
-    add_action('admin_menu', 'requestdesk_aeo_add_admin_menu');
-    add_action('add_meta_boxes', 'requestdesk_aeo_add_meta_boxes');
+    // Initialize AEO functionality with error handling
+    $aeo_classes = array(
+        'RequestDesk_AEO_Core',
+        'RequestDesk_Content_Analyzer',
+        'RequestDesk_Schema_Generator',
+        'RequestDesk_Freshness_Tracker',
+        'RequestDesk_Citation_Tracker'
+    );
+
+    foreach ($aeo_classes as $class_name) {
+        if (class_exists($class_name)) {
+            try {
+                new $class_name();
+            } catch (Throwable $e) {
+                if (function_exists('error_log')) {
+                    error_log("RequestDesk: Failed to initialize $class_name: " . $e->getMessage());
+                }
+            }
+        }
+    }
 }
 
 /**
@@ -176,9 +235,11 @@ function requestdesk_combined_settings_page() {
 }
 
 /**
- * Activation hook
+ * Activation hook with safety checks
  */
-register_activation_hook(__FILE__, 'requestdesk_activate');
+if (function_exists('register_activation_hook')) {
+    register_activation_hook(__FILE__, 'requestdesk_activate');
+}
 
 function requestdesk_activate() {
     // Create database table for sync logs if needed
@@ -255,18 +316,22 @@ function requestdesk_activate() {
 }
 
 /**
- * Deactivation hook
+ * Deactivation hook with safety checks
  */
-register_deactivation_hook(__FILE__, 'requestdesk_deactivate');
+if (function_exists('register_deactivation_hook')) {
+    register_deactivation_hook(__FILE__, 'requestdesk_deactivate');
+}
 
 function requestdesk_deactivate() {
     flush_rewrite_rules();
 }
 
 /**
- * AJAX handler for testing Claude API connection
+ * AJAX handler for testing Claude API connection with safety checks
  */
-add_action('wp_ajax_test_claude_connection', 'requestdesk_test_claude_connection');
+if (function_exists('add_action')) {
+    add_action('wp_ajax_test_claude_connection', 'requestdesk_test_claude_connection');
+}
 
 function requestdesk_test_claude_connection() {
     // Verify nonce
