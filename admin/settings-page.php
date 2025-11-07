@@ -81,7 +81,11 @@ function requestdesk_settings_page() {
     ?>
     
     <div class="wrap">
-        <h1>RequestDesk Connector Settings</h1>
+        <h1>RequestDesk Connector Settings <span style="color: #666; font-size: 0.7em; font-weight: normal;">v<?php echo REQUESTDESK_VERSION; ?></span></h1>
+
+        <div class="notice notice-info" style="margin-bottom: 20px;">
+            <p><strong>Plugin Information:</strong> RequestDesk Connector v<?php echo REQUESTDESK_VERSION; ?> with Universal CSV AEO Template System and Enhanced Action Instructions</p>
+        </div>
 
         <div class="card">
             <h2>Connection Information</h2>
