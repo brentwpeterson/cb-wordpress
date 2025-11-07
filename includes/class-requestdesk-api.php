@@ -216,18 +216,42 @@ class RequestDesk_API {
                 $published_timestamp = strtotime($post->post_date);
                 $modified_timestamp = strtotime($post->post_modified);
 
+                // Get featured image URLs in different sizes (with safety checks)
+                $featured_image_id = null;
+                $featured_image_url = null;
+                $featured_image_medium = null;
+                $featured_image_thumbnail = null;
+
+                if (function_exists('get_post_thumbnail_id') && function_exists('get_the_post_thumbnail_url')) {
+                    $featured_image_id = get_post_thumbnail_id($post->ID);
+                    if ($featured_image_id) {
+                        $featured_image_url = get_the_post_thumbnail_url($post->ID, 'full');
+                        $featured_image_medium = get_the_post_thumbnail_url($post->ID, 'medium');
+                        $featured_image_thumbnail = get_the_post_thumbnail_url($post->ID, 'thumbnail');
+                    }
+                }
+
                 $post_data = array(
                     'id' => $post->ID,
                     'title' => $post->post_title,
                     'slug' => $post->post_name,
                     'url' => get_permalink($post->ID),
-                    'excerpt' => get_the_excerpt($post),
+                    'excerpt' => function_exists('get_the_excerpt') ? get_the_excerpt($post) : '',
                     'published_date' => $published_timestamp ? date('c', $published_timestamp) : null,
                     'modified_date' => $modified_timestamp ? date('c', $modified_timestamp) : null,
                     'author' => get_the_author_meta('display_name', $post->post_author),
                     'categories' => wp_get_post_categories($post->ID, array('fields' => 'names')),
                     'tags' => wp_get_post_tags($post->ID, array('fields' => 'names')),
-                    'word_count' => str_word_count(strip_tags($post->post_content))
+                    'word_count' => str_word_count(strip_tags($post->post_content)),
+                    // Featured image URLs - multiple formats for flexibility
+                    'featured_image' => $featured_image_url,
+                    'featured_image_url' => $featured_image_url,
+                    'image_url' => $featured_image_url,
+                    'wp_featured_image' => $featured_image_url,
+                    'thumbnail' => $featured_image_thumbnail,
+                    'thumbnail_url' => $featured_image_thumbnail,
+                    'featured_image_medium' => $featured_image_medium,
+                    'featured_image_id' => $featured_image_id
                 );
 
                 // Add content if requested
