@@ -61,6 +61,7 @@ class RequestDesk_Push {
             'modified_date' => $post->post_modified,
             'categories' => $this->get_post_categories($post_id),
             'tags' => $this->get_post_tags($post_id),
+            'featured_image_url' => get_the_post_thumbnail_url($post_id, 'full'),
             'metadata' => array(
                 'post_type' => $post->post_type,
                 'post_format' => get_post_format($post_id) ?: 'standard',
