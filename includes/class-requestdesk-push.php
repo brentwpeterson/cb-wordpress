@@ -71,7 +71,20 @@ class RequestDesk_Push {
             // Enhanced AEO data for better AI training
             'aeo_data' => $aeo_data
         );
-        
+
+        // DEBUG: Log the data being sent to RequestDesk
+        error_log('=== REQUESTDESK SYNC DEBUG v2.2.7 CODE ACTIVE ===');
+        error_log('Post ID: ' . $post_id);
+        error_log('Featured Image URL: ' . ($post_data['featured_image_url'] ?: 'NONE'));
+        error_log('*** FEATURED_IMAGE_URL FIELD ADDED BY CLAUDE v2.2.7 ***');
+        if ($post_data['featured_image_url']) {
+            error_log('✅ SUCCESS: Featured image URL found: ' . $post_data['featured_image_url']);
+        } else {
+            error_log('⚠️ No featured image URL (post may not have featured image set)');
+        }
+        error_log('Full post data: ' . json_encode($post_data, JSON_PRETTY_PRINT));
+        error_log('=== END DEBUG ===');
+
         // Send to RequestDesk
         $response = $this->send_to_requestdesk($post_data);
         

@@ -227,7 +227,8 @@ class RequestDesk_API {
                     'author' => get_the_author_meta('display_name', $post->post_author),
                     'categories' => wp_get_post_categories($post->ID, array('fields' => 'names')),
                     'tags' => wp_get_post_tags($post->ID, array('fields' => 'names')),
-                    'word_count' => str_word_count(strip_tags($post->post_content))
+                    'word_count' => str_word_count(strip_tags($post->post_content)),
+                    'featured_image_url' => get_the_post_thumbnail_url($post->ID, 'full') ?: null
                 );
 
                 // Add content if requested
@@ -322,7 +323,8 @@ class RequestDesk_API {
                     'author' => get_the_author_meta('display_name', $page->post_author),
                     'parent' => $page->post_parent,
                     'menu_order' => $page->menu_order,
-                    'word_count' => str_word_count(strip_tags($page->post_content))
+                    'word_count' => str_word_count(strip_tags($page->post_content)),
+                    'featured_image_url' => get_the_post_thumbnail_url($page->ID, 'full') ?: null
                 );
 
                 // Add content if requested
