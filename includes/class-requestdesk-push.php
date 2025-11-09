@@ -65,7 +65,6 @@ class RequestDesk_Push {
             'metadata' => array(
                 'post_type' => $post->post_type,
                 'post_format' => get_post_format($post_id) ?: 'standard',
-                'featured_image' => get_the_post_thumbnail_url($post_id, 'full'),
                 'word_count' => str_word_count(strip_tags($post->post_content))
             ),
             // Enhanced AEO data for better AI training
