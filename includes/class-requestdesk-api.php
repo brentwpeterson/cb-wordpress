@@ -135,9 +135,15 @@ class RequestDesk_API {
                 'tags' => array(
                     'required' => false,
                     'type' => 'array'
+                ),
+                'post_id' => array(
+                    'required' => false,
+                    'type' => 'string',
+                    'description' => 'Post ID to update (if provided, updates existing post instead of creating new one)'
                 )
             )
         ));
+
     }
 
     /**
@@ -386,8 +392,11 @@ class RequestDesk_API {
             $excerpt = sanitize_textarea_field($request->get_param('excerpt'));
             $categories = $request->get_param('categories') ?: array();
             $tags = $request->get_param('tags') ?: array();
+            $post_id = sanitize_text_field($request->get_param('post_id'));
 
-            // Create post
+            $is_update = !empty($post_id);
+
+            // Prepare post data
             $post_data = array(
                 'post_title' => $title,
                 'post_content' => $content,
@@ -400,10 +409,21 @@ class RequestDesk_API {
                 $post_data['post_excerpt'] = $excerpt;
             }
 
-            $post_id = wp_insert_post($post_data);
+            if ($is_update) {
+                // Update existing post
+                $post_data['ID'] = $post_id;
+                $result = wp_update_post($post_data);
 
-            if (is_wp_error($post_id)) {
-                throw new Exception('Failed to create post: ' . $post_id->get_error_message());
+                if (is_wp_error($result) || $result === 0) {
+                    throw new Exception('Failed to update post: ' . ($is_wp_error($result) ? $result->get_error_message() : 'Post not found'));
+                }
+            } else {
+                // Create new post
+                $post_id = wp_insert_post($post_data);
+
+                if (is_wp_error($post_id)) {
+                    throw new Exception('Failed to create post: ' . $post_id->get_error_message());
+                }
             }
 
             // Handle featured image
@@ -471,6 +491,7 @@ class RequestDesk_API {
             );
         }
     }
+
 
     /**
      * Set featured image from URL
