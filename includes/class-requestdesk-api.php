@@ -144,6 +144,25 @@ class RequestDesk_API {
             )
         ));
 
+        // NEW: Dedicated endpoint for updating featured images only
+        register_rest_route($this->namespace, '/update-featured-image', array(
+            'methods' => WP_REST_Server::CREATABLE,
+            'callback' => array($this, 'update_featured_image'),
+            'permission_callback' => array($this, 'check_api_key_permission'),
+            'args' => array(
+                'post_id' => array(
+                    'required' => true,
+                    'type' => 'string',
+                    'description' => 'WordPress post ID to update'
+                ),
+                'featured_image_url' => array(
+                    'required' => true,
+                    'type' => 'string',
+                    'description' => 'URL of the featured image to set'
+                )
+            )
+        ));
+
     }
 
     /**
@@ -487,6 +506,56 @@ class RequestDesk_API {
             return new WP_Error(
                 'publish_error',
                 'Failed to publish content: ' . $e->getMessage(),
+                array('status' => 500)
+            );
+        }
+    }
+
+    /**
+     * Update featured image for existing post
+     * Dedicated endpoint for EXISTING posts featured image updates
+     */
+    public function update_featured_image($request) {
+        try {
+            // Get parameters
+            $post_id = sanitize_text_field($request->get_param('post_id'));
+            $featured_image_url = esc_url_raw($request->get_param('featured_image_url'));
+
+            // Validate post exists
+            $post = get_post($post_id);
+            if (!$post) {
+                return new WP_Error(
+                    'post_not_found',
+                    'Post not found with ID: ' . $post_id,
+                    array('status' => 404)
+                );
+            }
+
+            // Set featured image using existing method
+            $attachment_id = $this->set_featured_image_from_url($post_id, $featured_image_url);
+
+            if ($attachment_id && !is_wp_error($attachment_id)) {
+                return new WP_REST_Response(array(
+                    'success' => true,
+                    'message' => 'Featured image updated successfully',
+                    'post_id' => $post_id,
+                    'attachment_id' => $attachment_id,
+                    'post_url' => get_permalink($post_id)
+                ), 200);
+            } else {
+                $error_message = is_wp_error($attachment_id) ? $attachment_id->get_error_message() : 'Failed to set featured image';
+
+                return new WP_Error(
+                    'featured_image_failed',
+                    $error_message,
+                    array('status' => 500)
+                );
+            }
+
+        } catch (Exception $e) {
+            return new WP_Error(
+                'update_featured_image_error',
+                'Failed to update featured image: ' . $e->getMessage(),
                 array('status' => 500)
             );
         }
