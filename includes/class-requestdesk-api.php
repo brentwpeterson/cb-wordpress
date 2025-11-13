@@ -8,25 +8,30 @@
 class RequestDesk_API {
 
     /**
+     * REST API namespace for all endpoints
+     */
+    private $namespace = 'requestdesk/v1';
+
+    /**
      * Register REST API routes
      */
     public function register_routes() {
         // Test connection endpoint
-        register_rest_route('requestdesk/v1', '/test-connection', array(
+        register_rest_route($this->namespace, '/test-connection', array(
             'methods' => 'GET',
             'callback' => array($this, 'test_connection'),
             'permission_callback' => array($this, 'verify_api_key')
         ));
 
         // Backward compatibility: old test endpoint
-        register_rest_route('requestdesk/v1', '/test', array(
+        register_rest_route($this->namespace, '/test', array(
             'methods' => 'GET',
             'callback' => array($this, 'test_connection'),
             'permission_callback' => array($this, 'verify_api_key')
         ));
 
         // Pull posts endpoint
-        register_rest_route('requestdesk/v1', '/pull-posts', array(
+        register_rest_route($this->namespace, '/pull-posts', array(
             'methods' => 'GET',
             'callback' => array($this, 'pull_posts_for_knowledge'),
             'permission_callback' => array($this, 'verify_api_key'),
@@ -59,7 +64,7 @@ class RequestDesk_API {
         ));
 
         // Pull pages endpoint (NEW for v1.3.0)
-        register_rest_route('requestdesk/v1', '/pull-pages', array(
+        register_rest_route($this->namespace, '/pull-pages', array(
             'methods' => 'GET',
             'callback' => array($this, 'pull_pages_for_knowledge'),
             'permission_callback' => array($this, 'verify_api_key'),
@@ -92,7 +97,7 @@ class RequestDesk_API {
         ));
 
         // Publish content endpoint
-        register_rest_route('requestdesk/v1', '/publish', array(
+        register_rest_route($this->namespace, '/publish', array(
             'methods' => 'POST',
             'callback' => array($this, 'publish_content'),
             'permission_callback' => array($this, 'verify_api_key'),
@@ -148,7 +153,7 @@ class RequestDesk_API {
         register_rest_route($this->namespace, '/update-featured-image', array(
             'methods' => WP_REST_Server::CREATABLE,
             'callback' => array($this, 'update_featured_image'),
-            'permission_callback' => array($this, 'check_api_key_permission'),
+            'permission_callback' => array($this, 'verify_api_key'),
             'args' => array(
                 'post_id' => array(
                     'required' => true,
