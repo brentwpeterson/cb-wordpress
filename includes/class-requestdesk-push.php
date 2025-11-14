@@ -61,16 +61,19 @@ class RequestDesk_Push {
             'modified_date' => $post->post_modified,
             'categories' => $this->get_post_categories($post_id),
             'tags' => $this->get_post_tags($post_id),
+            'featured_image_url' => get_the_post_thumbnail_url($post_id, 'full'),
             'metadata' => array(
                 'post_type' => $post->post_type,
                 'post_format' => get_post_format($post_id) ?: 'standard',
-                'featured_image' => get_the_post_thumbnail_url($post_id, 'full'),
                 'word_count' => str_word_count(strip_tags($post->post_content))
             ),
             // Enhanced AEO data for better AI training
             'aeo_data' => $aeo_data
         );
-        
+
+        // Debug logging removed to prevent activation output errors
+        // This debug code was causing "133 characters of unexpected output" during plugin activation
+
         // Send to RequestDesk
         $response = $this->send_to_requestdesk($post_data);
         
@@ -382,7 +385,10 @@ class RequestDesk_Push {
             return $aeo_data;
         }
 
-        // Get AEO core data
+        // Get AEO core data (check if class exists to prevent activation warnings)
+        if (!class_exists('RequestDesk_AEO_Core')) {
+            return $aeo_data;
+        }
         $aeo_core = new RequestDesk_AEO_Core();
         $core_aeo_data = $aeo_core->get_aeo_data($post_id);
 
@@ -432,7 +438,7 @@ class RequestDesk_Push {
 
         // Content analysis insights
         $post = get_post($post_id);
-        if ($post) {
+        if ($post && class_exists('RequestDesk_Content_Analyzer')) {
             $analyzer = new RequestDesk_Content_Analyzer();
             $analysis = $analyzer->analyze_content($post);
 

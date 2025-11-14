@@ -3,7 +3,7 @@
  * Plugin Name: RequestDesk Connector
  * Plugin URI: https://requestdesk.ai
  * Description: Connects RequestDesk.ai to WordPress for publishing content with secure API key authentication and AEO/AIO/GEO optimization
- * Version: 2.3.1
+ * Version: 2.3.4
  * Author: RequestDesk Team
  * License: GPL v2 or later
  * Text Domain: requestdesk-connector
@@ -14,26 +14,10 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-// Define plugin constants with safety checks
-if (!defined('REQUESTDESK_VERSION')) {
-    define('REQUESTDESK_VERSION', '2.3.1');
-}
-
-if (!defined('REQUESTDESK_PLUGIN_DIR')) {
-    if (function_exists('plugin_dir_path')) {
-        define('REQUESTDESK_PLUGIN_DIR', plugin_dir_path(__FILE__));
-    } else {
-        define('REQUESTDESK_PLUGIN_DIR', dirname(__FILE__) . '/');
-    }
-}
-
-if (!defined('REQUESTDESK_PLUGIN_URL')) {
-    if (function_exists('plugin_dir_url')) {
-        define('REQUESTDESK_PLUGIN_URL', plugin_dir_url(__FILE__));
-    } else {
-        define('REQUESTDESK_PLUGIN_URL', '/wp-content/plugins/' . basename(dirname(__FILE__)) . '/');
-    }
-}
+// Define plugin constants
+define('REQUESTDESK_VERSION', '2.3.4');
+define('REQUESTDESK_PLUGIN_DIR', plugin_dir_path(__FILE__));
+define('REQUESTDESK_PLUGIN_URL', plugin_dir_url(__FILE__));
 
 // Load plugin files with error handling
 $plugin_files = array(

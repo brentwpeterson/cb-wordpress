@@ -8,25 +8,30 @@
 class RequestDesk_API {
 
     /**
+     * REST API namespace for all endpoints
+     */
+    private $namespace = 'requestdesk/v1';
+
+    /**
      * Register REST API routes
      */
     public function register_routes() {
         // Test connection endpoint
-        register_rest_route('requestdesk/v1', '/test-connection', array(
+        register_rest_route($this->namespace, '/test-connection', array(
             'methods' => 'GET',
             'callback' => array($this, 'test_connection'),
             'permission_callback' => array($this, 'verify_api_key')
         ));
 
         // Backward compatibility: old test endpoint
-        register_rest_route('requestdesk/v1', '/test', array(
+        register_rest_route($this->namespace, '/test', array(
             'methods' => 'GET',
             'callback' => array($this, 'test_connection'),
             'permission_callback' => array($this, 'verify_api_key')
         ));
 
         // Pull posts endpoint
-        register_rest_route('requestdesk/v1', '/pull-posts', array(
+        register_rest_route($this->namespace, '/pull-posts', array(
             'methods' => 'GET',
             'callback' => array($this, 'pull_posts_for_knowledge'),
             'permission_callback' => array($this, 'verify_api_key'),
@@ -59,7 +64,7 @@ class RequestDesk_API {
         ));
 
         // Pull pages endpoint (NEW for v1.3.0)
-        register_rest_route('requestdesk/v1', '/pull-pages', array(
+        register_rest_route($this->namespace, '/pull-pages', array(
             'methods' => 'GET',
             'callback' => array($this, 'pull_pages_for_knowledge'),
             'permission_callback' => array($this, 'verify_api_key'),
@@ -92,7 +97,7 @@ class RequestDesk_API {
         ));
 
         // Publish content endpoint
-        register_rest_route('requestdesk/v1', '/publish', array(
+        register_rest_route($this->namespace, '/publish', array(
             'methods' => 'POST',
             'callback' => array($this, 'publish_content'),
             'permission_callback' => array($this, 'verify_api_key'),
@@ -135,9 +140,34 @@ class RequestDesk_API {
                 'tags' => array(
                     'required' => false,
                     'type' => 'array'
+                ),
+                'post_id' => array(
+                    'required' => false,
+                    'type' => 'string',
+                    'description' => 'Post ID to update (if provided, updates existing post instead of creating new one)'
                 )
             )
         ));
+
+        // NEW: Dedicated endpoint for updating featured images only
+        register_rest_route($this->namespace, '/update-featured-image', array(
+            'methods' => WP_REST_Server::CREATABLE,
+            'callback' => array($this, 'update_featured_image'),
+            'permission_callback' => array($this, 'verify_api_key'),
+            'args' => array(
+                'post_id' => array(
+                    'required' => true,
+                    'type' => 'string',
+                    'description' => 'WordPress post ID to update'
+                ),
+                'featured_image_url' => array(
+                    'required' => true,
+                    'type' => 'string',
+                    'description' => 'URL of the featured image to set'
+                )
+            )
+        ));
+
     }
 
     /**
@@ -243,15 +273,7 @@ class RequestDesk_API {
                     'categories' => wp_get_post_categories($post->ID, array('fields' => 'names')),
                     'tags' => wp_get_post_tags($post->ID, array('fields' => 'names')),
                     'word_count' => str_word_count(strip_tags($post->post_content)),
-                    // Featured image URLs - multiple formats for flexibility
-                    'featured_image' => $featured_image_url,
-                    'featured_image_url' => $featured_image_url,
-                    'image_url' => $featured_image_url,
-                    'wp_featured_image' => $featured_image_url,
-                    'thumbnail' => $featured_image_thumbnail,
-                    'thumbnail_url' => $featured_image_thumbnail,
-                    'featured_image_medium' => $featured_image_medium,
-                    'featured_image_id' => $featured_image_id
+                    'featured_image_url' => $featured_image_url
                 );
 
                 // Add content if requested
@@ -346,7 +368,8 @@ class RequestDesk_API {
                     'author' => get_the_author_meta('display_name', $page->post_author),
                     'parent' => $page->post_parent,
                     'menu_order' => $page->menu_order,
-                    'word_count' => str_word_count(strip_tags($page->post_content))
+                    'word_count' => str_word_count(strip_tags($page->post_content)),
+                    'featured_image_url' => get_the_post_thumbnail_url($page->ID, 'full') ?: null
                 );
 
                 // Add content if requested
@@ -408,8 +431,11 @@ class RequestDesk_API {
             $excerpt = sanitize_textarea_field($request->get_param('excerpt'));
             $categories = $request->get_param('categories') ?: array();
             $tags = $request->get_param('tags') ?: array();
+            $post_id = sanitize_text_field($request->get_param('post_id'));
 
-            // Create post
+            $is_update = !empty($post_id);
+
+            // Prepare post data
             $post_data = array(
                 'post_title' => $title,
                 'post_content' => $content,
@@ -422,10 +448,21 @@ class RequestDesk_API {
                 $post_data['post_excerpt'] = $excerpt;
             }
 
-            $post_id = wp_insert_post($post_data);
+            if ($is_update) {
+                // Update existing post
+                $post_data['ID'] = $post_id;
+                $result = wp_update_post($post_data);
 
-            if (is_wp_error($post_id)) {
-                throw new Exception('Failed to create post: ' . $post_id->get_error_message());
+                if (is_wp_error($result) || $result === 0) {
+                    throw new Exception('Failed to update post: ' . ($is_wp_error($result) ? $result->get_error_message() : 'Post not found'));
+                }
+            } else {
+                // Create new post
+                $post_id = wp_insert_post($post_data);
+
+                if (is_wp_error($post_id)) {
+                    throw new Exception('Failed to create post: ' . $post_id->get_error_message());
+                }
             }
 
             // Handle featured image
@@ -493,6 +530,57 @@ class RequestDesk_API {
             );
         }
     }
+
+    /**
+     * Update featured image for existing post
+     * Dedicated endpoint for EXISTING posts featured image updates
+     */
+    public function update_featured_image($request) {
+        try {
+            // Get parameters
+            $post_id = sanitize_text_field($request->get_param('post_id'));
+            $featured_image_url = esc_url_raw($request->get_param('featured_image_url'));
+
+            // Validate post exists
+            $post = get_post($post_id);
+            if (!$post) {
+                return new WP_Error(
+                    'post_not_found',
+                    'Post not found with ID: ' . $post_id,
+                    array('status' => 404)
+                );
+            }
+
+            // Set featured image using existing method
+            $attachment_id = $this->set_featured_image_from_url($post_id, $featured_image_url);
+
+            if ($attachment_id && !is_wp_error($attachment_id)) {
+                return new WP_REST_Response(array(
+                    'success' => true,
+                    'message' => 'Featured image updated successfully',
+                    'post_id' => $post_id,
+                    'attachment_id' => $attachment_id,
+                    'post_url' => get_permalink($post_id)
+                ), 200);
+            } else {
+                $error_message = is_wp_error($attachment_id) ? $attachment_id->get_error_message() : 'Failed to set featured image';
+
+                return new WP_Error(
+                    'featured_image_failed',
+                    $error_message,
+                    array('status' => 500)
+                );
+            }
+
+        } catch (Exception $e) {
+            return new WP_Error(
+                'update_featured_image_error',
+                'Failed to update featured image: ' . $e->getMessage(),
+                array('status' => 500)
+            );
+        }
+    }
+
 
     /**
      * Set featured image from URL
