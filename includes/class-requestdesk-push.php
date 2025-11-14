@@ -71,18 +71,8 @@ class RequestDesk_Push {
             'aeo_data' => $aeo_data
         );
 
-        // DEBUG: Log the data being sent to RequestDesk
-        error_log('=== REQUESTDESK SYNC DEBUG v2.2.7 CODE ACTIVE ===');
-        error_log('Post ID: ' . $post_id);
-        error_log('Featured Image URL: ' . ($post_data['featured_image_url'] ?: 'NONE'));
-        error_log('*** FEATURED_IMAGE_URL FIELD ADDED BY CLAUDE v2.2.7 ***');
-        if ($post_data['featured_image_url']) {
-            error_log('✅ SUCCESS: Featured image URL found: ' . $post_data['featured_image_url']);
-        } else {
-            error_log('⚠️ No featured image URL (post may not have featured image set)');
-        }
-        error_log('Full post data: ' . json_encode($post_data, JSON_PRETTY_PRINT));
-        error_log('=== END DEBUG ===');
+        // Debug logging removed to prevent activation output errors
+        // This debug code was causing "133 characters of unexpected output" during plugin activation
 
         // Send to RequestDesk
         $response = $this->send_to_requestdesk($post_data);
@@ -395,7 +385,10 @@ class RequestDesk_Push {
             return $aeo_data;
         }
 
-        // Get AEO core data
+        // Get AEO core data (check if class exists to prevent activation warnings)
+        if (!class_exists('RequestDesk_AEO_Core')) {
+            return $aeo_data;
+        }
         $aeo_core = new RequestDesk_AEO_Core();
         $core_aeo_data = $aeo_core->get_aeo_data($post_id);
 
@@ -445,7 +438,7 @@ class RequestDesk_Push {
 
         // Content analysis insights
         $post = get_post($post_id);
-        if ($post) {
+        if ($post && class_exists('RequestDesk_Content_Analyzer')) {
             $analyzer = new RequestDesk_Content_Analyzer();
             $analysis = $analyzer->analyze_content($post);
 
