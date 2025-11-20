@@ -3,7 +3,7 @@
  * Plugin Name: RequestDesk Connector
  * Plugin URI: https://requestdesk.ai
  * Description: Connects RequestDesk.ai to WordPress for publishing content with secure API key authentication and AEO/AIO/GEO optimization
- * Version: 2.3.6
+ * Version: 2.3.11
  * Author: RequestDesk Team
  * License: GPL v2 or later
  * Text Domain: requestdesk-connector
@@ -15,7 +15,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('REQUESTDESK_VERSION', '2.3.6');
+define('REQUESTDESK_VERSION', '2.3.11');
 define('REQUESTDESK_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('REQUESTDESK_PLUGIN_URL', plugin_dir_url(__FILE__));
 
@@ -298,6 +298,9 @@ function requestdesk_activate() {
 
     // Flush rewrite rules for REST API
     flush_rewrite_rules();
+
+    // Mark activation as complete to enable auto-updater safely
+    update_option('requestdesk_activation_complete', true);
 }
 
 /**
@@ -359,9 +362,16 @@ function requestdesk_test_claude_connection() {
     }
 }
 
-// Initialize auto-updater after WordPress is fully loaded (WordPress 6.7.0 compatibility)
-add_action('plugins_loaded', function() {
-    if (is_admin() && class_exists('RequestDesk_Plugin_Updater')) {
+// Initialize auto-updater ONLY after activation is complete (WordPress 6.8.3 compatibility)
+// Use 'admin_init' and multiple checks to prevent activation interference
+add_action('admin_init', function() {
+    // Multiple safety checks to prevent auto-updater during activation
+    if (is_admin() &&
+        class_exists('RequestDesk_Plugin_Updater') &&
+        !defined('WP_ACTIVATING_PLUGIN') &&
+        !isset($_GET['action'], $_GET['plugin']) &&
+        get_option('requestdesk_activation_complete', false)) {
+
         new RequestDesk_Plugin_Updater(__FILE__, array(
             'server' => 'https://requestdesk-plugin-updates.s3.amazonaws.com/api/',
         ));
