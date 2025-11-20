@@ -1,0 +1,193 @@
+/**
+ * RequestDesk Frontend Q&A Styles
+ *
+ * Clean, accessible styling for Q&A pairs display on frontend
+ */
+
+.requestdesk-qa-section {
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background: #f9f9f9;
+    border-radius: 8px;
+    border-left: 4px solid #0073aa;
+}
+
+.requestdesk-qa-title {
+    color: #333;
+    font-size: 1.4em;
+    margin: 0 0 1.5rem 0;
+    font-weight: 600;
+    border-bottom: 2px solid #0073aa;
+    padding-bottom: 0.5rem;
+}
+
+.requestdesk-qa-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.requestdesk-qa-item {
+    background: #fff;
+    border-radius: 6px;
+    padding: 1.25rem;
+    border: 1px solid #e0e0e0;
+    transition: box-shadow 0.2s ease;
+}
+
+.requestdesk-qa-item:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.requestdesk-qa-question {
+    color: #0073aa;
+    font-size: 1.1em;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    line-height: 1.4;
+}
+
+.requestdesk-qa-question strong {
+    font-weight: inherit;
+}
+
+.requestdesk-qa-confidence {
+    color: #666;
+    font-weight: normal;
+    font-size: 0.85em;
+    margin-left: 0.5rem;
+}
+
+.requestdesk-qa-answer {
+    color: #444;
+    line-height: 1.6;
+    font-size: 1rem;
+}
+
+.requestdesk-qa-answer p {
+    margin: 0 0 0.75rem 0;
+}
+
+.requestdesk-qa-answer p:last-child {
+    margin-bottom: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .requestdesk-qa-section {
+        margin: 1.5rem 0;
+        padding: 1rem;
+    }
+
+    .requestdesk-qa-title {
+        font-size: 1.2em;
+        margin-bottom: 1rem;
+    }
+
+    .requestdesk-qa-item {
+        padding: 1rem;
+    }
+
+    .requestdesk-qa-question {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* Dark Theme Support */
+@media (prefers-color-scheme: dark) {
+    .requestdesk-qa-section {
+        background: #1a1a1a;
+        border-left-color: #00a0d2;
+    }
+
+    .requestdesk-qa-title {
+        color: #f0f0f0;
+        border-bottom-color: #00a0d2;
+    }
+
+    .requestdesk-qa-item {
+        background: #2a2a2a;
+        border-color: #444;
+    }
+
+    .requestdesk-qa-question {
+        color: #00a0d2;
+    }
+
+    .requestdesk-qa-answer {
+        color: #e0e0e0;
+    }
+
+    .requestdesk-qa-confidence {
+        color: #999;
+    }
+}
+
+/* High Contrast Accessibility */
+@media (prefers-contrast: high) {
+    .requestdesk-qa-section {
+        border-left-width: 6px;
+        border-left-color: #000;
+    }
+
+    .requestdesk-qa-item {
+        border-width: 2px;
+        border-color: #000;
+    }
+
+    .requestdesk-qa-question {
+        color: #000;
+        font-weight: bold;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .requestdesk-qa-section {
+        background: transparent;
+        border: 1px solid #333;
+        page-break-inside: avoid;
+    }
+
+    .requestdesk-qa-item {
+        background: transparent;
+        border: none;
+        border-bottom: 1px solid #ccc;
+        page-break-inside: avoid;
+    }
+
+    .requestdesk-qa-confidence {
+        display: none;
+    }
+}
+
+/* Animation for smooth loading */
+.requestdesk-qa-item {
+    animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Focus styles for accessibility */
+.requestdesk-qa-item:focus {
+    outline: 2px solid #0073aa;
+    outline-offset: 2px;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+    .requestdesk-qa-item {
+        animation: none;
+        transition: none;
+    }
+}

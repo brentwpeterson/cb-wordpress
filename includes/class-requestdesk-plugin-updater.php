@@ -34,13 +34,8 @@ class RequestDesk_Plugin_Updater {
         $this->plugin_file = $plugin_file;
         $this->plugin_slug = plugin_basename($plugin_file);
 
-        // Get plugin data
-        if (!function_exists('get_plugin_data')) {
-            require_once(ABSPATH . 'wp-admin/includes/plugin.php');
-        }
-
-        $plugin_data = get_plugin_data($plugin_file, false);
-        $this->plugin_version = $plugin_data['Version'];
+        // Defer plugin data loading to prevent early translation loading
+        $this->plugin_version = null; // Will be loaded when needed
 
         $this->cache_key = 'requestdesk_update_check_' . md5($this->plugin_slug);
         $this->cache_allowed = true;
@@ -49,6 +44,22 @@ class RequestDesk_Plugin_Updater {
         $this->update_server = $config['server'] ?? $this->update_server;
 
         $this->init();
+    }
+
+    /**
+     * Get plugin version (lazy loading to prevent early translation loading)
+     *
+     * @return string Plugin version
+     */
+    private function get_plugin_version() {
+        if ($this->plugin_version === null) {
+            if (!function_exists('get_plugin_data')) {
+                require_once(ABSPATH . 'wp-admin/includes/plugin.php');
+            }
+            $plugin_data = get_plugin_data($this->plugin_file, false);
+            $this->plugin_version = $plugin_data['Version'];
+        }
+        return $this->plugin_version;
     }
 
     /**
@@ -65,6 +76,13 @@ class RequestDesk_Plugin_Updater {
         // WordPress auto-update integration (WordPress 5.5+)
         add_filter('plugin_auto_update_setting_html', array($this, 'plugin_auto_update_setting_html'), 10, 3);
         add_filter('auto_update_plugin', array($this, 'auto_update_plugin'), 10, 2);
+
+        // Handle auto-update toggle actions
+        add_action('admin_init', array($this, 'handle_auto_update_actions'));
+        add_action('admin_notices', array($this, 'show_auto_update_notices'));
+
+        // Enqueue admin script to handle auto-update toggle
+        add_action('admin_enqueue_scripts', array($this, 'enqueue_auto_update_script'));
     }
 
     /**
@@ -91,7 +109,7 @@ class RequestDesk_Plugin_Updater {
         }
 
         // Compare versions
-        if (version_compare($this->plugin_version, $remote_version['new_version'], '<')) {
+        if (version_compare($this->get_plugin_version(), $remote_version['new_version'], '<')) {
             $transient->response[$this->plugin_slug] = (object) array(
                 'slug' => dirname($this->plugin_slug),
                 'plugin' => $this->plugin_slug,
@@ -129,11 +147,11 @@ class RequestDesk_Plugin_Updater {
         $request = wp_remote_get($this->update_server . 'check-version', array(
             'timeout' => 15,
             'headers' => array(
-                'User-Agent' => 'RequestDesk-Updater/' . $this->plugin_version . '; ' . home_url(),
+                'User-Agent' => 'RequestDesk-Updater/' . $this->get_plugin_version() . '; ' . home_url(),
             ),
             'body' => array(
                 'plugin' => 'requestdesk-connector',
-                'version' => $this->plugin_version,
+                'version' => $this->get_plugin_version(),
                 'site_url' => home_url(),
                 'php_version' => phpversion(),
                 'wp_version' => get_bloginfo('version'),
@@ -234,7 +252,7 @@ class RequestDesk_Plugin_Updater {
             return;
         }
 
-        if (version_compare($this->plugin_version, $remote_version['new_version'], '<')) {
+        if (version_compare($this->get_plugin_version(), $remote_version['new_version'], '<')) {
             $plugin_name = get_plugin_data($this->plugin_file)['Name'];
 
             echo '<div class="notice notice-warning is-dismissible">';
@@ -272,9 +290,9 @@ class RequestDesk_Plugin_Updater {
             $auto_updates_enabled = in_array($this->plugin_slug, (array) get_site_option('auto_update_plugins', array()));
 
             if ($auto_updates_enabled) {
-                $html = '<a href="' . wp_nonce_url(admin_url('plugins.php?action=disable-auto-update-plugin&plugin=' . urlencode($this->plugin_slug)), 'disable-auto-update-plugin_' . $this->plugin_slug) . '" class="toggle-auto-update" data-wp-action="disable">Disable auto-updates</a>';
+                $html = '<a href="' . wp_nonce_url(admin_url('plugins.php?action=disable-auto-update-plugin&plugin=' . urlencode($this->plugin_slug)), 'disable-auto-update-plugin_' . $this->plugin_slug) . '" class="toggle-auto-update" data-wp-action="disable" aria-label="Disable auto-updates for RequestDesk Connector">Disable auto-updates</a>';
             } else {
-                $html = '<a href="' . wp_nonce_url(admin_url('plugins.php?action=enable-auto-update-plugin&plugin=' . urlencode($this->plugin_slug)), 'enable-auto-update-plugin_' . $this->plugin_slug) . '" class="toggle-auto-update" data-wp-action="enable">Enable auto-updates</a>';
+                $html = '<a href="' . wp_nonce_url(admin_url('plugins.php?action=enable-auto-update-plugin&plugin=' . urlencode($this->plugin_slug)), 'enable-auto-update-plugin_' . $this->plugin_slug) . '" class="toggle-auto-update" data-wp-action="enable" aria-label="Enable auto-updates for RequestDesk Connector">Enable auto-updates</a>';
             }
         }
         return $html;
@@ -293,6 +311,97 @@ class RequestDesk_Plugin_Updater {
             return $auto_updates_enabled;
         }
         return $update;
+    }
+
+    /**
+     * Handle auto-update toggle actions
+     */
+    public function handle_auto_update_actions() {
+        if (!current_user_can('activate_plugins')) {
+            return;
+        }
+
+        $action = $_GET['action'] ?? '';
+        $plugin = $_GET['plugin'] ?? '';
+
+        if ($plugin !== $this->plugin_slug) {
+            return;
+        }
+
+        if ($action === 'enable-auto-update-plugin') {
+            if (!wp_verify_nonce($_GET['_wpnonce'], 'enable-auto-update-plugin_' . $this->plugin_slug)) {
+                wp_die('Invalid nonce');
+            }
+
+            // Add plugin to auto-update list
+            $auto_update_plugins = (array) get_site_option('auto_update_plugins', array());
+            if (!in_array($this->plugin_slug, $auto_update_plugins)) {
+                $auto_update_plugins[] = $this->plugin_slug;
+                update_site_option('auto_update_plugins', $auto_update_plugins);
+            }
+
+            // Redirect back to plugins page with success message
+            wp_redirect(add_query_arg(array(
+                'auto-updates-enabled' => '1',
+                'plugin_name' => urlencode('RequestDesk Connector')
+            ), admin_url('plugins.php')));
+            exit;
+        }
+
+        if ($action === 'disable-auto-update-plugin') {
+            if (!wp_verify_nonce($_GET['_wpnonce'], 'disable-auto-update-plugin_' . $this->plugin_slug)) {
+                wp_die('Invalid nonce');
+            }
+
+            // Remove plugin from auto-update list
+            $auto_update_plugins = (array) get_site_option('auto_update_plugins', array());
+            $auto_update_plugins = array_diff($auto_update_plugins, array($this->plugin_slug));
+            update_site_option('auto_update_plugins', $auto_update_plugins);
+
+            // Redirect back to plugins page with success message
+            wp_redirect(add_query_arg(array(
+                'auto-updates-disabled' => '1',
+                'plugin_name' => urlencode('RequestDesk Connector')
+            ), admin_url('plugins.php')));
+            exit;
+        }
+    }
+
+    /**
+     * Show admin notices for auto-update toggle actions
+     */
+    public function show_auto_update_notices() {
+        if (isset($_GET['auto-updates-enabled'])) {
+            $plugin_name = urldecode($_GET['plugin_name'] ?? 'RequestDesk Connector');
+            echo '<div class="notice notice-success is-dismissible"><p>';
+            echo sprintf('Auto-updates enabled for <strong>%s</strong>.', esc_html($plugin_name));
+            echo '</p></div>';
+        }
+
+        if (isset($_GET['auto-updates-disabled'])) {
+            $plugin_name = urldecode($_GET['plugin_name'] ?? 'RequestDesk Connector');
+            echo '<div class="notice notice-success is-dismissible"><p>';
+            echo sprintf('Auto-updates disabled for <strong>%s</strong>.', esc_html($plugin_name));
+            echo '</p></div>';
+        }
+    }
+
+    /**
+     * Enqueue admin script for auto-update toggle
+     */
+    public function enqueue_auto_update_script($hook) {
+        if ($hook === 'plugins.php') {
+            // Add inline script to handle our plugin's auto-update toggle
+            wp_add_inline_script('jquery', '
+                jQuery(document).ready(function($) {
+                    $("tr[data-plugin=\'' . $this->plugin_slug . '\'] .toggle-auto-update").off("click.wp-toggle-auto-update");
+                    $("tr[data-plugin=\'' . $this->plugin_slug . '\'] .toggle-auto-update").on("click", function(e) {
+                        e.preventDefault();
+                        window.location.href = $(this).attr("href");
+                    });
+                });
+            ');
+        }
     }
 }
 

@@ -34,7 +34,11 @@ function requestdesk_aeo_settings_page() {
             'monitor_freshness' => isset($_POST['monitor_freshness']),
             'min_content_length' => intval($_POST['min_content_length']),
             'qa_extraction_confidence' => floatval($_POST['qa_extraction_confidence']),
-            'freshness_alert_days' => intval($_POST['freshness_alert_days'])
+            'freshness_alert_days' => intval($_POST['freshness_alert_days']),
+            'auto_display_qa_frontend' => isset($_POST['auto_display_qa_frontend']),
+            'qa_frontend_title' => sanitize_text_field($_POST['qa_frontend_title']),
+            'qa_frontend_max_pairs' => intval($_POST['qa_frontend_max_pairs']),
+            'qa_frontend_min_confidence' => floatval($_POST['qa_frontend_min_confidence'])
         );
 
         update_option('requestdesk_aeo_settings', $settings);
@@ -51,7 +55,11 @@ function requestdesk_aeo_settings_page() {
         'monitor_freshness' => true,
         'min_content_length' => 300,
         'qa_extraction_confidence' => 0.7,
-        'freshness_alert_days' => 90
+        'freshness_alert_days' => 90,
+        'auto_display_qa_frontend' => false,
+        'qa_frontend_title' => 'Frequently Asked Questions',
+        'qa_frontend_max_pairs' => 5,
+        'qa_frontend_min_confidence' => 0.7
     ));
 
     // Get system status
@@ -169,6 +177,79 @@ function requestdesk_aeo_settings_page() {
                         </td>
                     </tr>
                 </table>
+            </div>
+
+            <div class="card">
+                <h2>🌐 Frontend Q&A Display</h2>
+                <table class="form-table">
+                    <tr>
+                        <th scope="row">Auto-Display Q&A on Frontend</th>
+                        <td>
+                            <label>
+                                <input type="checkbox" name="auto_display_qa_frontend" value="1" <?php checked($settings['auto_display_qa_frontend'], true); ?>>
+                                Automatically display Q&A pairs at the end of posts/pages
+                            </label>
+                            <p class="description">
+                                When enabled, Q&A pairs will automatically appear at the end of post content on the frontend.
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Q&A Section Title</th>
+                        <td>
+                            <input type="text" name="qa_frontend_title" value="<?php echo esc_attr($settings['qa_frontend_title']); ?>" class="regular-text">
+                            <p class="description">
+                                The title displayed above Q&A pairs on the frontend.
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Maximum Q&A Pairs to Display</th>
+                        <td>
+                            <select name="qa_frontend_max_pairs">
+                                <option value="0" <?php selected($settings['qa_frontend_max_pairs'], 0); ?>>Show all available pairs</option>
+                                <option value="3" <?php selected($settings['qa_frontend_max_pairs'], 3); ?>>3 pairs</option>
+                                <option value="5" <?php selected($settings['qa_frontend_max_pairs'], 5); ?>>5 pairs</option>
+                                <option value="8" <?php selected($settings['qa_frontend_max_pairs'], 8); ?>>8 pairs</option>
+                                <option value="10" <?php selected($settings['qa_frontend_max_pairs'], 10); ?>>10 pairs</option>
+                            </select>
+                            <p class="description">
+                                Limit the number of Q&A pairs displayed to avoid overwhelming readers.
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Minimum Confidence for Frontend Display</th>
+                        <td>
+                            <select name="qa_frontend_min_confidence">
+                                <option value="0.5" <?php selected($settings['qa_frontend_min_confidence'], 0.5); ?>>50% - Show more Q&A pairs</option>
+                                <option value="0.6" <?php selected($settings['qa_frontend_min_confidence'], 0.6); ?>>60% - Balanced</option>
+                                <option value="0.7" <?php selected($settings['qa_frontend_min_confidence'], 0.7); ?>>70% - Recommended</option>
+                                <option value="0.8" <?php selected($settings['qa_frontend_min_confidence'], 0.8); ?>>80% - High quality only</option>
+                                <option value="0.9" <?php selected($settings['qa_frontend_min_confidence'], 0.9); ?>>90% - Excellent quality only</option>
+                            </select>
+                            <p class="description">
+                                Only display Q&A pairs above this confidence level on the frontend.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+                <div class="postbox" style="margin: 15px 0;">
+                    <h3 class="hndle" style="padding: 10px 15px; margin: 0; background: #f9f9f9;">💡 Manual Q&A Display Options</h3>
+                    <div class="inside" style="padding: 15px;">
+                        <p><strong>Shortcode:</strong> Use <code>[requestdesk_qa]</code> to display Q&A pairs anywhere in your content.</p>
+                        <p><strong>Template Function:</strong> Use <code>&lt;?php requestdesk_display_qa_pairs(); ?&gt;</code> in your theme files.</p>
+                        <p><strong>Conditional Check:</strong> Use <code>&lt;?php if (requestdesk_has_qa_pairs()) { ... } ?&gt;</code> to check if Q&A pairs exist.</p>
+
+                        <h4 style="margin-top: 20px;">Shortcode Examples:</h4>
+                        <ul>
+                            <li><code>[requestdesk_qa]</code> - Display all Q&A pairs with default settings</li>
+                            <li><code>[requestdesk_qa title="Common Questions" max_pairs="3"]</code> - Custom title, limit to 3 pairs</li>
+                            <li><code>[requestdesk_qa show_confidence="true" min_confidence="0.8"]</code> - Show confidence scores, high quality only</li>
+                            <li><code>[requestdesk_qa show_title="false"]</code> - Display without section title</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
 
             <div class="card">
