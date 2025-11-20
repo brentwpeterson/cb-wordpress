@@ -3,7 +3,7 @@
  * Plugin Name: RequestDesk Connector
  * Plugin URI: https://requestdesk.ai
  * Description: Connects RequestDesk.ai to WordPress for publishing content with secure API key authentication and AEO/AIO/GEO optimization
- * Version: 2.3.4
+ * Version: 2.3.6
  * Author: RequestDesk Team
  * License: GPL v2 or later
  * Text Domain: requestdesk-connector
@@ -15,7 +15,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('REQUESTDESK_VERSION', '2.3.4');
+define('REQUESTDESK_VERSION', '2.3.6');
 define('REQUESTDESK_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('REQUESTDESK_PLUGIN_URL', plugin_dir_url(__FILE__));
 
@@ -37,7 +37,8 @@ $plugin_files = array(
     'admin/aeo-template-importer.php',
     'admin/aeo-action-instructions.php',
     'admin/aeo-template-enhanced.php',
-    'admin/aeo-template-about.php'
+    'admin/aeo-template-about.php',
+    'includes/class-requestdesk-plugin-updater.php'
 );
 
 foreach ($plugin_files as $file) {
@@ -357,3 +358,12 @@ function requestdesk_test_claude_connection() {
         ));
     }
 }
+
+// Initialize auto-updater after WordPress is fully loaded (WordPress 6.7.0 compatibility)
+add_action('plugins_loaded', function() {
+    if (is_admin() && class_exists('RequestDesk_Plugin_Updater')) {
+        new RequestDesk_Plugin_Updater(__FILE__, array(
+            'server' => 'https://requestdesk-plugin-updates.s3.amazonaws.com/api/',
+        ));
+    }
+});
