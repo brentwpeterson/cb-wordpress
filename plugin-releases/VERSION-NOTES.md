@@ -1,5 +1,15 @@
 # RequestDesk Connector Version History
 
+## v2.3.22 (2025-11-21) 🐛 **CRITICAL Q&A GENERATION FIX**
+- **CRITICAL FIX:** Fixed "Generate Q&A Pairs" button not working in post editor
+- **Root Cause:** Missing JavaScript file `assets/js/aeo-admin.js` prevented AJAX functionality
+- **Solution:** Created complete `aeo-admin.js` with proper AJAX handlers for Q&A generation
+- **Enhancement:** Added comprehensive debug logging for troubleshooting
+- **Enhancement:** Added error handling and user feedback for failed operations
+- **Technical:** Button now properly calls `wp_ajax_requestdesk_optimize_content` endpoint
+- **Status:** Q&A generation functionality fully operational
+- **Location:** `requestdesk-connector-v2.3.22.zip`
+
 ## v2.3.16 (2025-11-20) 🔧 **AUTO-UPDATE TOGGLE FIX**
 - **CRITICAL FIX:** Fixed "Enable auto-updates" toggle button not working
 - **Enhancement:** Added proper action handlers for enable/disable auto-update actions

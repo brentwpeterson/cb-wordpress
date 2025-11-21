@@ -64,6 +64,9 @@ rm -rf plugin-releases/requestdesk-connector/plugin-releases
 rm -rf plugin-releases/requestdesk-connector/.git
 rm -f plugin-releases/requestdesk-connector/debug.log
 rm -f plugin-releases/requestdesk-connector/.DS_Store
+rm -f plugin-releases/requestdesk-connector/WORDPRESS-PLUGIN-DEVELOPMENT-SOP.md
+rm -f plugin-releases/requestdesk-connector/CRITICAL-WORDPRESS-PLUGIN-STRUCTURE-STANDARDS.md
+rm -f plugin-releases/requestdesk-connector/VERSION-NOTES.md
 ```
 
 ### **Step 2.4: Create Versioned ZIP**
