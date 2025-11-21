@@ -137,6 +137,12 @@ class RequestDesk_Frontend_QA {
             return $content;
         }
 
+        // Allow templates to override Q&A display
+        $show_qa = apply_filters('requestdesk_show_qa_on_template', true, get_the_ID());
+        if (!$show_qa) {
+            return $content;
+        }
+
         // Get Q&A pairs for current post
         $qa_html = $this->render_qa_pairs(get_the_ID(), array(
             'show_confidence' => false,
@@ -321,5 +327,24 @@ if (!function_exists('requestdesk_has_qa_pairs')) {
     function requestdesk_has_qa_pairs($post_id = null) {
         $frontend_qa = new RequestDesk_Frontend_QA();
         return $frontend_qa->post_has_qa_pairs($post_id);
+    }
+}
+
+if (!function_exists('requestdesk_disable_qa_for_template')) {
+    /**
+     * Disable Q&A display for specific template
+     * Call this in your template file to prevent auto-display
+     */
+    function requestdesk_disable_qa_for_template() {
+        add_filter('requestdesk_show_qa_on_template', '__return_false');
+    }
+}
+
+if (!function_exists('requestdesk_enable_qa_for_template')) {
+    /**
+     * Re-enable Q&A display for specific template (if previously disabled)
+     */
+    function requestdesk_enable_qa_for_template() {
+        remove_filter('requestdesk_show_qa_on_template', '__return_false');
     }
 }

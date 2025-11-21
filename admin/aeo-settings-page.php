@@ -186,7 +186,7 @@ function requestdesk_aeo_settings_page() {
                         <th scope="row">Auto-Display Q&A on Frontend</th>
                         <td>
                             <label>
-                                <input type="checkbox" name="auto_display_qa_frontend" value="1" <?php checked($settings['auto_display_qa_frontend'], true); ?>>
+                                <input type="checkbox" name="auto_display_qa_frontend" value="1" <?php checked($settings['auto_display_qa_frontend'] ?? false, true); ?>>
                                 Automatically display Q&A pairs at the end of posts/pages
                             </label>
                             <p class="description">
@@ -197,7 +197,7 @@ function requestdesk_aeo_settings_page() {
                     <tr>
                         <th scope="row">Q&A Section Title</th>
                         <td>
-                            <input type="text" name="qa_frontend_title" value="<?php echo esc_attr($settings['qa_frontend_title']); ?>" class="regular-text">
+                            <input type="text" name="qa_frontend_title" value="<?php echo esc_attr($settings['qa_frontend_title'] ?? 'Frequently Asked Questions'); ?>" class="regular-text">
                             <p class="description">
                                 The title displayed above Q&A pairs on the frontend.
                             </p>
@@ -207,11 +207,11 @@ function requestdesk_aeo_settings_page() {
                         <th scope="row">Maximum Q&A Pairs to Display</th>
                         <td>
                             <select name="qa_frontend_max_pairs">
-                                <option value="0" <?php selected($settings['qa_frontend_max_pairs'], 0); ?>>Show all available pairs</option>
-                                <option value="3" <?php selected($settings['qa_frontend_max_pairs'], 3); ?>>3 pairs</option>
-                                <option value="5" <?php selected($settings['qa_frontend_max_pairs'], 5); ?>>5 pairs</option>
-                                <option value="8" <?php selected($settings['qa_frontend_max_pairs'], 8); ?>>8 pairs</option>
-                                <option value="10" <?php selected($settings['qa_frontend_max_pairs'], 10); ?>>10 pairs</option>
+                                <option value="0" <?php selected($settings['qa_frontend_max_pairs'] ?? 0, 0); ?>>Show all available pairs</option>
+                                <option value="3" <?php selected($settings['qa_frontend_max_pairs'] ?? 0, 3); ?>>3 pairs</option>
+                                <option value="5" <?php selected($settings['qa_frontend_max_pairs'] ?? 0, 5); ?>>5 pairs</option>
+                                <option value="8" <?php selected($settings['qa_frontend_max_pairs'] ?? 0, 8); ?>>8 pairs</option>
+                                <option value="10" <?php selected($settings['qa_frontend_max_pairs'] ?? 0, 10); ?>>10 pairs</option>
                             </select>
                             <p class="description">
                                 Limit the number of Q&A pairs displayed to avoid overwhelming readers.
@@ -222,11 +222,11 @@ function requestdesk_aeo_settings_page() {
                         <th scope="row">Minimum Confidence for Frontend Display</th>
                         <td>
                             <select name="qa_frontend_min_confidence">
-                                <option value="0.5" <?php selected($settings['qa_frontend_min_confidence'], 0.5); ?>>50% - Show more Q&A pairs</option>
-                                <option value="0.6" <?php selected($settings['qa_frontend_min_confidence'], 0.6); ?>>60% - Balanced</option>
-                                <option value="0.7" <?php selected($settings['qa_frontend_min_confidence'], 0.7); ?>>70% - Recommended</option>
-                                <option value="0.8" <?php selected($settings['qa_frontend_min_confidence'], 0.8); ?>>80% - High quality only</option>
-                                <option value="0.9" <?php selected($settings['qa_frontend_min_confidence'], 0.9); ?>>90% - Excellent quality only</option>
+                                <option value="0.5" <?php selected($settings['qa_frontend_min_confidence'] ?? 0.5, 0.5); ?>>50% - Show more Q&A pairs</option>
+                                <option value="0.6" <?php selected($settings['qa_frontend_min_confidence'] ?? 0.5, 0.6); ?>>60% - Balanced</option>
+                                <option value="0.7" <?php selected($settings['qa_frontend_min_confidence'] ?? 0.5, 0.7); ?>>70% - Recommended</option>
+                                <option value="0.8" <?php selected($settings['qa_frontend_min_confidence'] ?? 0.5, 0.8); ?>>80% - High quality only</option>
+                                <option value="0.9" <?php selected($settings['qa_frontend_min_confidence'] ?? 0.5, 0.9); ?>>90% - Excellent quality only</option>
                             </select>
                             <p class="description">
                                 Only display Q&A pairs above this confidence level on the frontend.

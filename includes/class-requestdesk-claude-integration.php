@@ -9,11 +9,12 @@ class RequestDesk_Claude_Integration {
 
     private $api_key;
     private $api_url = 'https://api.anthropic.com/v1/messages';
-    private $model = 'claude-3-5-sonnet-20241022';
+    private $model;
 
     public function __construct() {
         $settings = get_option('requestdesk_settings', array());
         $this->api_key = $settings['claude_api_key'] ?? '';
+        $this->model = $settings['claude_model'] ?? 'claude-sonnet-4-5-20250929';
     }
 
     /**

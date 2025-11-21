@@ -45,6 +45,7 @@ function requestdesk_settings_page() {
             'allowed_post_types' => array('post'), // For MVP, only posts
             'api_key' => sanitize_text_field($_POST['api_key']),
             'claude_api_key' => sanitize_text_field($_POST['claude_api_key']),
+            'claude_model' => sanitize_text_field($_POST['claude_model']),
             'requestdesk_endpoint' => sanitize_text_field($_POST['requestdesk_endpoint']),
             'auto_sync_on_publish' => isset($_POST['auto_sync_on_publish']),
             'auto_sync_on_update' => isset($_POST['auto_sync_on_update'])
@@ -71,7 +72,8 @@ function requestdesk_settings_page() {
         'default_post_status' => 'draft',
         'allowed_post_types' => array('post'),
         'api_key' => '',
-        'claude_api_key' => ''
+        'claude_api_key' => '',
+        'claude_model' => 'claude-sonnet-4-5-20250929'
     ));
     
     // Get sync logs
@@ -216,6 +218,33 @@ function requestdesk_settings_page() {
                                 <p><strong>✅ Ready:</strong> Claude AI integration enabled for AEO features.</p>
                             </div>
                             <?php endif; ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Claude AI Model</th>
+                        <td>
+                            <select id="claude_model" name="claude_model" class="regular-text">
+                                <option value="claude-sonnet-4-5-20250929" <?php selected($settings['claude_model'] ?? 'claude-sonnet-4-5-20250929', 'claude-sonnet-4-5-20250929'); ?>>
+                                    Claude Sonnet 4.5 (Latest) - Most Capable, Highest Cost
+                                </option>
+                                <option value="claude-opus-4-1-20250805" <?php selected($settings['claude_model'] ?? '', 'claude-opus-4-1-20250805'); ?>>
+                                    Claude Opus 4.1 - Very Capable, High Cost
+                                </option>
+                                <option value="claude-opus-4-20250514" <?php selected($settings['claude_model'] ?? '', 'claude-opus-4-20250514'); ?>>
+                                    Claude Opus 4 - Capable, Moderate Cost
+                                </option>
+                                <option value="claude-sonnet-4-20250514" <?php selected($settings['claude_model'] ?? '', 'claude-sonnet-4-20250514'); ?>>
+                                    Claude Sonnet 4 - Balanced Performance, Moderate Cost
+                                </option>
+                                <option value="claude-haiku-4-5-20251001" <?php selected($settings['claude_model'] ?? '', 'claude-haiku-4-5-20251001'); ?>>
+                                    Claude Haiku 4.5 - Fastest, Lowest Cost
+                                </option>
+                            </select>
+                            <p class="description">
+                                <strong>Choose your Claude model:</strong> Ordered by cost (highest to lowest).<br>
+                                Higher cost models offer better performance but consume more API credits.<br>
+                                <strong>Recommended:</strong> Claude 3.5 Sonnet for best results, Claude 3.5 Haiku for cost savings.
+                            </p>
                         </td>
                     </tr>
                 </table>
