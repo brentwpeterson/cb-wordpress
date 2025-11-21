@@ -1,0 +1,13 @@
+##############################################################################
+# DEBUG LOG - WORDPRESS-IMAGE-UPLOAD
+##############################################################################
+# INSTRUCTIONS FOR USE:
+# - Use /debug-attempt [try-number] command to add structured entries
+# - Each debug attempt = one attempt number
+# - Format: Attempt #X | Date Time | What tested | Result | What was tried/learned
+##############################################################################
+# SUMMARY OF ATTEMPTS:
+# (Debug attempts will be added here by /debug-attempt command)
+##############################################################################
+2025-11-06 20:03:35 - Initial setup - No debug attempts yet
+##############################################################################
