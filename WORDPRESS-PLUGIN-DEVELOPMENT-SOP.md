@@ -18,11 +18,35 @@ Establish a standardized, repeatable process for WordPress plugin development th
 
 ---
 
+## 🖥️ **DEVELOPMENT ENVIRONMENT: LocalWP**
+
+This project uses **LocalWP** (formerly Local by Flywheel) for local WordPress development.
+
+### **LocalWP Setup**
+- **Download**: https://localwp.com/
+- **Site Name**: Configure a local WordPress site for plugin testing
+- **Plugin Path**: `~/Local Sites/[site-name]/app/public/wp-content/plugins/`
+
+### **Why LocalWP?**
+- ✅ One-click WordPress installation
+- ✅ Easy PHP version switching
+- ✅ Built-in SSL certificates
+- ✅ Live Link for external testing
+- ✅ No Docker required - native performance on macOS
+
+### **Starting LocalWP**
+1. Open LocalWP application
+2. Start your WordPress site
+3. Access admin at: `http://[site-name].local/wp-admin/`
+
+---
+
 ## 📋 **PHASE 1: DEVELOPMENT PREPARATION**
 
 ### **Step 1.1: Environment Setup**
-- [ ] Confirm local WordPress development environment is running
-- [ ] Verify local environment matches production WordPress version
+- [ ] Open LocalWP application
+- [ ] Start your WordPress test site
+- [ ] Verify LocalWP site matches production WordPress version
 - [ ] Backup existing plugin installation (if any)
 - [ ] Document current plugin version before starting
 
@@ -106,11 +130,12 @@ zip -r requestdesk-connector-v[VERSION].zip requestdesk-connector/ -x "*.DS_Stor
 
 ---
 
-## 🧪 **PHASE 3: LOCAL TESTING (MANDATORY)**
+## 🧪 **PHASE 3: LOCAL TESTING IN LocalWP (MANDATORY)**
 
-### **Step 3.1: Upload to Local WordPress**
-- [ ] Access local WordPress admin: Plugins → Add New → Upload Plugin
-- [ ] Upload `requestdesk-connector.zip`
+### **Step 3.1: Upload to LocalWP WordPress**
+- [ ] Access LocalWP WordPress admin: `http://[site-name].local/wp-admin/`
+- [ ] Navigate to: Plugins → Add New → Upload Plugin
+- [ ] Upload `requestdesk-connector-v[VERSION].zip` from `plugin-releases/`
 - [ ] Verify installation creates `requestdesk-connector/` directory only
 
 ### **Step 3.2: Activation Testing**
