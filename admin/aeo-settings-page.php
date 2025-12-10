@@ -38,7 +38,18 @@ function requestdesk_aeo_settings_page() {
             'auto_display_qa_frontend' => isset($_POST['auto_display_qa_frontend']),
             'qa_frontend_title' => sanitize_text_field($_POST['qa_frontend_title']),
             'qa_frontend_max_pairs' => intval($_POST['qa_frontend_max_pairs']),
-            'qa_frontend_min_confidence' => floatval($_POST['qa_frontend_min_confidence'])
+            'qa_frontend_min_confidence' => floatval($_POST['qa_frontend_min_confidence']),
+            // Schema Type Settings (AI-First)
+            'schema_article' => isset($_POST['schema_article']),
+            'schema_faq' => isset($_POST['schema_faq']),
+            'schema_howto' => isset($_POST['schema_howto']),
+            'schema_breadcrumb' => isset($_POST['schema_breadcrumb']),
+            'schema_product' => isset($_POST['schema_product']),
+            'schema_local_business' => isset($_POST['schema_local_business']),
+            'schema_video' => isset($_POST['schema_video']),
+            'schema_course' => isset($_POST['schema_course']),
+            'schema_detection_mode' => sanitize_text_field($_POST['schema_detection_mode'] ?? 'auto'),
+            'schema_detection_confidence' => floatval($_POST['schema_detection_confidence'] ?? 0.6)
         );
 
         update_option('requestdesk_aeo_settings', $settings);
@@ -59,7 +70,18 @@ function requestdesk_aeo_settings_page() {
         'auto_display_qa_frontend' => false,
         'qa_frontend_title' => 'Frequently Asked Questions',
         'qa_frontend_max_pairs' => 5,
-        'qa_frontend_min_confidence' => 0.7
+        'qa_frontend_min_confidence' => 0.7,
+        // Schema Type Defaults (AI-First)
+        'schema_article' => true,
+        'schema_faq' => true,
+        'schema_howto' => true,
+        'schema_breadcrumb' => true,
+        'schema_product' => true,
+        'schema_local_business' => true,
+        'schema_video' => true,
+        'schema_course' => true,
+        'schema_detection_mode' => 'auto',
+        'schema_detection_confidence' => 0.6
     ));
 
     // Get system status
@@ -254,20 +276,139 @@ function requestdesk_aeo_settings_page() {
 
             <div class="card">
                 <h2>🏷️ Schema Markup Generation</h2>
+                <p class="description" style="margin-bottom: 15px; font-size: 14px;">
+                    <strong>AI-First Schema:</strong> These schema types are optimized for AI search engines and LLMs (ChatGPT, Claude, Perplexity, Google AI Overviews).
+                </p>
+
                 <table class="form-table">
                     <tr>
-                        <th scope="row">Generate FAQ Schema</th>
+                        <th scope="row">Core Schema Types</th>
+                        <td>
+                            <label style="display: block; margin-bottom: 8px;">
+                                <input type="checkbox" name="schema_article" value="1" <?php checked($settings['schema_article'] ?? true, true); ?>>
+                                <strong>Article Schema</strong> - Blog posts and news content
+                            </label>
+                            <label style="display: block; margin-bottom: 8px;">
+                                <input type="checkbox" name="schema_faq" value="1" <?php checked($settings['schema_faq'] ?? true, true); ?>>
+                                <strong>FAQ Schema</strong> - Question/Answer pairs for AI assistants
+                            </label>
+                            <label style="display: block; margin-bottom: 8px;">
+                                <input type="checkbox" name="schema_howto" value="1" <?php checked($settings['schema_howto'] ?? true, true); ?>>
+                                <strong>HowTo Schema</strong> - Step-by-step instructions
+                            </label>
+                            <label style="display: block; margin-bottom: 8px;">
+                                <input type="checkbox" name="schema_breadcrumb" value="1" <?php checked($settings['schema_breadcrumb'] ?? true, true); ?>>
+                                <strong>Breadcrumb Schema</strong> - Navigation path (always recommended for AI)
+                            </label>
+                            <p class="description">Core schema types are always available based on content detection.</p>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <th scope="row">Enhanced Schema Types</th>
+                        <td>
+                            <label style="display: block; margin-bottom: 8px;">
+                                <input type="checkbox" name="schema_product" value="1" <?php checked($settings['schema_product'] ?? true, true); ?>>
+                                <strong>Product/Review Schema</strong> - Product pages with pricing, ratings, availability
+                            </label>
+                            <p class="description" style="margin-left: 25px; margin-bottom: 12px; color: #666;">
+                                Auto-detects: WooCommerce products, price patterns ($XX.XX), ratings, buy buttons
+                            </p>
+
+                            <label style="display: block; margin-bottom: 8px;">
+                                <input type="checkbox" name="schema_local_business" value="1" <?php checked($settings['schema_local_business'] ?? true, true); ?>>
+                                <strong>LocalBusiness Schema</strong> - Business location, hours, contact info
+                            </label>
+                            <p class="description" style="margin-left: 25px; margin-bottom: 12px; color: #666;">
+                                Auto-detects: Addresses, phone numbers, business hours, location pages
+                            </p>
+
+                            <label style="display: block; margin-bottom: 8px;">
+                                <input type="checkbox" name="schema_video" value="1" <?php checked($settings['schema_video'] ?? true, true); ?>>
+                                <strong>Video Schema</strong> - Embedded video content
+                            </label>
+                            <p class="description" style="margin-left: 25px; margin-bottom: 12px; color: #666;">
+                                Auto-detects: YouTube, Vimeo, HTML5 video, WordPress video blocks
+                            </p>
+
+                            <label style="display: block; margin-bottom: 8px;">
+                                <input type="checkbox" name="schema_course" value="1" <?php checked($settings['schema_course'] ?? true, true); ?>>
+                                <strong>Course Schema</strong> - Educational and training content
+                            </label>
+                            <p class="description" style="margin-left: 25px; margin-bottom: 12px; color: #666;">
+                                Auto-detects: LearnDash/LifterLMS courses, learning objectives, enrollment CTAs
+                            </p>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <th scope="row">Schema Detection Mode</th>
+                        <td>
+                            <select name="schema_detection_mode">
+                                <option value="auto" <?php selected($settings['schema_detection_mode'] ?? 'auto', 'auto'); ?>>
+                                    Automatic Detection (Recommended)
+                                </option>
+                                <option value="claude_enhanced" <?php selected($settings['schema_detection_mode'] ?? 'auto', 'claude_enhanced'); ?>>
+                                    Claude AI Enhanced (uses AI for smarter detection)
+                                </option>
+                            </select>
+                            <p class="description">
+                                How schema types are determined for each piece of content.
+                            </p>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <th scope="row">Detection Sensitivity</th>
+                        <td>
+                            <select name="schema_detection_confidence">
+                                <option value="0.4" <?php selected($settings['schema_detection_confidence'] ?? 0.6, 0.4); ?>>
+                                    Low (40%) - Generate more schema, may include false positives
+                                </option>
+                                <option value="0.6" <?php selected($settings['schema_detection_confidence'] ?? 0.6, 0.6); ?>>
+                                    Medium (60%) - Balanced (Recommended)
+                                </option>
+                                <option value="0.8" <?php selected($settings['schema_detection_confidence'] ?? 0.6, 0.8); ?>>
+                                    High (80%) - Only generate when confident
+                                </option>
+                            </select>
+                            <p class="description">
+                                Minimum confidence level required before auto-generating a schema type.
+                            </p>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <th scope="row">Legacy: Generate FAQ Schema</th>
                         <td>
                             <label>
                                 <input type="checkbox" name="generate_faq_schema" value="1" <?php checked($settings['generate_faq_schema'], true); ?>>
-                                Automatically generate FAQ structured data
+                                Automatically generate FAQ structured data from Q&A pairs
                             </label>
                             <p class="description">
-                                Creates schema.org FAQ markup for extracted Q&A pairs. Helps AI engines understand your content structure.
+                                Creates schema.org FAQ markup for extracted Q&A pairs. This setting works with the FAQ Schema toggle above.
                             </p>
                         </td>
                     </tr>
                 </table>
+
+                <div class="postbox" style="margin: 15px 0; background: #f0f6fc; border-color: #0073aa;">
+                    <h3 style="padding: 10px 15px; margin: 0; background: #e8f4fd; border-bottom: 1px solid #0073aa;">
+                        🤖 AI-First Schema Benefits
+                    </h3>
+                    <div class="inside" style="padding: 15px;">
+                        <p><strong>Why Schema Matters for AI Engines:</strong></p>
+                        <ul style="list-style: disc; margin-left: 20px;">
+                            <li><strong>Improved Citations:</strong> Schema makes your content easier for AI assistants to cite accurately</li>
+                            <li><strong>Better Understanding:</strong> Structured data helps LLMs understand entity relationships</li>
+                            <li><strong>Featured Answers:</strong> Schema increases chances of appearing in AI-generated summaries</li>
+                            <li><strong>Knowledge Graph:</strong> Schema.org markup feeds into knowledge graphs used by AI systems</li>
+                        </ul>
+                        <p style="font-style: italic; margin-top: 15px; color: #555;">
+                            "Generative AI search tools now use structured data as a key signal of authority and clarity."
+                        </p>
+                    </div>
+                </div>
             </div>
 
             <div class="card">

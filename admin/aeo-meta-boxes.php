@@ -40,6 +40,15 @@ function requestdesk_aeo_add_meta_boxes() {
         'normal',
         'default'
     );
+
+    add_meta_box(
+        'requestdesk-aeo-schema-control',
+        'Schema Control',
+        'requestdesk_aeo_schema_control_meta_box',
+        array('post', 'page'),
+        'side',
+        'default'
+    );
 }
 
 /**
@@ -513,4 +522,319 @@ function requestdesk_get_badge_color($class) {
         'secondary' => '#666'
     );
     return $colors[$class] ?? '#666';
+}
+
+/**
+ * Schema Control meta box
+ */
+function requestdesk_aeo_schema_control_meta_box($post) {
+    // Get detected schemas using content detector
+    $detected_schemas = array();
+    if (class_exists('RequestDesk_Content_Detector')) {
+        $detector = new RequestDesk_Content_Detector();
+        $detected_schemas = $detector->detect_schema_types($post);
+    }
+
+    // Get manual overrides from post meta
+    $schema_overrides = get_post_meta($post->ID, '_requestdesk_schema_overrides', true);
+    if (!is_array($schema_overrides)) {
+        $schema_overrides = array();
+    }
+
+    // Get global settings
+    $settings = get_option('requestdesk_aeo_settings', array());
+    $confidence_threshold = floatval($settings['schema_detection_confidence'] ?? 0.6);
+
+    // Define all schema types with their labels
+    $schema_types = array(
+        'article' => array('label' => 'Article', 'icon' => '📄', 'always' => true),
+        'breadcrumb' => array('label' => 'Breadcrumb', 'icon' => '🔗', 'always' => true),
+        'faq' => array('label' => 'FAQ', 'icon' => '❓', 'always' => false),
+        'howto' => array('label' => 'HowTo', 'icon' => '📋', 'always' => false),
+        'product' => array('label' => 'Product', 'icon' => '🛒', 'always' => false),
+        'local_business' => array('label' => 'LocalBusiness', 'icon' => '🏢', 'always' => false),
+        'video' => array('label' => 'Video', 'icon' => '🎬', 'always' => false),
+        'course' => array('label' => 'Course', 'icon' => '🎓', 'always' => false),
+    );
+
+    wp_nonce_field('requestdesk_schema_control', 'requestdesk_schema_control_nonce');
+    ?>
+
+    <div class="requestdesk-schema-control">
+        <p style="margin: 0 0 15px 0; font-size: 12px; color: #666;">
+            Auto-detected schema types based on content analysis. Override to force enable/disable.
+        </p>
+
+        <div class="schema-types-list">
+            <?php foreach ($schema_types as $type => $info): ?>
+                <?php
+                // Determine detection status
+                $is_detected = false;
+                $confidence = 0;
+                $detection_info = '';
+
+                if ($info['always']) {
+                    $is_detected = true;
+                    $confidence = 1.0;
+                    $detection_info = 'Always enabled';
+                } elseif (isset($detected_schemas[$type])) {
+                    $detection = $detected_schemas[$type];
+                    if (is_array($detection)) {
+                        $is_detected = ($detection['confidence'] ?? 0) >= $confidence_threshold;
+                        $confidence = $detection['confidence'] ?? 0;
+                        $detection_info = implode(', ', array_slice($detection['signals'] ?? array(), 0, 2));
+                    } else {
+                        $is_detected = (bool)$detection;
+                        $confidence = $detection ? 1.0 : 0;
+                    }
+                }
+
+                // Check for manual override
+                $override = $schema_overrides[$type] ?? 'auto';
+                $final_enabled = ($override === 'force_on') || ($override === 'auto' && $is_detected);
+
+                // Check if globally enabled
+                $global_enabled = $settings['schema_' . $type] ?? true;
+                ?>
+
+                <div class="schema-type-row" style="display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee;">
+                    <div class="schema-status" style="width: 24px; text-align: center;">
+                        <?php if (!$global_enabled): ?>
+                            <span title="Disabled in global settings" style="color: #999;">⊘</span>
+                        <?php elseif ($final_enabled): ?>
+                            <span title="Schema will be generated" style="color: #46b450;">✓</span>
+                        <?php else: ?>
+                            <span title="Schema will not be generated" style="color: #ccc;">○</span>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="schema-info" style="flex: 1; min-width: 0;">
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <span style="font-size: 14px;"><?php echo $info['icon']; ?></span>
+                            <strong style="font-size: 13px;"><?php echo esc_html($info['label']); ?></strong>
+                        </div>
+                        <?php if ($confidence > 0 && !$info['always']): ?>
+                            <div style="font-size: 10px; color: #666; margin-top: 2px;">
+                                <?php echo round($confidence * 100); ?>% confidence
+                                <?php if ($detection_info): ?>
+                                    · <?php echo esc_html($detection_info); ?>
+                                <?php endif; ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="schema-override" style="width: 90px;">
+                        <select name="requestdesk_schema_override[<?php echo esc_attr($type); ?>]"
+                                style="width: 100%; font-size: 11px; padding: 2px;"
+                                <?php echo !$global_enabled ? 'disabled' : ''; ?>>
+                            <option value="auto" <?php selected($override, 'auto'); ?>>Auto</option>
+                            <option value="force_on" <?php selected($override, 'force_on'); ?>>Force On</option>
+                            <option value="force_off" <?php selected($override, 'force_off'); ?>>Force Off</option>
+                        </select>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+
+        <!-- Detection Summary -->
+        <div class="schema-detection-summary" style="margin-top: 15px; padding: 10px; background: #f9f9f9; border-radius: 6px;">
+            <h4 style="margin: 0 0 8px 0; font-size: 12px; color: #333;">Detection Settings</h4>
+            <div style="font-size: 11px; color: #666;">
+                <strong>Confidence threshold:</strong> <?php echo round($confidence_threshold * 100); ?>%<br>
+                <strong>Mode:</strong> <?php echo ucfirst($settings['schema_detection_mode'] ?? 'auto'); ?>
+            </div>
+        </div>
+
+        <!-- Regenerate Button -->
+        <div class="schema-actions" style="margin-top: 15px;">
+            <button type="button" class="button schema-regenerate-btn" data-post-id="<?php echo $post->ID; ?>" style="width: 100%;">
+                🔄 Regenerate Schema
+            </button>
+        </div>
+
+        <!-- Schema Preview Toggle -->
+        <div class="schema-preview-toggle" style="margin-top: 10px;">
+            <button type="button" class="button-link schema-preview-btn" style="font-size: 11px; width: 100%; text-align: center;">
+                Show Schema Preview ▼
+            </button>
+        </div>
+
+        <div class="schema-preview-content" style="display: none; margin-top: 10px; padding: 10px; background: #1e1e1e; border-radius: 4px; max-height: 200px; overflow: auto;">
+            <pre style="margin: 0; font-size: 10px; color: #d4d4d4; white-space: pre-wrap; word-break: break-all;" id="schema-preview-json">Loading...</pre>
+        </div>
+    </div>
+
+    <script>
+    jQuery(document).ready(function($) {
+        // Regenerate schema
+        $('.schema-regenerate-btn').on('click', function() {
+            const postId = $(this).data('post-id');
+            const $btn = $(this);
+
+            $btn.prop('disabled', true).text('Regenerating...');
+
+            $.post(ajaxurl, {
+                action: 'requestdesk_regenerate_schema',
+                post_id: postId,
+                nonce: '<?php echo wp_create_nonce('requestdesk_regenerate_schema'); ?>'
+            }, function(response) {
+                if (response.success) {
+                    location.reload();
+                } else {
+                    alert('Failed to regenerate schema: ' + (response.data || 'Unknown error'));
+                    $btn.prop('disabled', false).text('🔄 Regenerate Schema');
+                }
+            }).fail(function() {
+                alert('Request failed. Please try again.');
+                $btn.prop('disabled', false).text('🔄 Regenerate Schema');
+            });
+        });
+
+        // Toggle schema preview
+        $('.schema-preview-btn').on('click', function() {
+            const $content = $('.schema-preview-content');
+            const $btn = $(this);
+
+            if ($content.is(':visible')) {
+                $content.slideUp(200);
+                $btn.text('Show Schema Preview ▼');
+            } else {
+                $content.slideDown(200);
+                $btn.text('Hide Schema Preview ▲');
+
+                // Load schema preview if not already loaded
+                if ($('#schema-preview-json').text() === 'Loading...') {
+                    $.get(ajaxurl, {
+                        action: 'requestdesk_get_schema_preview',
+                        post_id: <?php echo $post->ID; ?>,
+                        nonce: '<?php echo wp_create_nonce('requestdesk_schema_preview'); ?>'
+                    }, function(response) {
+                        if (response.success && response.data) {
+                            $('#schema-preview-json').text(JSON.stringify(response.data, null, 2));
+                        } else {
+                            $('#schema-preview-json').text('No schema generated yet.');
+                        }
+                    }).fail(function() {
+                        $('#schema-preview-json').text('Failed to load schema preview.');
+                    });
+                }
+            }
+        });
+    });
+    </script>
+    <?php
+}
+
+/**
+ * Save schema control overrides
+ */
+add_action('save_post', 'requestdesk_save_schema_overrides');
+function requestdesk_save_schema_overrides($post_id) {
+    // Check nonce
+    if (!isset($_POST['requestdesk_schema_control_nonce'])) {
+        return;
+    }
+
+    if (!wp_verify_nonce($_POST['requestdesk_schema_control_nonce'], 'requestdesk_schema_control')) {
+        return;
+    }
+
+    // Check permissions
+    if (!current_user_can('edit_post', $post_id)) {
+        return;
+    }
+
+    // Save overrides
+    if (isset($_POST['requestdesk_schema_override']) && is_array($_POST['requestdesk_schema_override'])) {
+        $overrides = array();
+        $valid_values = array('auto', 'force_on', 'force_off');
+
+        foreach ($_POST['requestdesk_schema_override'] as $type => $value) {
+            $type = sanitize_key($type);
+            $value = sanitize_key($value);
+
+            if (in_array($value, $valid_values)) {
+                $overrides[$type] = $value;
+            }
+        }
+
+        update_post_meta($post_id, '_requestdesk_schema_overrides', $overrides);
+    }
+}
+
+/**
+ * AJAX handler for regenerating schema
+ */
+add_action('wp_ajax_requestdesk_regenerate_schema', 'requestdesk_ajax_regenerate_schema');
+function requestdesk_ajax_regenerate_schema() {
+    // Verify nonce
+    if (!wp_verify_nonce($_POST['nonce'], 'requestdesk_regenerate_schema')) {
+        wp_send_json_error('Invalid nonce');
+        return;
+    }
+
+    $post_id = intval($_POST['post_id']);
+
+    // Check permissions
+    if (!current_user_can('edit_post', $post_id)) {
+        wp_send_json_error('Permission denied');
+        return;
+    }
+
+    $post = get_post($post_id);
+    if (!$post) {
+        wp_send_json_error('Post not found');
+        return;
+    }
+
+    // Generate fresh schema
+    if (class_exists('RequestDesk_Schema_Generator')) {
+        $generator = new RequestDesk_Schema_Generator();
+        $schema = $generator->generate_comprehensive_schema($post);
+
+        // Store the generated schema
+        update_post_meta($post_id, '_requestdesk_schema_data', $schema);
+        update_post_meta($post_id, '_requestdesk_schema_generated', current_time('timestamp'));
+
+        wp_send_json_success(array(
+            'message' => 'Schema regenerated successfully',
+            'schema_count' => count($schema)
+        ));
+    } else {
+        wp_send_json_error('Schema generator not available');
+    }
+}
+
+/**
+ * AJAX handler for getting schema preview
+ */
+add_action('wp_ajax_requestdesk_get_schema_preview', 'requestdesk_ajax_get_schema_preview');
+function requestdesk_ajax_get_schema_preview() {
+    // Verify nonce
+    if (!wp_verify_nonce($_GET['nonce'], 'requestdesk_schema_preview')) {
+        wp_send_json_error('Invalid nonce');
+        return;
+    }
+
+    $post_id = intval($_GET['post_id']);
+
+    $post = get_post($post_id);
+    if (!$post) {
+        wp_send_json_error('Post not found');
+        return;
+    }
+
+    // Get or generate schema
+    $schema = get_post_meta($post_id, '_requestdesk_schema_data', true);
+
+    if (empty($schema) && class_exists('RequestDesk_Schema_Generator')) {
+        $generator = new RequestDesk_Schema_Generator();
+        $schema = $generator->generate_comprehensive_schema($post);
+    }
+
+    if (!empty($schema)) {
+        wp_send_json_success($schema);
+    } else {
+        wp_send_json_error('No schema available');
+    }
 }

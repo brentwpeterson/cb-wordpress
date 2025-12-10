@@ -190,23 +190,55 @@ Focus on actionable, specific improvements rather than general advice.";
 
     /**
      * Generate schema markup suggestions
+     * Enhanced for AI-First schema optimization
      */
     public function generate_schema_suggestions($title, $content, $post_type = 'article') {
-        $prompt = "Generate schema markup suggestions for this WordPress post. Return as JSON.
+        $prompt = "Analyze this WordPress content and suggest optimal schema.org markup for AI/LLM visibility.
 
 Title: {$title}
 Content: {$content}
 Post Type: {$post_type}
 
-Analyze the content and suggest appropriate schema.org markup. Return JSON with:
-- primary_schema: Main schema type (Article, HowTo, FAQ, etc.)
-- schema_data: Structured data object for the primary schema
-- additional_schemas: Array of other applicable schema types
-- faq_schema: FAQ schema if Q&A content is present
-- breadcrumb_suggestions: Suggested breadcrumb structure
-- organization_markup: Any organization-related markup needed
+IMPORTANT: Focus on schema that will help AI assistants (ChatGPT, Claude, Perplexity, Google AI Overviews) understand, cite, and reference this content accurately.
 
-Focus on schema that will help with rich snippets and AI understanding.";
+Analyze the content and return JSON with:
+
+1. primary_schema: Main schema type. Choose from:
+   - Article (for blog posts, news)
+   - Product (for product pages, reviews with pricing)
+   - LocalBusiness (for location-based content with addresses, hours)
+   - VideoObject (for video content)
+   - Course (for educational/training content)
+   - HowTo (for instructional step-by-step content)
+   - FAQPage (for Q&A content)
+
+2. additional_schemas: Array of secondary schema types that should also be applied (can include multiple)
+
+3. detected_signals: What content signals led to your recommendation:
+   - For Product: price patterns, SKU, availability, ratings found
+   - For LocalBusiness: address, phone, hours, location keywords
+   - For Video: embedded videos, video URLs detected
+   - For Course: learning objectives, modules, enrollment keywords
+   - For HowTo: step patterns, instructional language
+   - For FAQ: Q&A patterns detected
+
+4. confidence_score: 0-100 confidence in primary schema recommendation
+
+5. extracted_data: Any data values extracted that should populate the schema:
+   - product: { price, currency, rating, brand, availability }
+   - local_business: { address, phone, hours, business_type }
+   - video: { video_ids, platform, duration }
+   - course: { duration, instructor, price, level }
+
+6. ai_optimization_tips: Specific tips to make schema more AI-friendly:
+   - What additional properties would help LLMs cite this content
+   - What structured data would improve answer engine responses
+
+7. faq_schema: FAQ schema if Q&A content is present
+
+8. breadcrumb_suggestions: Suggested breadcrumb structure
+
+Focus on schema that will help this content appear in AI-generated summaries and get cited by AI assistants.";
 
         $result = $this->make_request($prompt);
 
