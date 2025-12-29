@@ -9,6 +9,7 @@ vendor/
 debug.log
 logs/
 todo/
+plugin-releases/
 
 # Claude AI directory (workspace root only)
 .claude/
