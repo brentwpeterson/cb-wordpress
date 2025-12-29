@@ -4,5 +4,11 @@ node_modules/
 vendor/
 .env
 .env.local
-# Claude AI directory (workspace should handle Claude context, not subprojects)
+
+# Development files - not for public repo
+debug.log
+logs/
+todo/
+
+# Claude AI directory (workspace root only)
 .claude/
